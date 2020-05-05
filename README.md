@@ -1,12 +1,13 @@
 # MuleSoft SMB Extension
 
-Add description ...
+Initial MuleSoft SMB Connector implementation for Mule 4.2.x
 
+Pending tasks:
+- Documentation
+- Run unit tests against different SMB versions
+- Run unit tests against different server authentication methods
+- Code revision
 
-...
-
-
-...
 
 
 Add this dependency to your application pom.xml
