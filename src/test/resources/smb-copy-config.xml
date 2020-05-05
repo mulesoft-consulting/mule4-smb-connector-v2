@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd">
+
+    <import file="smb-read-config.xml"/>
+
+    <flow name="copy">
+        <smb:copy config-ref="config" sourcePath="#[vars.source]" targetPath="#[vars.target]" overwrite="#[vars.overwrite]"
+                  createParentDirectories="#[vars.createParent]" renameTo="#[vars.renameTo]"/>
+    </flow>
+
+    <flow name="readAndDo">
+        <smb:read config-ref="config" path="#[vars.source]" />
+        <smb:copy config-ref="config" sourcePath="#[vars.source]" targetPath="#[vars.target]" overwrite="#[vars.overwrite]" createParentDirectories="#[vars.createParent]" renameTo="#[vars.renameTo]"/>
+    </flow>
+
+</mule>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd">
+
+    <import file="smb-read-config.xml"/>
+
+    <flow name="rename">
+        <smb:rename config-ref="config" path="#[vars.path]" to="#[vars.to]" overwrite="#[vars.overwrite]"/>
+    </flow>
+
+    <flow name="readAndRename">
+        <smb:read config-ref="config" path="#[vars.path]" />
+        <smb:rename config-ref="config" path="#[vars.path]" to="#[vars.to]"/>
+    </flow>
+
+</mule>

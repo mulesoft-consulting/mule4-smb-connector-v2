@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns:java="http://www.mulesoft.org/schema/mule/java"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+      http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
+      http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+
+    <import file="smb-read-config.xml"/>
+
+    <flow name="write">
+        <smb:write config-ref="config" path="#[vars.path]" mode="#[vars.mode]" createParentDirectories="#[vars.createParent]" encoding="#[vars.encoding]" />
+    </flow>
+
+    <flow name="writeStaticContent">
+        <smb:write config-ref="config" path="#[vars.path]" mode="#[vars.mode]" createParentDirectories="#[vars.createParent]">
+            <smb:content>Hello World!</smb:content>
+        </smb:write>
+    </flow>
+
+    <flow name="readAndWrite">
+        <smb:read config-ref="config" path="#[vars.path]" />
+        <set-payload value="Hello World!" />
+        <smb:write config-ref="config" path="#[vars.path]" mode="OVERWRITE"/>
+    </flow>
+
+    <flow name="writeWithLock">
+        <smb:write config-ref="config" lock="true" path="#[vars.path]" mode="#[vars.mode]"
+                   createParentDirectories="#[vars.createParent]"/>
+    </flow>
+
+    <flow name="writeFromStreamWithLock">
+        <java:invoke-static class="org.mule.extension.smb.SmbWriteTestCase" method="getContentStream()" />
+        <smb:write config-ref="config" path="#[vars.path]" lock="true" mode="#[vars.mode]"
+                   createParentDirectories="#[vars.createParent]"/>
+    </flow>
+
+    <flow name="writeAlreadyLocked">
+        <scatter-gather>
+            <route>
+                <flow-ref name="writeFromStreamWithLock"/>
+            </route>
+            <route>
+                <flow-ref name="writeFromStreamWithLock"/>
+            </route>
+        </scatter-gather>
+    </flow>
+
+</mule>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns:test="http://www.mulesoft.org/schema/mule/test"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
+        http://www.mulesoft.org/schema/mule/test http://www.mulesoft.org/schema/mule/test/current/mule-test.xsd">
+
+    <import file="smb-connection.xml"/>
+
+    <flow name="read">
+        <choice>
+            <when expression="#[vars.streaming]">
+                <smb:read config-ref="config" path="#[vars.path]"/>
+                <object-to-string-transformer />
+            </when>
+            <otherwise>
+                <smb:read config-ref="config" path="#[vars.path]">
+                    <non-repeatable-stream />
+                </smb:read>
+            </otherwise>
+        </choice>
+    </flow>
+
+    <flow name="readWithLock">
+        <smb:read config-ref="config" path="#[vars.readPath]" lock="true">
+            <non-repeatable-stream />
+        </smb:read>
+        <custom-processor class="org.mule.extension.smb.StreamCloserTestMessageProcessor"/>
+    </flow>
+
+    <flow name="readWithForcedMimeType">
+        <smb:read config-ref="config" path="#[vars.path]" outputMimeType="test/test"/>
+        <object-to-string-transformer />
+    </flow>
+
+    <flow name="readFileThatIsDeleted">
+        <smb:read config-ref="config" path="#[vars.path]"/>
+        <smb:delete config-ref="config" path="#[vars.path]"/>
+        <object-to-string-transformer />
+    </flow>
+
+    <flow name="readFileWithSizeCheck">
+        <smb:read config-ref="config" path="#[vars.path]" timeBetweenSizeCheck="2000"/>
+        <object-to-string-transformer />
+    </flow>
+
+</mule>

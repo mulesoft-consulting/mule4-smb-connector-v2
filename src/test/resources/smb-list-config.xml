@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns:test="http://www.mulesoft.org/schema/mule/test"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+      http://www.mulesoft.org/schema/mule/test http://www.mulesoft.org/schema/mule/test/current/mule-test.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd">
+
+    <import file="smb-connection.xml"/>
+
+    <smb:matcher name="globalMatcher" directories="REQUIRE" filenamePattern="sub*"/>
+
+    <flow name="list">
+        <smb:list config-ref="config" directoryPath="#[vars.path]" recursive="#[vars.recursive]"/>
+    </flow>
+
+    <flow name="listWithStableSizeTime">
+        <smb:list config-ref="config" directoryPath="#[vars.path]" recursive="#[vars.recursive]"
+                   timeBetweenSizeCheck="200"/>
+    </flow>
+
+    <flow name="listWithEmbeddedPredicate">
+        <smb:list config-ref="config" directoryPath="#[vars.path]" recursive="#[vars.recursive]">
+            <smb:matcher filenamePattern="*[1-2]*.html"/>
+        </smb:list>
+    </flow>
+
+    <flow name="listWithGlobalMatcher">
+        <smb:list config-ref="config" directoryPath="#[vars.path]" recursive="#[vars.recursive]"
+                   matcher="globalMatcher"/>
+    </flow>
+
+    <flow name="listCursors">
+        <smb:list config-ref="config" directoryPath="#[vars.path]">
+            <smb:matcher filenamePattern="*2.html"/>
+        </smb:list>
+        <test:processor class="org.mule.extension.smb.SmbListTestCase$TestProcessor"/>
+        <test:processor class="org.mule.extension.smb.SmbListTestCase$TestProcessor"/>
+    </flow>
+
+    <flow name="listFilesRecursivelyWithNameFilter">
+        <smb:list config-ref="config" directoryPath="#[vars.path]" recursive="#[vars.recursive]">
+            <smb:matcher directories="EXCLUDE" filenamePattern="*"/>
+        </smb:list>
+    </flow>
+
+    <flow name="listFilesRecursivelyWithSpecificNameFilter">
+        <smb:list config-ref="config" directoryPath="#[vars.path]" recursive="#[vars.recursive]">
+            <smb:matcher directories="EXCLUDE" filenamePattern="test-file-6.html"/>
+        </smb:list>
+    </flow>
+
+    <flow name="listFilesWithFilesStillBeingWritten">
+        <smb:list config-ref="config" directoryPath="#[vars.path]" recursive="#[vars.recursive]"
+                   timeBetweenSizeCheck="2000">
+            <smb:matcher directories="EXCLUDE" filenamePattern="*"/>
+        </smb:list>
+        <foreach>
+            <try>
+                <test:processor class="org.mule.extension.smb.SmbListTestCase$FilesWrittenProcessor"/>
+                <object-to-string-transformer/>
+                <error-handler>
+                    <on-error-continue enableNotifications="true" logException="true" type="ANY" >
+                        <test:processor class="org.mule.extension.smb.SmbListTestCase$FilesBeingWrittenProcessor"/>
+                    </on-error-continue>
+                </error-handler>
+            </try>
+        </foreach>
+    </flow>
+
+</mule>

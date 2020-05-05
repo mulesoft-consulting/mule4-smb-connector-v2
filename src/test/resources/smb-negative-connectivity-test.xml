@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd">
+
+    <smb:config name="smbConfigInvalidCredentials">
+        <smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft1" shareRoot="share"/>
+    </smb:config>
+
+    <smb:config name="smbConfigConnectionTimeout">
+        <smb:connection host="google.com" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share"/>
+    </smb:config>
+
+    <smb:config name="smbConfigMissingCredentials">
+        <smb:connection host="localhost" domain="WORKGROUP" shareRoot="share"/>
+    </smb:config>
+
+    <smb:config name="smbConfigUnknownHost">
+        <smb:connection host="sdasdadasd" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share"/>
+    </smb:config>
+</mule>
