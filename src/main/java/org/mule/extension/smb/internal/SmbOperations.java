@@ -14,6 +14,7 @@ import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
 import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED_TAB;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mule.extension.file.common.api.BaseFileSystemOperations;
 import org.mule.extension.file.common.api.FileAttributes;
@@ -32,8 +33,11 @@ import org.mule.extension.file.common.api.matcher.FileMatcher;
 import org.mule.extension.file.common.api.matcher.NullFilePayloadPredicate;
 import org.mule.extension.smb.api.SmbFileAttributes;
 import org.mule.extension.smb.api.SmbFileMatcher;
+import org.mule.extension.smb.api.LogLevel;
 import org.mule.extension.smb.internal.connection.SmbFileSystem;
+import org.mule.extension.smb.internal.utils.SmbUtils;
 import org.mule.runtime.api.message.Message;
+import org.mule.runtime.core.internal.processor.LoggerMessageProcessor;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.annotation.param.ConfigOverride;
@@ -50,6 +54,8 @@ import org.mule.runtime.extension.api.runtime.streaming.PagingProvider;
 import org.mule.runtime.extension.api.runtime.streaming.StreamingHelper;
 
 import java.io.InputStream;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -312,4 +318,57 @@ public final class SmbOperations extends BaseFileSystemOperations {
 	private Predicate<SmbFileAttributes> getPredicate(FileMatcher builder) {
 		return builder != null ? builder.build() : new NullFilePayloadPredicate();
 	}
+
+	/**
+	 * Writes the {@code content} into the file pointed by {@code path}.
+	 * <p>
+	 * If the directory on which the file is attempting to be written doesn't exist, then the operation will either throw
+	 * {@code SMB:ILLEGAL_PATH} error or create such folder depending on the value of the {@code createParentDirectory}.
+	 * <p>
+	 * If the file itself already exists, then the behavior depends on the supplied {@code mode}.
+	 * <p>
+	 * This operation also supports locking support depending on the value of the {@code lock} argument, but following the same
+	 * rules and considerations as described in the read operation.
+	 *
+	 * @param config the {@link FileConnectorConfig} on which the operation is being executed
+	 * @param fileSystem a reference to the host {@link FileSystem}
+	 * @param path the path of the file to be written
+	 * @param message the message to be logged in the remote file
+	 * @param logLevel the log level used to log the message {@link LoggerMessageProcessor.LogLevel}
+	 * @param writeToLogger whether or not to write the message to the default logger.
+	 * @throws IllegalArgumentException if an illegal combination of arguments is supplied
+	 */
+	@Summary("Logs the message in the file pointed by \"Path\"")
+	@Throws(FileWriteErrorTypeProvider.class)
+	public void logger(@Config FileConnectorConfig config,
+					   @Connection FileSystem fileSystem,
+					   @Path(type = DIRECTORY, location = EXTERNAL) String path,
+					   @DisplayName("Message") String message,
+					   @Optional(defaultValue = "INFO")
+						   @DisplayName("Log Level") LogLevel logLevel,
+					   @Optional(defaultValue = "true") boolean writeToLogger) {
+		// FIXME: implement this operation as a LogAppender!
+		// workaround to write logs in a SMB File server
+		if (isBlank(path)) {
+			throw new IllegalPathException("path cannot be null nor blank");
+		}
+
+		try {
+			fileSystem.write(path, IOUtils.toInputStream(
+					  SmbUtils.padRight(logLevel.name(), 6, " ")
+					+ ZonedDateTime.now()
+									.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
+					+ message
+					+ "\n"), FileWriteMode.APPEND, true, true);
+			if (writeToLogger) {
+				logLevel.log(LOGGER, message);
+			}
+		} catch(Exception e) {
+			LOGGER.error("Could not log message to remote file. File path: " + path + ", message: " + message, e);
+		}
+
+
+	}
+
+
 }

@@ -7,6 +7,7 @@
 package org.mule.extension.smb.internal.command;
 
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.command.ReadCommand;
@@ -22,6 +23,7 @@ import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.util.IOUtils;
 import org.mule.runtime.extension.api.runtime.operation.Result;
+import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -33,6 +35,8 @@ import java.util.concurrent.TimeUnit;
  * @since 1.0
  */
 public final class SmbReadCommand extends SmbCommand implements ReadCommand<SmbFileAttributes> {
+
+	private static final Logger LOGGER = getLogger(SmbReadCommand.class);
 
 	/**
 	 * {@inheritDoc}
@@ -93,9 +97,16 @@ public final class SmbReadCommand extends SmbCommand implements ReadCommand<SmbF
 			return Result.<InputStream, SmbFileAttributes>builder().output(payload).mediaType(resolvedMediaType).attributes(attributes)
 					.build();
 		} catch (Exception e) {
-			pathLock.release();
 			IOUtils.closeQuietly(payload);
 			throw exception("Could not fetch file " + uri.getPath(), e);
+		} finally {
+			if (pathLock != null) {
+				try {
+					pathLock.release();
+				} catch(Exception e) {
+					LOGGER.warn("Could not release lock for path " + uri.toString(), e);
+				}
+			}
 		}
 	}
 

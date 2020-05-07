@@ -9,14 +9,10 @@ package org.mule.extension.smb.internal.utils;
 import static java.lang.Thread.currentThread;
 
 import java.net.URI;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
-import jcifs.SmbConstants;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.mule.extension.file.common.api.exceptions.IllegalPathException;
 import org.mule.extension.file.common.api.util.UriUtils;
 
 /**
@@ -120,4 +116,15 @@ public class SmbUtils {
         return (path.endsWith(SEPARATOR) || path.length() == 1) ? path : path + SEPARATOR;
     }
 
+    public static String padRight(String value, int length, String padChar) {
+        String result = value;
+
+        if (result != null) {
+            while (result.length() < length) {
+                result = result + padChar;
+            }
+        }
+
+        return result;
+    }
 }

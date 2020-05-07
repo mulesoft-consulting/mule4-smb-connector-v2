@@ -73,8 +73,15 @@ public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
 			client.write(uri.getPath(), content, mode);
 			LOGGER.debug("Successfully wrote to path {}", uri.getPath());
 		} catch (Exception e) {
-			pathLock.release();
 			throw exception(format("Exception was found writing to file '%s'", uri.getPath()), e);
+		} finally {
+			if (pathLock != null) {
+				try {
+					pathLock.release();
+				} catch (Exception e) {
+					LOGGER.warn("Could not release lock for path " + uri.toString(), e);
+				}
+			}
 		}
 	}
 
