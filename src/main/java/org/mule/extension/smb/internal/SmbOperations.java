@@ -21,14 +21,7 @@ import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.FileSystem;
 import org.mule.extension.file.common.api.FileWriteMode;
-import org.mule.extension.file.common.api.exceptions.FileCopyErrorTypeProvider;
-import org.mule.extension.file.common.api.exceptions.FileDeleteErrorTypeProvider;
-import org.mule.extension.file.common.api.exceptions.FileListErrorTypeProvider;
-import org.mule.extension.file.common.api.exceptions.FileReadErrorTypeProvider;
-import org.mule.extension.file.common.api.exceptions.FileRenameErrorTypeProvider;
-import org.mule.extension.file.common.api.exceptions.FileWriteErrorTypeProvider;
-import org.mule.extension.file.common.api.exceptions.IllegalContentException;
-import org.mule.extension.file.common.api.exceptions.IllegalPathException;
+import org.mule.extension.file.common.api.exceptions.*;
 import org.mule.extension.file.common.api.matcher.FileMatcher;
 import org.mule.extension.file.common.api.matcher.NullFilePayloadPredicate;
 import org.mule.extension.smb.api.SmbFileAttributes;
@@ -57,6 +50,7 @@ import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -353,22 +347,30 @@ public final class SmbOperations extends BaseFileSystemOperations {
 			throw new IllegalPathException("path cannot be null nor blank");
 		}
 
-		try {
-			fileSystem.write(path, IOUtils.toInputStream(
-					  SmbUtils.padRight(logLevel.name(), 6, " ")
-					+ ZonedDateTime.now()
-									.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
-					+ message
-					+ "\n"), FileWriteMode.APPEND, true, true);
-			if (writeToLogger) {
-				logLevel.log(LOGGER, message);
+		CompletableFuture.runAsync(() -> {
+			try {
+				boolean done = false;
+				while (!done) {
+					try {
+						fileSystem.write(path, IOUtils.toInputStream(
+								SmbUtils.padRight(logLevel.name(), 6, " ")
+										+ ZonedDateTime.now()
+										.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
+										+ message
+										+ "\n"), FileWriteMode.APPEND, true, true);
+						if (writeToLogger) {
+							logLevel.log(LOGGER, message);
+						}
+						done = true;
+					} catch (FileLockedException fle) {
+						if (LOGGER.isDebugEnabled()) {
+							LOGGER.debug(fle.getMessage() + " - Retrying...");
+						}
+					}
+				}
+			} catch (Exception e) {
+				LOGGER.error("Could not log message to remote file in async mode. File path: " + path + ", message: " + message, e);
 			}
-		} catch(Exception e) {
-			LOGGER.error("Could not log message to remote file. File path: " + path + ", message: " + message, e);
-		}
-
-
+		});
 	}
-
-
 }

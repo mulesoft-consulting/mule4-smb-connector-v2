@@ -3,9 +3,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.mule.connectors</groupId>
+    <groupId>82f92d27-f09c-4498-971c-befdd2751bc6</groupId>
     <artifactId>mule-smb-connector</artifactId>
-    <version>1.0.15</version>
+    <version>1.0.16</version>
     <packaging>mule-extension</packaging>
     <name>mule-smb-connector</name>
 
@@ -188,6 +188,7 @@
 
     </dependencies>
 
+    <!--
     <distributionManagement>
         <repository>
             <id>mule-releases</id>
@@ -201,6 +202,7 @@
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
+    -->
 
     <repositories>
         <repository>
@@ -241,5 +243,20 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>BradescoApiTeamRepository</id>
+            <name>Exchange Repository</name>
+            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/82f92d27-f09c-4498-971c-befdd2751bc6/maven</url>
+            <layout>default</layout>
+        </snapshotRepository>
+        <repository>
+            <id>BradescoApiTeamRepository</id>
+            <name>Exchange Repository</name>
+            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/82f92d27-f09c-4498-971c-befdd2751bc6/maven</url>
+            <layout>default</layout>
+        </repository>
+    </distributionManagement>
 
 </project>
