@@ -22,6 +22,7 @@ import org.mule.extension.AbstractSmbTestHarness;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileWriteMode;
 import org.mule.extension.file.common.api.util.UriUtils;
+import org.mule.extension.smb.api.LogLevel;
 import org.mule.extension.smb.api.SmbFileAttributes;
 import org.mule.extension.smb.internal.connection.SmbClient;
 import org.mule.extension.smb.internal.connection.SmbClientFactory;
@@ -86,7 +87,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
   }
 
   private SmbClient createDefaultSmbClient() throws Exception {
-    SmbClient smbClient = new SmbClientFactory().createInstance("localhost", SmbServer.SHARE_ROOT);
+    SmbClient smbClient = new SmbClientFactory().createInstance("localhost", SmbServer.SHARE_ROOT, LogLevel.WARN);
     smbClient.login(DOMAIN, USERNAME, PASSWORD);
     return smbClient;
   }

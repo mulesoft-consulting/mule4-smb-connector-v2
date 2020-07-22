@@ -7,6 +7,8 @@ package org.mule.extension.smb.internal.connection;
  * LICENSE.txt file.
  */
 
+import org.mule.extension.smb.api.LogLevel;
+
 /**
  * Creates instances of {@link SmbClient}
  *
@@ -19,9 +21,10 @@ public class SmbClientFactory {
    *
    * @param host the host address
    * @param shareRoot the share root
+   * @param logLevel the log level
    * @return a {@link SmbClient}
    */
-  public SmbClient createInstance(String host, String shareRoot) {
-    return new SmbClient(host, shareRoot);
+  public SmbClient createInstance(String host, String shareRoot, LogLevel logLevel) {
+    return new SmbClient(host, shareRoot, logLevel);
   }
 }

@@ -7,6 +7,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 
 import org.mule.extension.file.common.api.FileSystemProvider;
+import org.mule.extension.smb.api.LogLevel;
 import org.mule.extension.smb.internal.connection.SmbClient;
 import org.mule.extension.smb.internal.connection.SmbClientFactory;
 import org.mule.extension.smb.internal.connection.SmbFileSystem;
@@ -35,7 +36,7 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystem>
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SmbConnectionProvider.class);
 
-	private static final String SMB_ERROR_MESSAGE_MASK = "Could not establish SMB connection (host: '%s', domain: %s, user: %s, share root: '%s'): %s";
+	private static final String SMB_ERROR_MESSAGE_MASK = "Could not establish SMB connection (host: '%s', domain: %s, user: %s, share root: '%s', logLevel: '%s'): %s";
 
 	@Inject
 	private LockFactory lockFactory;
@@ -82,6 +83,16 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystem>
 	@Placement(order = 5)
 	private String shareRoot;
 
+	/**
+	 * The log level
+	 */
+	@Parameter
+	@Optional(defaultValue = "WARN")
+	@Summary("Log level. Used by Logger operation to determine if messages " +
+			 "whether log messages should be written or not")
+	@Placement(order = 6)
+	private LogLevel logLevel;
+
 	private SmbClientFactory clientFactory = new SmbClientFactory();
 
 	@Override
@@ -90,7 +101,7 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystem>
 			LOGGER.debug(format("Connecting to SMB server (host: '%s', domain: '%s', user: '%s', share Root: '%s')", host,
 					domain, username, shareRoot));
 		}
-		SmbClient client = clientFactory.createInstance(host, shareRoot);
+		SmbClient client = clientFactory.createInstance(host, shareRoot, logLevel);
 		try {
 			client.login(domain, username, password);
 		} catch (Exception e) {
@@ -124,7 +135,7 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystem>
 	}
 
 	private String getErrorMessage(String message) {
-		return format(SMB_ERROR_MESSAGE_MASK, this.host, this.domain, this.username, this.shareRoot, message);
+		return format(SMB_ERROR_MESSAGE_MASK, this.host, this.domain, this.username, this.shareRoot, this.logLevel, message);
 	}
 
 	@Override
@@ -144,12 +155,13 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystem>
 		SmbConnectionProvider that = (SmbConnectionProvider) o;
 		return Objects.equals(host, that.host) && Objects.equals(domain, that.domain)
 				&& Objects.equals(username, that.username) && Objects.equals(password, that.password)
-				&& Objects.equals(shareRoot, that.shareRoot);
+				&& Objects.equals(shareRoot, that.shareRoot)
+				&& Objects.equals(logLevel, logLevel);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), host, domain, username, password, shareRoot);
+		return Objects.hash(super.hashCode(), host, domain, username, password, shareRoot, logLevel);
 	}
 
 	// This validation needs to be done because of the bug explained in MULE-15197
@@ -181,5 +193,6 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystem>
 		this.shareRoot = shareRoot;
 	}
 
+	public void setLogger(LogLevel logLevel) {this.logLevel = logLevel;}
 
 }

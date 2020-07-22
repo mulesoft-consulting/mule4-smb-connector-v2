@@ -4,6 +4,7 @@ import jcifs.smb.SmbFile;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mule.extension.smb.api.LogLevel;
 import org.mule.extension.smb.internal.SmbConnectionProvider;
 import org.mule.extension.smb.internal.connection.SmbClient;
 import org.mule.extension.smb.internal.connection.SmbClientFactory;
@@ -33,8 +34,8 @@ public class SmbConnectionProviderTestCase  extends AbstractMuleTestCase {
         provider.setClientFactory(new SmbClientFactory() {
 
             @Override
-            public SmbClient createInstance(String host, String shareRoot) {
-                return new SmbClient(host, shareRoot);
+            public SmbClient createInstance(String host, String shareRoot, LogLevel logLevel) {
+                return new SmbClient(host, shareRoot, logLevel);
             }
         });
     }

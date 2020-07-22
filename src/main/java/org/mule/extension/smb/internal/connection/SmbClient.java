@@ -15,6 +15,7 @@ import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import org.mule.extension.file.common.api.FileWriteMode;
 import org.mule.extension.file.common.api.util.UriUtils;
+import org.mule.extension.smb.api.LogLevel;
 import org.mule.extension.smb.api.SmbFileAttributes;
 import org.mule.extension.smb.internal.utils.SmbUtils;
 import org.mule.runtime.api.connection.ConnectionException;
@@ -27,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -45,18 +45,19 @@ import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 public class SmbClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SmbClient.class);
-    private static final CharSequence JCIFS_SMB_PKG = "jcifs.smb";
 
     private String host;
     private String shareRoot;
+    private LogLevel logLevel;
 
     private CIFSContext context;
 
     private SmbFileSystem owner;
 
-    public SmbClient(String host, String shareRoot) {
+    public SmbClient(String host, String shareRoot, LogLevel logLevel) {
         this.host = host;
         this.shareRoot = shareRoot;
+        this.logLevel = logLevel != null ? logLevel : LogLevel.WARN;
         //this.registerSmbUrlHandler();
     }
 
@@ -90,10 +91,20 @@ public class SmbClient {
     }
 
     private void connect() throws Exception {
-        SmbFile shareRoot = this.getFile("");
-        if (shareRoot == null || !shareRoot.exists()) {
-            throw exception("Connection failed: could not access path " + this.getShareRootURL(), null);
+        SmbFile shareRoot = null;
+        try {
+            shareRoot = this.getFile("");
+            if (shareRoot != null) {
+                shareRoot.exists();
+            }
+        } catch (Exception e) {
+            throw exception("Connection failed: could not access path " + getAbsolutePath(""), e);
         }
+
+        if (shareRoot == null) {
+            throw exception("Connection failed: could not access path " + getAbsolutePath(""), null);
+        }
+
     }
 
 
@@ -139,7 +150,7 @@ public class SmbClient {
             List<SmbFileAttributes> result = new Vector<SmbFileAttributes>();
 
             for (SmbFile file : dir.listFiles()) {
-                URI uri = file.getURL().toURI();
+                URI uri = new URI(SmbUtils.urlEncodePathFragments(file.getURL().toString()));
                 if (uri.toString().endsWith("/")) {
                     uri = new URI(uri.toString().replaceAll("/$", ""));
                 }
@@ -403,6 +414,10 @@ public class SmbClient {
             }
         }
 
+        if (path != null && path.replace("smb://", "").matches(".*(:|\\||>|<|\"|\\?|\\*)+.*")) {
+            throw new ConnectionException("The filename, directory name, or volume label syntax is incorrect.");
+        }
+
         return result;
     }
 
@@ -427,5 +442,11 @@ public class SmbClient {
     public boolean pathIsShareRoot(String path) {
         return this.getShareRootURL().equals(path)
                 || this.getShareRootURL().equals(path != null ? path + "/" : null);
+    }
+
+    public boolean isLogLevelEnabled(LogLevel logLevel) {
+        return this.logLevel != null
+                && logLevel != null
+                && logLevel.ordinal() <= this.logLevel.ordinal();
     }
 }

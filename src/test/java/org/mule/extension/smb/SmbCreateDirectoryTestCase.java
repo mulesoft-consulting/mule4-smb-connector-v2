@@ -6,7 +6,6 @@
  */
 package org.mule.extension.smb;
 
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -202,7 +201,6 @@ public class SmbCreateDirectoryTestCase extends CommonSmbConnectorTestCase {
     testHarness.expectedError().expectErrorType("SMB", "CONNECTIVITY");
     testHarness.expectedError().expectMessage(containsString("The filename, directory name, or volume label syntax is incorrect."));
 
-    assumeTrue(!IS_OS_WINDOWS);
     final String path = "pathWith:Colon";
     doCreateDirectory(path);
     assertThat(testHarness.dirExists("/base/pathWith:Colon"), is(true));

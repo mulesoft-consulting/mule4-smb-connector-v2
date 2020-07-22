@@ -20,6 +20,7 @@ import org.mule.extension.file.common.api.command.MoveCommand;
 import org.mule.extension.file.common.api.command.RenameCommand;
 import org.mule.extension.file.common.api.command.WriteCommand;
 import org.mule.extension.file.common.api.lock.UriLock;
+import org.mule.extension.smb.api.LogLevel;
 import org.mule.extension.smb.api.SmbConnectionException;
 import org.mule.extension.smb.api.SmbFileAttributes;
 import org.mule.extension.smb.internal.utils.SmbUtils;
@@ -194,4 +195,8 @@ public class SmbFileSystem extends AbstractExternalFileSystem {
 	public SmbClient getClient() {
 		return client;
 	}
+
+    public boolean isLogLevelEnabled(LogLevel logLevel) {
+		return this.getClient().isLogLevelEnabled(logLevel);
+    }
 }

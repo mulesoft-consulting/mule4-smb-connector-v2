@@ -7,11 +7,9 @@
 package org.mule.extension.smb;
 
 import static java.nio.charset.Charset.availableCharsets;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 import static org.mule.extension.file.common.api.FileWriteMode.APPEND;
 import static org.mule.extension.file.common.api.FileWriteMode.CREATE_NEW;
 import static org.mule.extension.file.common.api.FileWriteMode.OVERWRITE;

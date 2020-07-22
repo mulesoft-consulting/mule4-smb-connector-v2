@@ -15,7 +15,6 @@ import static org.mule.runtime.extension.api.annotation.param.display.Placement.
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.mule.extension.file.common.api.BaseFileSystemOperations;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileConnectorConfig;
@@ -30,6 +29,7 @@ import org.mule.extension.smb.api.LogLevel;
 import org.mule.extension.smb.internal.connection.SmbFileSystem;
 import org.mule.extension.smb.internal.utils.SmbUtils;
 import org.mule.runtime.api.message.Message;
+import org.mule.runtime.core.api.util.StringUtils;
 import org.mule.runtime.core.internal.processor.LoggerMessageProcessor;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.param.Config;
@@ -343,13 +343,20 @@ public final class SmbOperations extends BaseFileSystemOperations {
 					   @Optional(defaultValue = "true") boolean writeToLogger) {
 		// FIXME: implement this operation as a LogAppender!
 		// workaround to write logs in a SMB File server
+
+		if (writeToLogger) {
+			if (logLevel.isEnabled(LOGGER)) {
+				logLevel.log(LOGGER, message);
+			}
+		}
+
 		if (isBlank(path)) {
 			throw new IllegalPathException("path cannot be null nor blank");
 		}
 
 		CompletableFuture.runAsync(() -> {
 			try {
-				boolean done = false;
+				boolean done = !((SmbFileSystem)fileSystem).isLogLevelEnabled(logLevel);
 				while (!done) {
 					try {
 						fileSystem.write(path, IOUtils.toInputStream(
@@ -358,9 +365,6 @@ public final class SmbOperations extends BaseFileSystemOperations {
 										.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
 										+ message
 										+ "\n"), FileWriteMode.APPEND, true, true);
-						if (writeToLogger) {
-							logLevel.log(LOGGER, message);
-						}
 						done = true;
 					} catch (FileLockedException fle) {
 						if (LOGGER.isDebugEnabled()) {

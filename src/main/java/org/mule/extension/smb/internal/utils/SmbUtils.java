@@ -8,8 +8,10 @@ package org.mule.extension.smb.internal.utils;
 
 import static java.lang.Thread.currentThread;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FilenameUtils;
@@ -122,6 +124,30 @@ public class SmbUtils {
         if (result != null) {
             while (result.length() < length) {
                 result = result + padChar;
+            }
+        }
+
+        return result;
+    }
+
+    public static String urlEncodePathFragments(String url) {
+        String result = null;
+
+        if (url != null) {
+
+            String[] fragments = url.split("/");
+
+            try {
+                for (String fragment : fragments) {
+                    String actualFragment = "smb:".equals(fragment) ? fragment : URLEncoder.encode(fragment, StandardCharsets.UTF_8.name());
+                    result = (result == null ? "" : result + "/") + actualFragment;
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Could not URL encode path fragments for URL " + url, e);
+            }
+
+            if (url.endsWith("/")) {
+                result = result + "/";
             }
         }
 

@@ -7,7 +7,6 @@
 package org.mule.extension.smb.internal.command;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
 import static org.mule.extension.file.common.api.util.UriUtils.normalizeUri;
 import static org.mule.extension.file.common.api.util.UriUtils.trimLastFragment;
@@ -19,7 +18,6 @@ import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.FileSystem;
 import org.mule.extension.file.common.api.command.ExternalFileCommand;
 import org.mule.extension.file.common.api.exceptions.FileAlreadyExistsException;
-import org.mule.extension.file.common.api.util.UriUtils;
 import org.mule.extension.smb.api.SmbFileAttributes;
 import org.mule.extension.smb.internal.utils.SmbUtils;
 import org.mule.extension.smb.internal.connection.SmbClient;
@@ -28,6 +26,7 @@ import org.mule.extension.smb.internal.connection.SmbFileSystem;
 import java.net.URI;
 
 import org.apache.commons.io.FilenameUtils;
+import org.mule.runtime.core.api.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +103,7 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystem> {
 	protected URI resolvePath(String filePath) {
 		URI result = null;
 		if (filePath != null && filePath.startsWith("smb://")) {
-			result = URI.create(filePath);
+			result = URI.create(SmbUtils.urlEncodePathFragments(filePath));
 		} else {
 			result = super.resolvePath(filePath);
 		}
@@ -195,7 +194,7 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystem> {
 		FileAttributes sourceFile = getExistingFile(source);
 		URI targetUri = resolvePath(target);
 		FileAttributes targetFile = getFile(targetUri.getPath());
-		String targetFileName = isBlank(renameTo) ? getFileName(source) : renameTo;
+		String targetFileName = StringUtils.isBlank(renameTo) ? getFileName(source) : renameTo;
 
 		if (targetFile != null) {
 			if (targetFile.isDirectory()) {
