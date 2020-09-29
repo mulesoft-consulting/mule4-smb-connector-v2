@@ -109,7 +109,7 @@ public class SmbClient {
 
 
     public boolean isConnected() {
-        // TODO: check how to check if client is connected or not
+        // TODO: check how to detect if client is connected or not
         // Assume always true, but need to confirm if this can affect
         // the connector's behavior
         return true;

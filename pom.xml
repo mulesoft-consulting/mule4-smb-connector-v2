@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>82f92d27-f09c-4498-971c-befdd2751bc6</groupId>
+    <groupId>org.mule.connectors</groupId>
     <artifactId>mule-smb-connector</artifactId>
     <version>1.0.22</version>
     <packaging>mule-extension</packaging>
