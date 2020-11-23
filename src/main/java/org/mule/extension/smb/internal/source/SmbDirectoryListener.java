@@ -9,7 +9,7 @@ import static org.mule.runtime.extension.api.runtime.source.PollContext.PollItem
 import org.mule.extension.file.common.api.matcher.NullFilePayloadPredicate;
 import org.mule.extension.smb.api.SmbFileAttributes;
 import org.mule.extension.smb.api.SmbFileMatcher;
-import org.mule.extension.smb.internal.SmbConnector;
+import org.mule.extension.smb.internal.extension.SmbConnector;
 import org.mule.extension.smb.internal.connection.SmbFileSystem;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionProvider;

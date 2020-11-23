@@ -1,4 +1,4 @@
-package org.mule.extension.smb.internal;
+package org.mule.extension.smb.internal.command;
 
 /*
  * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
@@ -13,6 +13,7 @@ import org.mule.extension.file.common.api.stream.AbstractNonFinalizableFileInput
 import org.mule.extension.file.common.api.stream.LazyStreamSupplier;
 import org.mule.extension.smb.api.SmbFileAttributes;
 import org.mule.extension.smb.internal.connection.SmbFileSystem;
+import org.mule.extension.smb.internal.extension.SmbConnector;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.core.api.connector.ConnectionManager;

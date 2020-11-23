@@ -5,14 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.mule.connectors</groupId>
     <artifactId>mule-smb-connector</artifactId>
-    <version>1.0.22</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>mule-extension</packaging>
-    <name>mule-smb-connector</name>
+    <name>SMB Connector - Mule 4</name>
+    <description>A Mule extension that provides functionality to manage files in an SMB server</description>
 
     <parent>
-        <groupId>org.mule.extensions</groupId>
-        <artifactId>mule-modules-parent</artifactId>
-        <version>1.1.6</version>
+        <groupId>org.mule.connectors</groupId>
+        <artifactId>mule-certified-parent</artifactId>
+        <version>1.4.1</version>
     </parent>
 
     <properties>
@@ -206,15 +207,9 @@
 
     <repositories>
         <repository>
-            <id>mule</id>
-            <name>Mule Repository</name>
-            <url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
-        </repository>
-        <repository>
-            <id>mulesoft-releases</id>
-            <name>MuleSoft Releases Repository</name>
-            <url>http://repository.mulesoft.org/releases/</url>
-            <layout>default</layout>
+            <id>mule-releases</id>
+            <name>Nexus Public Releases</name>
+            <url>https://repository.mulesoft.org/nexus/content/repositories/releases/</url>
         </repository>
         <repository>
             <id>alfresco-public</id>
@@ -243,20 +238,5 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>BradescoApiTeamRepository</id>
-            <name>Exchange Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/82f92d27-f09c-4498-971c-befdd2751bc6/maven</url>
-            <layout>default</layout>
-        </snapshotRepository>
-        <repository>
-            <id>BradescoApiTeamRepository</id>
-            <name>Exchange Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/82f92d27-f09c-4498-971c-befdd2751bc6/maven</url>
-            <layout>default</layout>
-        </repository>
-    </distributionManagement>
 
 </project>

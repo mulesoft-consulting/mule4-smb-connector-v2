@@ -21,7 +21,7 @@ import org.mule.extension.file.common.api.command.RenameCommand;
 import org.mule.extension.file.common.api.command.WriteCommand;
 import org.mule.extension.file.common.api.lock.UriLock;
 import org.mule.extension.smb.api.LogLevel;
-import org.mule.extension.smb.api.SmbConnectionException;
+import org.mule.extension.smb.error.exception.SmbConnectionException;
 import org.mule.extension.smb.api.SmbFileAttributes;
 import org.mule.extension.smb.internal.utils.SmbUtils;
 import org.mule.extension.smb.internal.command.SmbCopyCommand;

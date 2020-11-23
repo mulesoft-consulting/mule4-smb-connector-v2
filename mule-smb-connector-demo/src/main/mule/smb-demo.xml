@@ -7,7 +7,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<smb:config name="SMB_Config" doc:name="SMB Config" doc:id="8fd4dc7e-6abf-48f3-8400-a785457ffc34" >
-		<smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="/shared" logLevel="INFO"/>
+		<smb:connection host="${smb.host}" domain="${smb.workgroup}" username="${smb.user}" password="${smb.password}" shareRoot="${smb.shareRoot}" logLevel="INFO"/>
 	</smb:config>
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="da2a3a47-62b1-4f0a-92a6-8a372d53e2b7" >
 		<http:listener-connection host="0.0.0.0" port="8081" />

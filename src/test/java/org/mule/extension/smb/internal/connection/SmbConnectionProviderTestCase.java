@@ -1,17 +1,9 @@
 package org.mule.extension.smb.internal.connection;
 
-import jcifs.smb.SmbFile;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.mule.extension.smb.api.LogLevel;
-import org.mule.extension.smb.internal.SmbConnectionProvider;
-import org.mule.extension.smb.internal.connection.SmbClient;
-import org.mule.extension.smb.internal.connection.SmbClientFactory;
-import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.extension.smb.internal.connection.provider.SmbConnectionProvider;
 import org.mule.tck.junit4.AbstractMuleTestCase;
-
-import java.net.URI;
 
 public class SmbConnectionProviderTestCase  extends AbstractMuleTestCase {
 

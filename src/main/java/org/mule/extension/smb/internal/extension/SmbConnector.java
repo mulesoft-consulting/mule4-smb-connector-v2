@@ -1,4 +1,4 @@
-package org.mule.extension.smb.internal;
+package org.mule.extension.smb.internal.extension;
 
 import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED_TAB;
 
@@ -8,6 +8,8 @@ import javax.inject.Inject;
 
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.exceptions.FileError;
+import org.mule.extension.smb.internal.connection.provider.SmbConnectionProvider;
+import org.mule.extension.smb.internal.operation.SmbOperations;
 import org.mule.extension.smb.internal.source.SmbDirectoryListener;
 import org.mule.runtime.core.api.connector.ConnectionManager;
 import org.mule.runtime.extension.api.annotation.Extension;

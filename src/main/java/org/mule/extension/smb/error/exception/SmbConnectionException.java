@@ -1,4 +1,4 @@
-package org.mule.extension.smb.api;
+package org.mule.extension.smb.error.exception;
 
 /*
  * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com

@@ -1,4 +1,4 @@
-package org.mule.extension.smb.internal;
+package org.mule.extension.smb.internal.connection.provider;
 
 import static java.lang.String.format;
 
@@ -11,6 +11,7 @@ import org.mule.extension.smb.api.LogLevel;
 import org.mule.extension.smb.internal.connection.SmbClient;
 import org.mule.extension.smb.internal.connection.SmbClientFactory;
 import org.mule.extension.smb.internal.connection.SmbFileSystem;
+import org.mule.extension.smb.internal.extension.SmbConnector;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.api.connection.PoolingConnectionProvider;
