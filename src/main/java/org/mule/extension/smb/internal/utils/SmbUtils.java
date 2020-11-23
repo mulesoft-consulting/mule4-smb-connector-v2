@@ -135,7 +135,7 @@ public class SmbUtils {
 
         if (url != null) {
 
-            String[] fragments = url.split("/");
+            String[] fragments = url.replaceAll("(?<!:)\\/\\/", "/").split("/");
 
             try {
                 for (String fragment : fragments) {

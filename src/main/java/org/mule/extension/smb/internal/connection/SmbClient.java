@@ -422,7 +422,7 @@ public class SmbClient {
     }
 
     public String getShareRootURL() {
-        return "smb://" + this.host + "/" + this.shareRoot + "/";
+        return "smb://" + this.host + ("/" + this.shareRoot + "/").replaceAll("/+", "/");
     }
 
     /* Getters and Setters */
