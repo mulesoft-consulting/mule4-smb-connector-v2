@@ -189,28 +189,13 @@
 
     </dependencies>
 
-    <!--
-    <distributionManagement>
-        <repository>
-            <id>mule-releases</id>
-            <name>Mule Release Repository</name>
-            <url>https://repository-master.mulesoft.org/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>mule-snapshots</id>
-            <name>Mule Snapshot Repository</name>
-            <url>https://repository-master.mulesoft.org/nexus/content/repositories/snapshots</url>
-            <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository>
-    </distributionManagement>
-    -->
-
     <repositories>
         <repository>
             <id>mule-releases</id>
             <name>Nexus Public Releases</name>
             <url>https://repository.mulesoft.org/nexus/content/repositories/releases/</url>
         </repository>
+        <!-- TODO install jar from https://artifacts.alfresco.com/nexus/content/groups/public in MuleSoft repo -->
         <repository>
             <id>alfresco-public</id>
             <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>

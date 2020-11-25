@@ -24,7 +24,7 @@ import io.qameta.allure.Feature;
 import org.junit.Test;
 
 @Feature(SMB_EXTENSION)
-public class SmbDirectoryListenerReconnectionFunctionalTestCase extends CommonSmbConnectorTestCase {
+public class SmbDirectorySourceReconnectionFunctionalTestCase extends CommonSmbConnectorTestCase {
 
   private static final String MATCHERLESS_LISTENER_FOLDER_NAME = "matcherless";
   private static final String WATCH_FILE = "watchme.txt";
@@ -43,7 +43,7 @@ public class SmbDirectoryListenerReconnectionFunctionalTestCase extends CommonSm
     }
   }
 
-  public SmbDirectoryListenerReconnectionFunctionalTestCase(String name, SmbTestHarness testHarness, String smbConfigFile) {
+  public SmbDirectorySourceReconnectionFunctionalTestCase(String name, SmbTestHarness testHarness, String smbConfigFile) {
     super(name, testHarness, smbConfigFile);
   }
 

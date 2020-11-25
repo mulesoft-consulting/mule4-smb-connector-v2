@@ -27,7 +27,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.junit.Test;
 
 @Feature(SMB_EXTENSION)
-public class SmbDirectoryListenerPollFailureConsistencyFunctionalTestCase extends CommonSmbConnectorTestCase {
+public class SmbDirectorySourcePollFailureConsistencyFunctionalTestCase extends CommonSmbConnectorTestCase {
 
   private static final String CONTENT = "File Content.";
   private static final String FILE_NAME = "file_%s.txt";
@@ -57,8 +57,8 @@ public class SmbDirectoryListenerPollFailureConsistencyFunctionalTestCase extend
     }
   }
 
-  public SmbDirectoryListenerPollFailureConsistencyFunctionalTestCase(String name, SmbTestHarness testHarness,
-                                                                      String smbConfigFile) {
+  public SmbDirectorySourcePollFailureConsistencyFunctionalTestCase(String name, SmbTestHarness testHarness,
+                                                                    String smbConfigFile) {
     super(name, testHarness, smbConfigFile);
   }
 

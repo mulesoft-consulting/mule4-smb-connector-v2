@@ -12,7 +12,7 @@ import static org.mule.extension.file.common.api.exceptions.FileError.UNKNOWN_HO
 import static org.mule.extension.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
 import static org.mule.functional.junit4.matchers.ThrowableCauseMatcher.hasCause;
 import static org.mule.tck.junit4.matcher.ErrorTypeMatcher.errorType;
-import org.mule.extension.smb.error.exception.SmbConnectionException;
+import org.mule.extension.smb.internal.error.exception.SmbConnectionException;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.tck.junit4.rule.SystemProperty;
 import org.mule.tck.util.TestConnectivityUtils;

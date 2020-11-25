@@ -45,7 +45,7 @@ mvn clean install -DskipTests
 - Fix  SmbClient helper methods that may be duplicated
 - Implement isConnected method in SmbClient class
 - Replace with overwrite does not work when renaming directories
-- Add MIME Type to SmbDirectoryListener
+- Add MIME Type to SmbDirectorySource
 - SmbUtils: check if declared methods are defined somewhere else
 - Verify if the share root can be assumed as being the working directory (maybe this concept of working directory does not apply in SMB, as opposed to sFTP
 - The logger operation should be implemented as a LogAppender

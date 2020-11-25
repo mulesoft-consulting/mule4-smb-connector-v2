@@ -67,11 +67,11 @@ import org.slf4j.LoggerFactory;
 @MediaType(value = ANY, strict = false)
 @DisplayName("On New or Updated File")
 @Summary("Triggers when a new file is created in a directory")
-@Alias("listener")
+@Alias("smb-directory-listener")
 // TODO: MULE-13940 - add mimeType here too
-public class SmbDirectoryListener extends PollingSource<InputStream, SmbFileAttributes> {
+public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttributes> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SmbDirectoryListener.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SmbDirectorySource.class);
   private static final String ATTRIBUTES_CONTEXT_VAR = "attributes";
   private static final String POST_PROCESSING_GROUP_NAME = "Post processing action";
 
@@ -291,7 +291,9 @@ public class SmbDirectoryListener extends PollingSource<InputStream, SmbFileAttr
 
   @Override
   protected void doStop() {
-
+    // Connection is obtained from fileSystemProvider when needed, and released in the method.
+    // Thus, this as there is not reference to a fileSystem connection in the source instance,
+    // there is no need to implement the doStop in order to release the connection.
   }
 
   private URI resolveRootPath() {

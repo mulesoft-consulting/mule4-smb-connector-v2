@@ -10,14 +10,14 @@
     <import file="smb-connection.xml"/>
 
     <flow name="listenWithoutMatcher">
-        <smb:listener config-ref="config" directory="input" autoDelete="true" watermarkEnabled="true">
+        <smb:smb-directory-listener config-ref="config" directory="input" autoDelete="true" watermarkEnabled="true">
             <scheduling-strategy>
                 <fixed-frequency frequency="1000"/>
             </scheduling-strategy>
-        </smb:listener>
+        </smb:smb-directory-listener>
         <test:processor waitTime="5000"/>
         <test:processor
-                class="org.mule.extension.smb.SmbDirectoryListenerPollFailureConsistencyFunctionaTestCase$TestProcessor"/>
+                class="org.mule.extension.smb.SmbDirectorySourcePollFailureConsistencyFunctionaTestCase$TestProcessor"/>
     </flow>
 
 </mule>

@@ -33,7 +33,7 @@ import io.qameta.allure.Feature;
 import org.junit.Test;
 
 @Feature(SMB_EXTENSION)
-public class SmbDirectoryListenerFunctionalTestCase extends CommonSmbConnectorTestCase {
+public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTestCase {
 
   private static final String MATCHERLESS_LISTENER_FOLDER_NAME = "matcherless";
   private static final String SHARED_LISTENER_FOLDER_NAME = "shared";
@@ -57,7 +57,7 @@ public class SmbDirectoryListenerFunctionalTestCase extends CommonSmbConnectorTe
     }
   }
 
-  public SmbDirectoryListenerFunctionalTestCase(String name, SmbTestHarness testHarness, String smbConfigFile) {
+  public SmbDirectorySourceFunctionalTestCase(String name, SmbTestHarness testHarness, String smbConfigFile) {
     super(name, testHarness, smbConfigFile);
   }
 

@@ -17,7 +17,7 @@ import java.net.URI;
 
 /**
  * A {@link SmbCommand} which implements support functionality for
- * {@link SmbDirectoryListener}
+ * {@link SmbDirectorySource}
  *
  * @since 1.1
  */

@@ -13,7 +13,8 @@ import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.exceptions.FileError;
 import org.mule.extension.smb.internal.connection.provider.SmbConnectionProvider;
 import org.mule.extension.smb.internal.operation.SmbOperations;
-import org.mule.extension.smb.internal.source.SmbDirectoryListener;
+import org.mule.extension.smb.internal.source.SmbDirectorySource;
+import org.mule.runtime.api.meta.Category;
 import org.mule.runtime.core.api.connector.ConnectionManager;
 import org.mule.runtime.extension.api.annotation.Extension;
 import org.mule.runtime.extension.api.annotation.Operations;
@@ -31,11 +32,11 @@ import org.mule.runtime.extension.api.annotation.param.display.Summary;
  * configurations, connection providers, operations and sources are going to be
  * declared.
  */
-@Extension(name = "SMB")
+@Extension(name = "SMB", category = Category.CERTIFIED)
 @Operations({ SmbOperations.class })
 @ConnectionProviders({ SmbConnectionProvider.class })
 @ErrorTypes(FileError.class)
-@Sources(SmbDirectoryListener.class)
+@Sources(SmbDirectorySource.class)
 @Xml(prefix = "smb")
 public class SmbConnector extends FileConnectorConfig {
 

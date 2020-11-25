@@ -47,11 +47,11 @@ output application/json
 		</error-handler>
 	</flow>
 	<flow name="smb-demoFlow1" doc:id="cbe74b42-f09a-4f75-ae8d-2e9bde742ae5" >
-		<smb:listener doc:name="On New or Updated File" doc:id="ae1b7394-b581-4ca3-9eab-83942f749d01" config-ref="SMB_Config" directory="/input">
+		<smb:smb-directory-listener doc:name="On New or Updated File" doc:id="ae1b7394-b581-4ca3-9eab-83942f749d01" config-ref="SMB_Config" directory="/input">
 			<scheduling-strategy >
 				<fixed-frequency />
 			</scheduling-strategy>
-		</smb:listener>
+		</smb:smb-directory-listener>
 		<smb:logger doc:name="Logger" doc:id="25a28bbe-bb92-447c-9aba-72a3dc2b5d9a" config-ref="SMB_Config" path="/logs/output.log" message='#["Processing new or updated file: " ++ write(attributes,"application/json", {"indent": false})]'/>
 		<smb:logger doc:name="Logger" doc:id="d6a78190-6bd3-4f94-b47d-4cb56cda78e7" config-ref="SMB_Config" path="/logs/output.log" message='#["File content: " ++ payload]'/>
 		<smb:logger doc:name="Logger" doc:id="5652dc6f-82de-4381-b772-25575356b17f" config-ref="SMB_Config" path="/logs/output.log" message="#[&quot;Moving file '&quot; ++ attributes.absolutePath ++ &quot;' to pending directory...&quot;]"/>
