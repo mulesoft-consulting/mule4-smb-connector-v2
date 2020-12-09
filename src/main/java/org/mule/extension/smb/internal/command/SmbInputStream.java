@@ -92,8 +92,6 @@ public class SmbInputStream extends AbstractNonFinalizableFileInputStream {
 
   protected static class SmbFileInputStreamSupplier extends AbstractConnectedFileInputStreamSupplier<SmbFileSystem> {
 
-    private static final String FILE_NOT_FOUND_EXCEPTION = "FileNotFoundException";
-
     private SmbFileInputStreamSupplier(SmbFileAttributes attributes, ConnectionManager connectionManager,
                                         Long timeBetweenSizeCheck, SmbConnector config) {
       super(attributes, connectionManager, timeBetweenSizeCheck, config);
@@ -115,7 +113,8 @@ public class SmbInputStream extends AbstractNonFinalizableFileInputStream {
 
     @Override
     protected boolean fileWasDeleted(MuleRuntimeException e) {
-      return e.getCause().getMessage().contains(FILE_NOT_FOUND_EXCEPTION);
+      return e.getCause() != null
+              && e.getCause().getMessage().contains("The system cannot find the file specified.");
     }
   }
 }

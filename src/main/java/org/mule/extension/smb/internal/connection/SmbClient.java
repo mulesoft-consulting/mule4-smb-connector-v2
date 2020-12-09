@@ -17,8 +17,10 @@ import jcifs.smb.NtlmPasswordAuthenticator;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import org.mule.extension.file.common.api.FileWriteMode;
+import org.mule.extension.file.common.api.exceptions.FileError;
 import org.mule.extension.file.common.api.util.UriUtils;
 import org.mule.extension.smb.api.LogLevel;
+import org.mule.extension.smb.internal.error.exception.SmbConnectionException;
 import org.mule.extension.smb.api.SmbFileAttributes;
 import org.mule.extension.smb.internal.utils.SmbUtils;
 import org.mule.runtime.api.connection.ConnectionException;
@@ -216,7 +218,7 @@ public class SmbClient {
             file = getFile(filePath);
             return file.getInputStream();
         } catch (Exception e) {
-            throw exception("Cannot read from file: " + e.getMessage(), e);
+            throw exception("Cannot read from file: " + filePath, e, false);
         } finally {
             close(file);
         }
@@ -360,13 +362,17 @@ public class SmbClient {
     }
 
     private RuntimeException exception(String message, Exception cause) {
+        return this.exception(message, cause, true);
+    }
+
+    private RuntimeException exception(String message, Exception cause, boolean convertSmbExceptionToConnectionException) {
 
         if (cause == null) {
             return new MuleRuntimeException(createStaticMessage(message));
         }
 
-        if (cause instanceof SmbException || cause.getCause() instanceof IOException) {
-            return exception(message, new ConnectionException(cause, owner));
+        if (convertSmbExceptionToConnectionException && cause instanceof SmbException) {
+            return new MuleRuntimeException(createStaticMessage(message), new SmbConnectionException(message, cause, FileError.CONNECTIVITY));
         }
 
         return new MuleRuntimeException(createStaticMessage(message), cause);
@@ -409,8 +415,8 @@ public class SmbClient {
         String result = path;
 
         if (result != null) {
-
-            result = URLDecoder.decode(path, StandardCharsets.UTF_8.name());
+            result = result.replaceAll("\\+", "%2B");
+            result = URLDecoder.decode(result, StandardCharsets.UTF_8.name());
 
             if (!result.startsWith("smb://")) {
                 result = getShareRootURL() + result.replaceFirst("^/", "");

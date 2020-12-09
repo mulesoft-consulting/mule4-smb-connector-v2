@@ -17,7 +17,7 @@
         </smb:smb-directory-listener>
         <test:processor waitTime="5000"/>
         <test:processor
-                class="org.mule.extension.smb.SmbDirectorySourcePollFailureConsistencyFunctionaTestCase$TestProcessor"/>
+                class="org.mule.extension.smb.SmbDirectorySourcePollFailureConsistencyFunctionalTestCase$TestProcessor"/>
     </flow>
 
 </mule>

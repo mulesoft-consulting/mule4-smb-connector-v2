@@ -37,7 +37,7 @@ public class SmbFileMatcherTestCase
   @Override
   public void before() {
     super.before();
-    when(attributes.getTimestamp()).thenReturn(TIMESTAMP);
+    when(attributes.getLastModified()).thenReturn(TIMESTAMP);
   }
 
   @Test
