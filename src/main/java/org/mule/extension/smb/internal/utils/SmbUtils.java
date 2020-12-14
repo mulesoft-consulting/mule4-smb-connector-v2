@@ -38,7 +38,7 @@ public class SmbUtils {
             }
 
             if (uri != null) {
-                path += getDecodedPath(UriUtils.normalizeUri(uri));
+                path += UriUtils.normalizeUri(uri);
             }
 
             result = new URI("smb://" + path.replaceAll("/+", "/"));
@@ -143,8 +143,12 @@ public class SmbUtils {
                 throw new RuntimeException("Could not URL encode path fragments for URL " + url, e);
             }
 
-            if (url.endsWith("/")) {
-                result = result + "/";
+            if (result != null) {
+                if (url.endsWith("/")) {
+                    result = result + "/";
+                }
+            } else {
+                result = url;
             }
         }
 

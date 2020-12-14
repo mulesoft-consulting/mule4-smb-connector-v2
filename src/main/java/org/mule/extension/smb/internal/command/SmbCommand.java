@@ -75,8 +75,16 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystem> {
 		return getFile(filePath, false);
 	}
 
+	public SmbFileAttributes getFile(URI uri) {
+		return getFile(uri, false);
+	}
+
+
 	private SmbFileAttributes getFile(String filePath, boolean requireExistence) {
-		URI uri = resolvePath(normalizePath(filePath));
+		return getFile(resolvePath(normalizePath(filePath)), requireExistence);
+	}
+
+	private SmbFileAttributes getFile(URI uri, boolean requireExistence) {
 		SmbFileAttributes attributes;
 		try {
 			attributes = client.getAttributes(uri);
@@ -112,7 +120,7 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystem> {
 	 */
 	@Override
 	protected boolean exists(URI uri) {
-		return ROOT.equals(uri.toString()) || getFile(normalizePath(uri.toString())) != null;
+		return uri != null && (ROOT.equals(uri.toString()) || getFile(uri) != null);
 	}
 
 	/**
@@ -227,7 +235,7 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystem> {
 	 */
 	@Override
 	protected void doMkDirs(URI directoryUri) {
-		client.mkdir(directoryUri.getPath());
+		client.mkdir(directoryUri);
 
 		// SMB Client implement this algorithm (supports mkdirs)
 		/*

@@ -103,11 +103,11 @@ public class SmbClient {
                 shareRoot.exists();
             }
         } catch (Exception e) {
-            throw exception("Connection failed: could not access path " + getAbsolutePath(""), e);
+            throw exception("Connection failed: could not access path " + getAbsolutePath("", false), e);
         }
 
         if (shareRoot == null) {
-            throw exception("Connection failed: could not access path " + getAbsolutePath(""), null);
+            throw exception("Connection failed: could not access path " + getAbsolutePath("", false), null);
         }
 
     }
@@ -133,10 +133,18 @@ public class SmbClient {
 
     /* OPERATIONS */
 
+    public void mkdir(URI uri) {
+        mkdir(uri.toString(), true);
+    }
+
     public void mkdir(String dirPath) {
+        mkdir(dirPath, false);
+    }
+
+    private void mkdir(String dirPath, boolean isUrlEncoded) {
         SmbFile dir = null;
         try {
-            dir = getFile(dirPath);
+            dir = getFile(dirPath, isUrlEncoded);
             if (!dir.exists()) {
                 dir.mkdirs();
             }
@@ -151,7 +159,7 @@ public class SmbClient {
     public List<SmbFileAttributes> list(String directory) {
         SmbFile dir = null;
         try {
-            dir = this.getFile(directory != null && !directory.endsWith("/") ? directory + "/" : directory);
+            dir = this.getFile(directory != null && !directory.endsWith("/") ? directory + "/" : directory, false);
             List<SmbFileAttributes> result = new Vector<SmbFileAttributes>();
 
             for (SmbFile file : dir.listFiles()) {
@@ -193,7 +201,7 @@ public class SmbClient {
         SmbFile file = null;
 
         try {
-            file = getFile(target);
+            file = getFile(target, false);
 
             if (!file.exists()) {
                 file.createNewFile();
@@ -215,7 +223,7 @@ public class SmbClient {
 
         SmbFile file = null;
         try {
-            file = getFile(filePath);
+            file = getFile(filePath, false);
             return file.getInputStream();
         } catch (Exception e) {
             throw exception("Cannot read from file: " + filePath, e, false);
@@ -299,7 +307,7 @@ public class SmbClient {
         }
 
         try {
-            file = getFile(path);
+            file = getFile(path, false);
             file.delete();
         } catch (Exception e) {
             throw exception("Cannot delete path: " + e.getMessage(), e);
@@ -332,8 +340,13 @@ public class SmbClient {
     }
 
     private SmbFile getFile(String path) throws Exception {
-        return new SmbFile(getAbsolutePath(path), this.context);
+        return this.getFile(path, true);
     }
+
+    private SmbFile getFile(String path, boolean isUrlEncoded) throws Exception {
+        return new SmbFile(getAbsolutePath(path, isUrlEncoded), this.context);
+    }
+
 
 
     /*
@@ -411,12 +424,15 @@ public class SmbClient {
         return result;
     }
 
-    private String getAbsolutePath(String path) throws Exception {
+    private String getAbsolutePath(String path, boolean isUrlEncoded) throws Exception {
         String result = path;
 
         if (result != null) {
+
+            if (isUrlEncoded) {
             result = result.replaceAll("\\+", "%2B");
             result = URLDecoder.decode(result, StandardCharsets.UTF_8.name());
+            }
 
             if (!result.startsWith("smb://")) {
                 result = getShareRootURL() + result.replaceFirst("^/", "");
