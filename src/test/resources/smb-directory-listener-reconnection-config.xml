@@ -23,7 +23,7 @@
 
     <sub-flow name="onEvent">
         <object-to-string-transformer/>
-        <test:processor class="org.mule.extension.smb.SmbDirectorySourceReconnectionFunctionalTestCase$TestProcessor"/>
+        <test:processor class="com.mulesoft.connector.smb.SmbDirectorySourceReconnectionFunctionalTestCase$TestProcessor"/>
     </sub-flow>
 
     <sub-flow name="onSharedFolderFile">

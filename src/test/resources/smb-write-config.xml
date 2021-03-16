@@ -31,7 +31,7 @@
     </flow>
 
     <flow name="writeFromStreamWithLock">
-        <java:invoke-static class="org.mule.extension.smb.SmbWriteTestCase" method="getContentStream()" />
+        <java:invoke-static class="com.mulesoft.connector.smb.SmbWriteTestCase" method="getContentStream()" />
         <smb:write config-ref="config" path="#[vars.path]" lock="true" mode="#[vars.mode]"
                    createParentDirectories="#[vars.createParent]"/>
     </flow>

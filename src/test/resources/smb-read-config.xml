@@ -27,7 +27,7 @@
         <smb:read config-ref="config" path="#[vars.readPath]" lock="true">
             <non-repeatable-stream />
         </smb:read>
-        <custom-processor class="org.mule.extension.smb.StreamCloserTestMessageProcessor"/>
+        <custom-processor class="com.mulesoft.connector.smb.StreamCloserTestMessageProcessor"/>
     </flow>
 
     <flow name="readWithForcedMimeType">
