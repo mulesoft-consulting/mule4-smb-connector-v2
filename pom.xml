@@ -191,8 +191,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>cryptix.jce</groupId>
-            <artifactId>crytix-jce-provider</artifactId>
+            <groupId>cryptix-jce</groupId>
+            <artifactId>cryptix-jce-provider</artifactId>
             <version>20050328</version>
             <scope>test</scope>
         </dependency>
