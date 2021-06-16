@@ -1,5 +1,8 @@
-/**
- * (c) 2003-2020 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
+/*
+ * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
  */
 package com.mulesoft.connector.smb.internal.command;
 
@@ -29,86 +32,83 @@ import org.slf4j.Logger;
  */
 public final class SmbListCommand extends SmbCommand implements ListCommand<SmbFileAttributes> {
 
-	private static final Logger LOGGER = getLogger(SmbListCommand.class);
-	private final SmbReadCommand smbReadCommand;
+  private static final Logger LOGGER = getLogger(SmbListCommand.class);
+  private final SmbReadCommand smbReadCommand;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public SmbListCommand(SmbFileSystemConnection fileSystem, SmbClient client, SmbReadCommand smbReadCommand) {
-		super(fileSystem, client);
-		this.smbReadCommand = smbReadCommand;
-	}
+  public SmbListCommand(SmbFileSystemConnection fileSystem, SmbClient client, SmbReadCommand smbReadCommand) {
+    super(fileSystem, client);
+    this.smbReadCommand = smbReadCommand;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	@Deprecated
-	public List<Result<InputStream, SmbFileAttributes>> list(FileConnectorConfig config,
-															  String directoryPath,
-															  boolean recursive,
-															  Predicate<SmbFileAttributes> matcher) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  @Deprecated
+  public List<Result<InputStream, SmbFileAttributes>> list(FileConnectorConfig config,
+                                                           String directoryPath,
+                                                           boolean recursive,
+                                                           Predicate<SmbFileAttributes> matcher) {
 
-		return list(config, directoryPath, recursive, matcher, null);
-	}
+    return list(config, directoryPath, recursive, matcher, null);
+  }
 
-	@Deprecated
-	public List<Result<InputStream, SmbFileAttributes>> list(FileConnectorConfig config,
-															  String directoryPath,
-															  boolean recursive,
-															  Predicate<SmbFileAttributes> matcher,
-															  Long timeBetweenSizeCheck,
-															  TimeUnit timeBetweenSizeCheckUnit) {
+  @Deprecated
+  public List<Result<InputStream, SmbFileAttributes>> list(FileConnectorConfig config,
+                                                           String directoryPath,
+                                                           boolean recursive,
+                                                           Predicate<SmbFileAttributes> matcher,
+                                                           Long timeBetweenSizeCheck,
+                                                           TimeUnit timeBetweenSizeCheckUnit) {
 
-		return list(config, directoryPath, recursive, matcher,
-				config.getTimeBetweenSizeCheckInMillis(timeBetweenSizeCheck, timeBetweenSizeCheckUnit).orElse(null));
-	}
+    return list(config, directoryPath, recursive, matcher,
+                config.getTimeBetweenSizeCheckInMillis(timeBetweenSizeCheck, timeBetweenSizeCheckUnit).orElse(null));
+  }
 
-	public List<Result<InputStream, SmbFileAttributes>> list(FileConnectorConfig config,
-															  String directoryPath,
-															  boolean recursive,
-															  Predicate<SmbFileAttributes> matcher,
-															  Long timeBetweenSizeCheck) {
+  public List<Result<InputStream, SmbFileAttributes>> list(FileConnectorConfig config,
+                                                           String directoryPath,
+                                                           boolean recursive,
+                                                           Predicate<SmbFileAttributes> matcher,
+                                                           Long timeBetweenSizeCheck) {
 
-		FileAttributes directoryAttributes = getExistingFile(directoryPath);
-		URI uri = createUri(directoryAttributes.getPath(), "");
+    FileAttributes directoryAttributes = getExistingFile(directoryPath);
+    URI uri = createUri(directoryAttributes.getPath(), "");
 
-		if (!directoryAttributes.isDirectory()) {
-			throw cannotListFileException(uri);
-		}
+    if (!directoryAttributes.isDirectory()) {
+      throw cannotListFileException(uri);
+    }
 
-		List<Result<InputStream, SmbFileAttributes>> accumulator = new LinkedList<>();
-		doList(config, directoryAttributes.getPath(), accumulator, recursive, matcher, timeBetweenSizeCheck);
+    List<Result<InputStream, SmbFileAttributes>> accumulator = new LinkedList<>();
+    doList(config, directoryAttributes.getPath(), accumulator, recursive, matcher, timeBetweenSizeCheck);
 
-		return accumulator;
-	}
+    return accumulator;
+  }
 
-	private void doList(FileConnectorConfig config,
-						String path,
-						List<Result<InputStream, SmbFileAttributes>> accumulator,
-						boolean recursive,
-						Predicate<SmbFileAttributes> matcher,
-						Long timeBetweenSizeCheck) {
+  private void doList(FileConnectorConfig config,
+                      String path,
+                      List<Result<InputStream, SmbFileAttributes>> accumulator,
+                      boolean recursive,
+                      Predicate<SmbFileAttributes> matcher,
+                      Long timeBetweenSizeCheck) {
 
-		LOGGER.debug("Listing directory {}", path);
-		for (SmbFileAttributes file : client.list(path)) {
+    LOGGER.debug("Listing directory {}", path);
+    for (SmbFileAttributes file : client.list(path)) {
 
-			if (isVirtualDirectory(file.getName())) {
-				continue;
-			}
-			if (file.isDirectory()) {
-				if (matcher.test(file)) {
-					accumulator.add(Result.<InputStream, SmbFileAttributes>builder().output(null).attributes(file).build());
-				}
-				if (recursive) {
-					doList(config, file.getPath(), accumulator, recursive, matcher, timeBetweenSizeCheck);
-				}
-			} else {
-				if (matcher.test(file)) {
-					accumulator.add(smbReadCommand.read(config, file, false, timeBetweenSizeCheck));
-				}
-			}
-		}
-	}
+      if (isVirtualDirectory(file.getName())) {
+        continue;
+      }
+      if (file.isDirectory()) {
+        if (matcher.test(file)) {
+          accumulator.add(Result.<InputStream, SmbFileAttributes>builder().output(null).attributes(file).build());
+        }
+        if (recursive) {
+          doList(config, file.getPath(), accumulator, recursive, matcher, timeBetweenSizeCheck);
+        }
+      } else {
+        if (matcher.test(file)) {
+          accumulator.add(smbReadCommand.read(config, file, false, timeBetweenSizeCheck));
+        }
+      }
+    }
+  }
 }

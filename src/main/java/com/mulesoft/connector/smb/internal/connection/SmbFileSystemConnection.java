@@ -1,5 +1,8 @@
-/**
- * (c) 2003-2020 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
+/*
+ * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
  */
 package com.mulesoft.connector.smb.internal.connection;
 
@@ -43,157 +46,159 @@ import java.net.URI;
  */
 public class SmbFileSystemConnection extends AbstractExternalFileSystem {
 
-	public static final String ROOT = "/";
+  public static final String ROOT = "/";
 
-	protected final SmbClient client;
-	protected final CopyCommand copyCommand;
-	protected final CreateDirectoryCommand createDirectoryCommand;
-	protected final DeleteCommand deleteCommand;
-	protected final SmbListCommand listCommand;
-	protected final MoveCommand moveCommand;
-	protected final SmbReadCommand readCommand;
-	protected final RenameCommand renameCommand;
-	protected final WriteCommand writeCommand;
-	private final LockFactory lockFactory;
+  protected final SmbClient client;
+  protected final CopyCommand copyCommand;
+  protected final CreateDirectoryCommand createDirectoryCommand;
+  protected final DeleteCommand deleteCommand;
+  protected final SmbListCommand listCommand;
+  protected final MoveCommand moveCommand;
+  protected final SmbReadCommand readCommand;
+  protected final RenameCommand renameCommand;
+  protected final WriteCommand writeCommand;
+  private final LockFactory lockFactory;
 
-	public SmbFileSystemConnection(SmbClient client, LockFactory lockFactory) {
-		super("");
-		this.client = client;
-		this.lockFactory = lockFactory;
+  public SmbFileSystemConnection(SmbClient client, LockFactory lockFactory) {
+    super("");
+    this.client = client;
+    this.lockFactory = lockFactory;
 
-		copyCommand = new SmbCopyCommand(this, client);
-		createDirectoryCommand = new SmbCreateDirectoryCommand(this, client);
-		deleteCommand = new SmbDeleteCommand(this, client);
-		moveCommand = new SmbMoveCommand(this, client);
-		readCommand = new SmbReadCommand(this, client);
-		listCommand = new SmbListCommand(this, client, (SmbReadCommand) readCommand);
-		renameCommand = new SmbRenameCommand(this, client);
-		writeCommand = new SmbWriteCommand(this, client);
-	}
+    copyCommand = new SmbCopyCommand(this, client);
+    createDirectoryCommand = new SmbCreateDirectoryCommand(this, client);
+    deleteCommand = new SmbDeleteCommand(this, client);
+    moveCommand = new SmbMoveCommand(this, client);
+    readCommand = new SmbReadCommand(this, client);
+    listCommand = new SmbListCommand(this, client, (SmbReadCommand) readCommand);
+    renameCommand = new SmbRenameCommand(this, client);
+    writeCommand = new SmbWriteCommand(this, client);
+  }
 
-	public void disconnect() {
-		client.disconnect();
-	}
+  public void disconnect() {
+    client.disconnect();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void changeToBaseDir() {
-		// Does not apply to SMB
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void changeToBaseDir() {
+    // Does not apply to SMB
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String getBasePath() { return SmbUtils.normalizePath(super.getBasePath()); }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String getBasePath() {
+    return SmbUtils.normalizePath(super.getBasePath());
+  }
 
-	public InputStream retrieveFileContent(FileAttributes filePayload) {
-		return client.read(filePayload.getPath());
-	}
+  public InputStream retrieveFileContent(FileAttributes filePayload) {
+    return client.read(filePayload.getPath());
+  }
 
-	public SmbFileAttributes readFileAttributes(String filePath) {
-		return getReadCommand().readAttributes(filePath);
-	}
+  public SmbFileAttributes readFileAttributes(String filePath) {
+    return getReadCommand().readAttributes(filePath);
+  }
 
-	protected boolean isConnected() {
-		return client.isConnected();
-	}
+  protected boolean isConnected() {
+    return client.isConnected();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	protected UriLock createLock(URI uri) {
-		return new SmbUriLock(client.resolve(uri), lockFactory);
-	}
+  /**
+   * {@inheritDoc}
+   */
+  protected UriLock createLock(URI uri) {
+    return new SmbUriLock(client.resolve(uri), lockFactory);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public CopyCommand getCopyCommand() {
-		return copyCommand;
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public CopyCommand getCopyCommand() {
+    return copyCommand;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public CreateDirectoryCommand getCreateDirectoryCommand() {
-		return createDirectoryCommand;
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public CreateDirectoryCommand getCreateDirectoryCommand() {
+    return createDirectoryCommand;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public DeleteCommand getDeleteCommand() {
-		return deleteCommand;
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public DeleteCommand getDeleteCommand() {
+    return deleteCommand;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public SmbListCommand getListCommand() {
-		return listCommand;
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public SmbListCommand getListCommand() {
+    return listCommand;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public MoveCommand getMoveCommand() {
-		return moveCommand;
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public MoveCommand getMoveCommand() {
+    return moveCommand;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public SmbReadCommand getReadCommand() {
-		return readCommand;
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public SmbReadCommand getReadCommand() {
+    return readCommand;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public RenameCommand getRenameCommand() {
-		return renameCommand;
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public RenameCommand getRenameCommand() {
+    return renameCommand;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public WriteCommand getWriteCommand() {
-		return writeCommand;
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public WriteCommand getWriteCommand() {
+    return writeCommand;
+  }
 
-	/**
-	 * Validates the underlying connection to the remote server
-	 *
-	 * @return a {@link ConnectionValidationResult}
-	 */
-	public ConnectionValidationResult validateConnection() {
-		if (!isConnected()) {
-			return failure("Connection is stale", new SmbConnectionException("Connection is stale", DISCONNECTED));
-		}
-		try {
-			changeToBaseDir();
-		} catch (Exception e) {
-			return failure("Configured workingDir is unavailable", e);
-		}
-		return success();
-	}
-
-	public SmbClient getClient() {
-		return client;
-	}
-
-    public boolean isLogLevelEnabled(LogLevel logLevel) {
-		return this.getClient().isLogLevelEnabled(logLevel);
+  /**
+   * Validates the underlying connection to the remote server
+   *
+   * @return a {@link ConnectionValidationResult}
+   */
+  public ConnectionValidationResult validateConnection() {
+    if (!isConnected()) {
+      return failure("Connection is stale", new SmbConnectionException("Connection is stale", DISCONNECTED));
     }
+    try {
+      changeToBaseDir();
+    } catch (Exception e) {
+      return failure("Configured workingDir is unavailable", e);
+    }
+    return success();
+  }
+
+  public SmbClient getClient() {
+    return client;
+  }
+
+  public boolean isLogLevelEnabled(LogLevel logLevel) {
+    return this.getClient().isLogLevelEnabled(logLevel);
+  }
 }

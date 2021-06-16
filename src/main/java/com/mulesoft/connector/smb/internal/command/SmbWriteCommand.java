@@ -1,5 +1,8 @@
-/**
- * (c) 2003-2020 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
+/*
+ * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
  */
 package com.mulesoft.connector.smb.internal.command;
 
@@ -27,60 +30,57 @@ import org.slf4j.Logger;
  */
 public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
 
-	private static final Logger LOGGER = getLogger(SmbWriteCommand.class);
+  private static final Logger LOGGER = getLogger(SmbWriteCommand.class);
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public SmbWriteCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
-		super(fileSystem, client);
-	}
+  public SmbWriteCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
+    super(fileSystem, client);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Deprecated
-	@Override
-	public void write(String filePath, InputStream content, FileWriteMode mode,
-					  boolean lock, boolean createParentDirectory, String encoding) {
-		write(filePath, content, mode, lock, createParentDirectory);
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Deprecated
+  @Override
+  public void write(String filePath, InputStream content, FileWriteMode mode,
+                    boolean lock, boolean createParentDirectory, String encoding) {
+    write(filePath, content, mode, lock, createParentDirectory);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void write(String filePath, InputStream content, FileWriteMode mode,
-					  boolean lock, boolean createParentDirectory) {
-		URI uri = resolvePath(filePath);
-		FileAttributes file = getFile(filePath);
-		if (file == null) {
-			assureParentFolderExists(uri, createParentDirectory);
-		} else {
-			if (mode == FileWriteMode.CREATE_NEW) {
-				throw new FileAlreadyExistsException(format(
-						"Cannot write to path '%s' because it already exists and write mode '%s' was selected. "
-								+ "Use a different write mode or point to a path which doesn't exist",
-						uri.getPath(), mode));
-			}
-		}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void write(String filePath, InputStream content, FileWriteMode mode,
+                    boolean lock, boolean createParentDirectory) {
+    URI uri = resolvePath(filePath);
+    FileAttributes file = getFile(filePath);
+    if (file == null) {
+      assureParentFolderExists(uri, createParentDirectory);
+    } else {
+      if (mode == FileWriteMode.CREATE_NEW) {
+        throw new FileAlreadyExistsException(format(
+                                                    "Cannot write to path '%s' because it already exists and write mode '%s' was selected. "
+                                                        + "Use a different write mode or point to a path which doesn't exist",
+                                                    uri.getPath(), mode));
+      }
+    }
 
-		UriLock pathLock = lock ? fileSystem.lock(uri) : new NullUriLock(uri);
+    UriLock pathLock = lock ? fileSystem.lock(uri) : new NullUriLock(uri);
 
-		try {
-			client.write(uri.getPath(), content, mode);
-			LOGGER.debug("Successfully wrote to path {}", uri.getPath());
-		} catch (Exception e) {
-			throw exception(format("Exception was found writing to file '%s'", uri.getPath()), e);
-		} finally {
-			if (pathLock != null) {
-				try {
-					pathLock.release();
-				} catch (Exception e) {
-					LOGGER.warn("Could not release lock for path " + uri.toString(), e);
-				}
-			}
-		}
-	}
+    try {
+      client.write(uri.getPath(), content, mode);
+      LOGGER.debug("Successfully wrote to path {}", uri.getPath());
+    } catch (Exception e) {
+      throw exception(format("Exception was found writing to file '%s'", uri.getPath()), e);
+    } finally {
+      if (pathLock != null) {
+        try {
+          pathLock.release();
+        } catch (Exception e) {
+          LOGGER.warn("Could not release lock for path " + uri.toString(), e);
+        }
+      }
+    }
+  }
 
 }

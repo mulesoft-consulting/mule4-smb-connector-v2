@@ -13,15 +13,19 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: org.mule.modules:mule-module-file-extension-common:mule-plugin:1.3.4" level="project" />
+    <orderEntry type="library" name="Maven: org.mule.modules:mule-module-file-extension-common:mule-plugin:1.3.6" level="project" />
     <orderEntry type="library" name="Maven: cglib:cglib:3.3.0" level="project" />
     <orderEntry type="library" name="Maven: org.ow2.asm:asm:7.1" level="project" />
     <orderEntry type="library" name="Maven: com.sun.activation:javax.activation:1.2.0" level="project" />
-    <orderEntry type="library" name="Maven: eu.agno3.jcifs:jcifs-ng:2.1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.11" level="project" />
+    <orderEntry type="library" name="Maven: eu.agno3.jcifs:jcifs-ng:2.1.6" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.24" level="project" />
-    <orderEntry type="library" name="Maven: org.bouncycastle:bcprov-jdk15on:1.61" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.9" level="project" />
-    <orderEntry type="library" name="Maven: commons-io:commons-io:2.4" level="project" />
+    <orderEntry type="library" name="Maven: org.bouncycastle:bcprov-jdk15to18:1.68" level="project" />
+    <orderEntry type="library" name="Maven: com.hierynomus:smbj:0.11.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.bouncycastle:bcprov-jdk15on:1.60" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: net.engio:mbassador:1.3.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.hierynomus:asn-one:0.5.0" level="project" />
+    <orderEntry type="library" name="Maven: commons-io:commons-io:2.9.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.mule.tests.plugin:mule-tests-component-plugin:mule-plugin:4.1.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.guava:guava:23.5-jre" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.code.findbugs:jsr305:1.3.9" level="project" />
@@ -82,6 +86,26 @@
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.ftpserver:ftplet-api:1.0.6" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.mina:mina-core:2.0.4" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.sshd:sshd-core:1.4.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.codehaus.groovy:groovy-all:2.4.4" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.maven.shared:maven-invoker:3.0.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.codehaus.plexus:plexus-component-annotations:1.7" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mule.modules:mule-module-file-extension-common:test-jar:tests:1.3.6" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mule.module:mule-java-module:mule-plugin:1.2.8" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-core:5.3.5" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.alfresco:alfresco-jlan-embed:7.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.springframework.extensions.surf:spring-surf-core-configservice:5.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.springframework.extensions.surf:spring-surf-core:5.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-beans:3.2.10.RELEASE" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-context:3.2.10.RELEASE" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-expression:3.2.10.RELEASE" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.springframework:spring-context-support:3.2.10.RELEASE" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.springframework:spring-web:3.2.10.RELEASE" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: cryptix-jce:cryptix-jce-provider:20050328" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.mule.services:mule-service-scheduler:mule-service:1.1.11" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.quartz-scheduler:quartz:2.2.3" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.mchange:c3p0:0.9.5.4" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.mchange:mchange-commons-java:0.2.15" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: io.qameta.allure:allure-junit4:2.0-BETA17" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: io.qameta.allure:allure-java-commons:2.0-BETA17" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: io.qameta.allure:allure2-model-api:1.0-BETA6" level="project" />
@@ -94,23 +118,6 @@
     <orderEntry type="library" scope="TEST" name="Maven: com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.7.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.aspectj:aspectjrt:1.8.10" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.jooq:joor:0.9.6" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.codehaus.groovy:groovy-all:2.4.4" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.apache.maven.shared:maven-invoker:3.0.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.codehaus.plexus:plexus-component-annotations:1.7" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.mule.modules:mule-module-file-extension-common:test-jar:tests:1.3.4" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.mule.module:mule-java-module:mule-plugin:1.2.1" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-core:5.0.5.RELEASE" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-jcl:5.0.5.RELEASE" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.alfresco:alfresco-jlan-embed:7.1" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.springframework.extensions.surf:spring-surf-core-configservice:5.1" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.springframework.extensions.surf:spring-surf-core:5.1" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-beans:3.2.10.RELEASE" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-context:3.2.10.RELEASE" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-expression:3.2.10.RELEASE" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.springframework:spring-context-support:3.2.10.RELEASE" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.springframework:spring-web:3.2.10.RELEASE" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: cryptix.jce:crytix-jce-provider:20050328" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.mule.runtime:mule-extensions-api:1.1.5" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.reactivestreams:reactive-streams:1.0.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.mule.runtime:mule-api:1.1.1" level="project" />
@@ -200,8 +207,6 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.mule.syaml:syaml_2.12:0.0.10" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.mule.common:scala-common_2.12:0.1.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.scalactic:scalactic_2.12:3.0.1" level="project" />
-    <orderEntry type="library" name="Maven: com.sun.mail:jakarta.mail:1.6.3" level="project" />
-    <orderEntry type="library" name="Maven: com.sun.activation:jakarta.activation:1.2.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.mule.tests:mule-tests-functional:4.1.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.mule.runtime:mule-module-service:test-jar:tests:4.1.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.mule.runtime:mule-module-artifact:test-jar:tests:4.1.2" level="project" />

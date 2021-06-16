@@ -1,5 +1,8 @@
-/**
- * (c) 2003-2020 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
+/*
+ * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
  */
 package com.mulesoft.connector.smb.internal.command;
 
@@ -18,22 +21,19 @@ import org.slf4j.LoggerFactory;
  */
 public class SmbMoveCommand extends SmbCommand implements MoveCommand {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SmbMoveCommand.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SmbMoveCommand.class);
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public SmbMoveCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
-		super(fileSystem, client);
-	}
+  public SmbMoveCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
+    super(fileSystem, client);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void move(FileConnectorConfig config, String sourcePath, String targetPath, boolean overwrite,
-					 boolean createParentDirectories, String renameTo) {
-		copy(config, sourcePath, targetPath, overwrite, createParentDirectories, renameTo, new SmbMoveDelegate(this, fileSystem));
-		LOGGER.debug("Moved '{}' to '{}'", sourcePath, targetPath);
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void move(FileConnectorConfig config, String sourcePath, String targetPath, boolean overwrite,
+                   boolean createParentDirectories, String renameTo) {
+    copy(config, sourcePath, targetPath, overwrite, createParentDirectories, renameTo, new SmbMoveDelegate(this, fileSystem));
+    LOGGER.debug("Moved '{}' to '{}'", sourcePath, targetPath);
+  }
 }

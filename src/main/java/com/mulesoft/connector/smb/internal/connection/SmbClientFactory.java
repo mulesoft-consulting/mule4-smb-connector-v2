@@ -1,16 +1,13 @@
-/**
- * (c) 2003-2020 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
- */
-package com.mulesoft.connector.smb.internal.connection;
-
 /*
  * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
  * The software in this package is published under the terms of the CPAL v1.0
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
+package com.mulesoft.connector.smb.internal.connection;
 
 import com.mulesoft.connector.smb.api.LogLevel;
+import com.mulesoft.connector.smb.internal.connection.client.impl.smbj.SmbjSmbClient;
 
 /**
  * Creates instances of {@link SmbClient}
@@ -27,7 +24,8 @@ public class SmbClientFactory {
    * @param logLevel the log level
    * @return a {@link SmbClient}
    */
-  public SmbClient createInstance(String host, String shareRoot, LogLevel logLevel) {
-    return new SmbClient(host, shareRoot, logLevel);
+  public SmbClient createInstance(String host, int port, String shareRoot, LogLevel logLevel) {
+    return new SmbjSmbClient(host, port, shareRoot, logLevel);
+    //return new JCifsNgSmbClient(host, port, shareRoot, logLevel);
   }
 }

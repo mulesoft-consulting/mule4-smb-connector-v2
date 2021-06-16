@@ -1,5 +1,8 @@
-/**
- * (c) 2003-2020 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
+/*
+ * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
  */
 package com.mulesoft.connector.smb.internal.source;
 
@@ -204,6 +207,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
         }
 
         if (!processFile(file, pollContext)) {
+          closeQuietly(file.getOutput());
           break;
         }
       }
@@ -243,7 +247,6 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
     String fullPath = attributes.getPath();
     PollItemStatus status = pollContext.accept(item -> {
       final SourceCallbackContext ctx = item.getSourceCallbackContext();
-      Result result = null;
 
       try {
         ctx.addVariable(ATTRIBUTES_CONTEXT_VAR, attributes);
@@ -257,9 +260,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
                             fullPath, t.getMessage()),
                      t);
 
-        if (result != null) {
-          onRejectedItem(result, ctx);
-        }
+        onRejectedItem(file, ctx);
 
         throw new MuleRuntimeException(t);
       }
