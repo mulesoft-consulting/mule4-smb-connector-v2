@@ -1,18 +1,20 @@
-/**
- * (c) 2003-2020 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
+/*
+ * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
  */
 package com.mulesoft.connector.smb;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.mule.extension.file.common.api.exceptions.FileError.CONNECTION_TIMEOUT;
-import static org.mule.extension.file.common.api.exceptions.FileError.INVALID_CREDENTIALS;
-import static org.mule.extension.file.common.api.exceptions.FileError.UNKNOWN_HOST;
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
-import static org.mule.functional.junit4.matchers.ThrowableCauseMatcher.hasCause;
-import static org.mule.tck.junit4.matcher.ErrorTypeMatcher.errorType;
 import com.mulesoft.connector.smb.internal.error.exception.SmbConnectionException;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Story;
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runners.Parameterized;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.tck.junit4.rule.SystemProperty;
 import org.mule.tck.util.TestConnectivityUtils;
@@ -20,13 +22,11 @@ import org.mule.tck.util.TestConnectivityUtils;
 import java.util.Arrays;
 import java.util.Collection;
 
-import io.qameta.allure.Feature;
-import io.qameta.allure.Story;
-import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runners.Parameterized;
+import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
+import static org.hamcrest.CoreMatchers.*;
+import static org.mule.extension.file.common.api.exceptions.FileError.*;
+import static org.mule.functional.junit4.matchers.ThrowableCauseMatcher.hasCause;
+import static org.mule.tck.junit4.matcher.ErrorTypeMatcher.errorType;
 
 @Feature(SMB_EXTENSION)
 @Story("Negative Connectivity Testing")
@@ -71,10 +71,16 @@ public class SmbNegativeConnectivityTestCase extends CommonSmbConnectorTestCase 
     utils.assertFailedConnection(name + "ConfigConnectionTimeout", ANYTHING, is(errorType(CONNECTION_TIMEOUT)));
   }
 
+  /*
   @Test
+  @Ignore
+  //TODO olamiral: if missing credentials, should try as anonymous.
+  //Need to detail the unit tests regarding anonymous access (both positive and negative).
+  //For now, this negative test will be ignored
   public void configMissingCredentials() {
     utils.assertFailedConnection(name + "ConfigMissingCredentials", ANYTHING, is(errorType(INVALID_CREDENTIALS)));
   }
+  */
 
   @Test
   public void configUnknownHost() {

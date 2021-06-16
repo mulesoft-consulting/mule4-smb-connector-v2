@@ -1,5 +1,8 @@
-/**
- * (c) 2003-2020 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
+/*
+ * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
  */
 package com.mulesoft.connector.smb;
 
@@ -149,10 +152,7 @@ public class SmbCreateDirectoryTestCase extends CommonSmbConnectorTestCase {
 
   @Test
   public void createDirectoryWithSpaceAndSlash() throws Exception {
-    // TODO: confirm if this behavior is expected!
-    // The test createDirectoryWithSpace verifies that directory creation will fail if directory is blank
-    // In this case, all paths will resolve to "/"
-    // If it is expected that a directory with an blank name exists, this test scenario should be revised.
+    testHarness.expectedError().expectMessage(containsString("directory path cannot be null nor blank"));
 
     doCreateDirectory(" /");
     assertThat(testHarness.dirExists(" "), is(true));
@@ -196,17 +196,19 @@ public class SmbCreateDirectoryTestCase extends CommonSmbConnectorTestCase {
   @Test
   public void createDirectoryWithColon() throws Exception {
     testHarness.expectedError().expectErrorType("SMB", "CONNECTIVITY");
-    testHarness.expectedError().expectMessage(containsString("The filename, directory name, or volume label syntax is incorrect."));
+    testHarness.expectedError()
+        .expectMessage(containsString("The filename, directory name, or volume label syntax is incorrect."));
 
     final String path = "pathWith:Colon";
     doCreateDirectory(path);
-    assertThat(testHarness.dirExists("/base/pathWith:Colon"), is(true));
+    assertThat(testHarness.dirExists("/base/pathWith:Colon"), is(false));
   }
 
   @Test
   public void createDirectoryWithGreaterThan() throws Exception {
     testHarness.expectedError().expectErrorType("SMB", "CONNECTIVITY");
-    testHarness.expectedError().expectMessage(containsString("The filename, directory name, or volume label syntax is incorrect."));
+    testHarness.expectedError()
+        .expectMessage(containsString("The filename, directory name, or volume label syntax is incorrect."));
 
     final String path = "pathWith>";
     doCreateDirectory(path);

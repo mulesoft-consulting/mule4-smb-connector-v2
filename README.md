@@ -14,7 +14,7 @@ Add this dependency to your application pom.xml
 ```
 <groupId>org.mule.connectors</groupId>
 <artifactId>mule-smb-connector</artifactId>
-<version>1.0.22</version>
+<version>1.0.0</version>
 <classifier>mule-plugin</classifier>
 ```
 

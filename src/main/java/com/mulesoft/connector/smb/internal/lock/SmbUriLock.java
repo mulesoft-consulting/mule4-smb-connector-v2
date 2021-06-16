@@ -1,5 +1,8 @@
-/**
- * (c) 2003-2020 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
+/*
+ * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
  */
 package com.mulesoft.connector.smb.internal.lock;
 
@@ -20,77 +23,77 @@ import org.mule.runtime.api.lock.LockFactory;
  */
 public class SmbUriLock implements UriLock {
 
-	private final URI uri;
-	private final LockFactory lockFactory;
-	private final AtomicReference<Lock> ownedLock = new AtomicReference<>();
+  private final URI uri;
+  private final LockFactory lockFactory;
+  private final AtomicReference<Lock> ownedLock = new AtomicReference<>();
 
-	/**
-	 * Creates a new instance
-	 *
-	 * @param uri        the absolute SMB path that will be used as the lock key
-	 * @param lockFactory a {@link LockFactory}
-	 */
-	public SmbUriLock(URI uri, LockFactory lockFactory) {
-		this.uri = uri;
-		this.lockFactory = lockFactory;
-	}
+  /**
+   * Creates a new instance
+   *
+   * @param uri        the absolute SMB path that will be used as the lock key
+   * @param lockFactory a {@link LockFactory}
+   */
+  public SmbUriLock(URI uri, LockFactory lockFactory) {
+    this.uri = uri;
+    this.lockFactory = lockFactory;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean tryLock() {
-		Lock lock = getLock();
-		if (lock.tryLock()) {
-			ownedLock.set(lock);
-			return true;
-		}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean tryLock() {
+    Lock lock = getLock();
+    if (lock.tryLock()) {
+      ownedLock.set(lock);
+      return true;
+    }
 
-		return false;
-	}
+    return false;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isLocked() {
-		if (ownedLock.get() != null) {
-			return true;
-		}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isLocked() {
+    if (ownedLock.get() != null) {
+      return true;
+    }
 
-		Lock lock = getLock();
-		try {
-			return !lock.tryLock();
-		} finally {
-			lock.unlock();
-		}
-	}
+    Lock lock = getLock();
+    try {
+      return !lock.tryLock();
+    } finally {
+      lock.unlock();
+    }
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void release() {
-		Lock lock = ownedLock.getAndSet(null);
-		if (lock != null) {
-			try {
-				lock.unlock();
-			} catch (IllegalMonitorStateException e) {
-				// ignore
-			}
-		}
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void release() {
+    Lock lock = ownedLock.getAndSet(null);
+    if (lock != null) {
+      try {
+        lock.unlock();
+      } catch (IllegalMonitorStateException e) {
+        // ignore
+      }
+    }
+  }
 
-	private Lock getLock() {
-		return lockFactory.createLock(uri.toString());
-	}
+  private Lock getLock() {
+    return lockFactory.createLock(uri.toString());
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public URI getUri() {
-		return this.uri;
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public URI getUri() {
+    return this.uri;
+  }
 
 }

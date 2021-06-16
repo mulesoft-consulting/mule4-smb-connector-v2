@@ -1,12 +1,14 @@
-/**
- * (c) 2003-2020 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
+/*
+ * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
+ * The software in this package is published under the terms of the CPAL v1.0
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
  */
 package com.mulesoft.connector.smb;
 
 import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
-import jcifs.SmbConstants;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.rules.TemporaryFolder;
@@ -24,13 +26,11 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mule.extension.file.common.api.FileWriteMode.APPEND;
 import static org.mule.extension.file.common.api.FileWriteMode.OVERWRITE;
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
 import static org.mule.extension.file.common.api.util.UriUtils.trimLastFragment;
-import static com.mulesoft.connector.smb.SmbServer.*;
 
 /**
  * Implementation of {@link FileTestHarness} for classic SMB connections
@@ -40,7 +40,6 @@ import static com.mulesoft.connector.smb.SmbServer.*;
 public class SmbTestHarness extends AbstractSmbTestHarness {
 
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
-  private SmbServer smbServer;
   private SmbClient smbClient;
 
   /**
@@ -57,8 +56,23 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
   @Override
   protected void doBefore() throws Exception {
     temporaryFolder.create();
-    setUpServer();
+    //setUpServer();
     smbClient = createDefaultSmbClient();
+    List<SmbFileAttributes> files = smbClient.list("/");
+    if (files != null && !files.isEmpty()) {
+      for (SmbFileAttributes file : files) {
+        smbClient.delete(file.getPath());
+      }
+    }
+
+    try {
+      smbClient.delete(".deleted");
+    } catch (Exception e) {
+      //Do nothing
+    }
+
+    assertTrue(smbClient.list("/").isEmpty());
+
   }
 
   /**
@@ -71,9 +85,6 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
         smbClient.disconnect();
       }
 
-      if (smbServer != null) {
-        smbServer.stop();
-      }
     } finally {
       temporaryFolder.delete();
       System.clearProperty(WORKING_DIR_SYSTEM_PROPERTY);
@@ -81,14 +92,10 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
   }
 
   private SmbClient createDefaultSmbClient() throws Exception {
-    SmbClient smbClient = new SmbClientFactory().createInstance("localhost", SmbServer.SHARE_ROOT, LogLevel.WARN);
-    smbClient.login(DOMAIN, USERNAME, PASSWORD);
+    SmbClient smbClient =
+        new SmbClientFactory().createInstance(SmbServer.HOSTNAME, SmbServer.PORT, SmbServer.SHARE_ROOT, LogLevel.WARN);
+    smbClient.login(SmbServer.DOMAIN, SmbServer.USERNAME, SmbServer.PASSWORD);
     return smbClient;
-  }
-
-  public void setUpServer() throws InterruptedException {
-    smbServer = new SmbServer(temporaryFolder.getRoot().toPath());
-    smbServer.start();
   }
 
   /**
@@ -182,7 +189,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
    */
   @Override
   public int getServerPort() throws Exception {
-    return SmbConstants.DEFAULT_PORT;
+    return SmbServer.PORT;
   }
 
   /**
@@ -229,11 +236,11 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
     OutputStream os = smbClient.getOutputStream(path, FileWriteMode.CREATE_NEW);
 
     new Thread(() -> {
-
       try {
         byte[] bytes = content.getBytes();
         for (int i = 0; i < bytes.length; i++) {
           IOUtils.copy(new ByteArrayInputStream(new byte[] {bytes[i]}), os);
+          os.flush();
           Thread.sleep(delayBetweenCharacters);
         }
       } catch (Exception e) {
@@ -241,10 +248,6 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
       }
     }).start();
 
-  }
-
-  public SmbServer getSmbServer() {
-    return smbServer;
   }
 
 }

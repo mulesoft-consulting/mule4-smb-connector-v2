@@ -1,14 +1,13 @@
-/**
- * (c) 2003-2020 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
- */
-package com.mulesoft.connector.smb.internal.command;
-
 /*
  * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
  * The software in this package is published under the terms of the CPAL v1.0
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
+package com.mulesoft.connector.smb.internal.command;
+
+import com.hierynomus.mserref.NtStatus;
+import com.hierynomus.mssmb2.SMBApiException;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import org.mule.extension.file.common.api.AbstractConnectedFileInputStreamSupplier;
 import org.mule.extension.file.common.api.FileAttributes;
@@ -49,7 +48,7 @@ public class SmbInputStream extends AbstractNonFinalizableFileInputStream {
    * @throws ConnectionException if a connection could not be established
    */
   public static SmbInputStream newInstance(SmbConnector config, SmbFileAttributes attributes, UriLock lock,
-                                            Long timeBetweenSizeCheck)
+                                           Long timeBetweenSizeCheck)
       throws ConnectionException {
     SmbFileInputStreamSupplier fileInputStreamSupplier =
         new SmbFileInputStreamSupplier(attributes, getConnectionManager(config), timeBetweenSizeCheck, config);
@@ -93,11 +92,12 @@ public class SmbInputStream extends AbstractNonFinalizableFileInputStream {
   protected static class SmbFileInputStreamSupplier extends AbstractConnectedFileInputStreamSupplier<SmbFileSystemConnection> {
 
     private SmbFileInputStreamSupplier(SmbFileAttributes attributes, ConnectionManager connectionManager,
-                                        Long timeBetweenSizeCheck, SmbConnector config) {
+                                       Long timeBetweenSizeCheck, SmbConnector config) {
       super(attributes, connectionManager, timeBetweenSizeCheck, config);
     }
 
-    private SmbFileInputStreamSupplier(SmbFileAttributes attributes, Long timeBetweenSizeCheck, SmbFileSystemConnection fileSystem) {
+    private SmbFileInputStreamSupplier(SmbFileAttributes attributes, Long timeBetweenSizeCheck,
+                                       SmbFileSystemConnection fileSystem) {
       super(attributes, timeBetweenSizeCheck, fileSystem);
     }
 
@@ -114,7 +114,9 @@ public class SmbInputStream extends AbstractNonFinalizableFileInputStream {
     @Override
     protected boolean fileWasDeleted(MuleRuntimeException e) {
       return e.getCause() != null
-              && e.getCause().getMessage().contains("The system cannot find the file specified.");
+          && (e.getCause().getMessage().contains("The system cannot find the file specified.")
+              || (e.getCause() instanceof SMBApiException
+                  && NtStatus.STATUS_OBJECT_NAME_NOT_FOUND.equals(((SMBApiException) e.getCause()).getStatus())));
     }
   }
 }
