@@ -8,6 +8,7 @@ package com.mulesoft.connector.smb.internal.connection;
 
 import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.internal.connection.client.impl.smbj.SmbjSmbClient;
+import com.mulesoft.connector.smb.internal.connection.provider.TimeoutSettings;
 
 /**
  * Creates instances of {@link SmbClient}
@@ -24,8 +25,33 @@ public class SmbClientFactory {
    * @param logLevel the log level
    * @return a {@link SmbClient}
    */
-  public SmbClient createInstance(String host, int port, String shareRoot, LogLevel logLevel) {
-    return new SmbjSmbClient(host, port, shareRoot, logLevel);
-    //return new JCifsNgSmbClient(host, port, shareRoot, logLevel);
+  public SmbClient createInstance(String host, int port, String shareRoot, LogLevel logLevel, boolean dfsEnabled,
+                                  TimeoutSettings timeoutSettings) {
+    SmbClient result = new SmbjSmbClient(host, port, shareRoot, logLevel, dfsEnabled);
+    if (timeoutSettings != null) {
+
+      if (timeoutSettings.getConnectionTimeout() != null && timeoutSettings.getConnectionTimeoutUnit() != null) {
+        result.setConnectionTimeout(timeoutSettings.getConnectionTimeoutUnit(), timeoutSettings.getConnectionTimeout());
+      }
+
+      if (timeoutSettings.getSocketTimeout() != null && timeoutSettings.getSocketTimeoutUnit() != null) {
+        result.setSocketTimeout(timeoutSettings.getSocketTimeoutUnit(), timeoutSettings.getSocketTimeout());
+      }
+
+      if (timeoutSettings.getReadTimeout() != null && timeoutSettings.getReadTimeoutUnit() != null) {
+        result.setReadTimeout(timeoutSettings.getReadTimeoutUnit(), timeoutSettings.getReadTimeout());
+      }
+
+      if (timeoutSettings.getTransactionTimeout() != null && timeoutSettings.getTransactionTimeoutUnit() != null) {
+        result.setTransactionTimeout(timeoutSettings.getTransactionTimeoutUnit(), timeoutSettings.getTransactionTimeout());
+      }
+
+      if (timeoutSettings.getWriteTimeout() != null && timeoutSettings.getWriteTimeoutUnit() != null) {
+        result.setWriteTimeout(timeoutSettings.getWriteTimeoutUnit(), timeoutSettings.getWriteTimeout());
+      }
+
+
+    }
+    return result;
   }
 }

@@ -17,18 +17,19 @@ import org.mule.extension.file.common.api.exceptions.FileError;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.api.connection.PoolingConnectionProvider;
+import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.api.lock.LockFactory;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
-import org.mule.runtime.extension.api.annotation.param.display.Password;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.Objects;
+import static org.mule.runtime.extension.api.annotation.param.ParameterGroup.CONNECTION;
 
 import static java.lang.String.format;
 
@@ -42,64 +43,19 @@ import static java.lang.String.format;
 public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConnection>
     implements PoolingConnectionProvider<SmbFileSystemConnection> {
 
+  private static final String TIMEOUT_CONFIGURATION = "Timeout Configuration";
   private static final Logger LOGGER = LoggerFactory.getLogger(SmbConnectionProvider.class);
-
   private static final String SMB_ERROR_MESSAGE_MASK =
       "Could not establish SMB connection (host: '%s', domain: %s, user: %s, share root: '%s', logLevel: '%s'): %s";
 
   @Inject
   private LockFactory lockFactory;
 
-  /**
-   * The SMB server hostname or ip address
-   */
-  @Parameter
-  @Placement(order = 1)
-  private String host;
+  @ParameterGroup(name = CONNECTION)
+  private SmbConnectionSettings connectionSettings = new SmbConnectionSettings();
 
-  /**
-   * The SMB server hostname or ip address
-   */
-  @Parameter
-  @Optional(defaultValue = "445")
-  @Placement(order = 2)
-  private Integer port;
-
-
-  /**
-   * The user domain. Required if the server uses NTLM authentication
-   */
-  @Parameter
-  @Optional
-  @Placement(order = 3)
-  private String domain;
-
-  /**
-   * Username. Required if the server uses NTLM authentication.
-   */
-  @Parameter
-  @Optional
-  @Placement(order = 4)
-  protected String username;
-
-  /**
-   * Password. Required if the server uses NTLM authentication.
-   */
-  @Parameter
-  @Optional
-  @Password
-  @Placement(order = 5)
-  private String password;
-
-  /**
-   * The share root
-   */
-  @Parameter
-  @Optional
-  @Summary("The SMB share to be considered as the root of every path" +
-      " (relative or absolute) used with this connector")
-  @Placement(order = 6)
-  private String shareRoot;
+  @ParameterGroup(name = TIMEOUT_CONFIGURATION)
+  private TimeoutSettings timeoutSettings = new TimeoutSettings();
 
   /**
    * The log level
@@ -116,12 +72,15 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
   @Override
   public SmbFileSystemConnection connect() throws ConnectionException {
     if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug(format("Connecting to SMB server (host: '%s', domain: '%s', user: '%s', share Root: '%s')", host,
-                          domain, username, shareRoot));
+      LOGGER.debug(format("Connecting to SMB server (host: '%s', domain: '%s', user: '%s', share Root: '%s')",
+                          connectionSettings.getHost(),
+                          connectionSettings.getDomain(), connectionSettings.getUsername(), connectionSettings.getShareRoot()));
     }
-    SmbClient client = clientFactory.createInstance(host, port, shareRoot, logLevel);
+    SmbClient client = clientFactory.createInstance(connectionSettings.getHost(), connectionSettings.getPort(),
+                                                    connectionSettings.getShareRoot(), logLevel,
+                                                    connectionSettings.getDfsEnabled(), timeoutSettings);
     try {
-      client.login(domain, username, password);
+      client.login(connectionSettings.getDomain(), connectionSettings.getUsername(), connectionSettings.getPassword());
     } catch (Exception e) {
       FileError error = null;
       if (client != null) {
@@ -151,43 +110,9 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
     this.clientFactory = clientFactory;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public String getWorkingDir() {
-    // TODO: verify if it's valid to assume the share root as the working directory
-    return this.shareRoot;
-  }
-
   private String getErrorMessage(String message) {
-    return format(SMB_ERROR_MESSAGE_MASK, this.host, this.domain, this.username, this.shareRoot, this.logLevel, message);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    SmbConnectionProvider that = (SmbConnectionProvider) o;
-    return Objects.equals(host, that.host) && Objects.equals(domain, that.domain)
-        && Objects.equals(username, that.username) && Objects.equals(password, that.password)
-        && Objects.equals(shareRoot, that.shareRoot)
-        && Objects.equals(logLevel, logLevel);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(super.hashCode(), host, domain, username, password, shareRoot, logLevel);
+    return format(SMB_ERROR_MESSAGE_MASK, this.connectionSettings.getHost(), this.connectionSettings.getDomain(),
+                  this.connectionSettings.getUsername(), this.connectionSettings.getShareRoot(), this.logLevel, message);
   }
 
   // This validation needs to be done because of the bug explained in MULE-15197
@@ -199,28 +124,29 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
     }
   }
 
-  public void setHost(String host) {
-    this.host = host;
+  @Override
+  public String getWorkingDir() {
+    //Working Dir is not used for SMB connector
+    throw new RuntimeException("workingDir property should not be used");
   }
 
-  public void setDomain(String domain) {
-    this.domain = domain;
+  void setHost(String host) {
+    this.connectionSettings.setHost(host);
   }
 
-  public void setUsername(String username) {
-    this.username = username;
+  void setShareRoot(String shareRoot) {
+    this.connectionSettings.setShareRoot(shareRoot);
   }
 
-  public void setPassword(String password) {
-    this.password = password;
+  void setDomain(String domain) {
+    this.connectionSettings.setDomain(domain);
   }
 
-  public void setShareRoot(String shareRoot) {
-    this.shareRoot = shareRoot;
+  void setUsername(String username) {
+    this.connectionSettings.setUsername(username);
   }
 
-  public void setLogger(LogLevel logLevel) {
-    this.logLevel = logLevel;
+  void setPassword(String password) {
+    this.connectionSettings.setPassword(password);
   }
-
 }

@@ -9,6 +9,7 @@ package com.mulesoft.connector.smb;
 import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
+import com.mulesoft.connector.smb.internal.connection.provider.TimeoutSettings;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.rules.TemporaryFolder;
@@ -93,9 +94,15 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
 
   private SmbClient createDefaultSmbClient() throws Exception {
     SmbClient smbClient =
-        new SmbClientFactory().createInstance(SmbServer.HOSTNAME, SmbServer.PORT, SmbServer.SHARE_ROOT, LogLevel.WARN);
+        new SmbClientFactory().createInstance(SmbServer.HOSTNAME, SmbServer.PORT, SmbServer.SHARE_ROOT, LogLevel.WARN, true,
+                                              getDefaultTimeoutSettings());
     smbClient.login(SmbServer.DOMAIN, SmbServer.USERNAME, SmbServer.PASSWORD);
     return smbClient;
+  }
+
+  private TimeoutSettings getDefaultTimeoutSettings() {
+    TimeoutSettings result = new TimeoutSettings();
+    return result;
   }
 
   /**

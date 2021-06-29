@@ -4,11 +4,14 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package com.mulesoft.connector.smb.internal.connection;
+package com.mulesoft.connector.smb.internal.connection.provider;
 
 import com.mulesoft.connector.smb.api.LogLevel;
+import com.mulesoft.connector.smb.internal.connection.SmbClient;
+import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
 import com.mulesoft.connector.smb.internal.connection.client.impl.smbj.SmbjSmbClient;
 import com.mulesoft.connector.smb.internal.connection.provider.SmbConnectionProvider;
+import com.mulesoft.connector.smb.internal.connection.provider.TimeoutSettings;
 import org.junit.Before;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 
@@ -29,14 +32,7 @@ public class SmbConnectionProviderTestCase extends AbstractMuleTestCase {
     provider.setDomain("WORKGROUP");
     provider.setUsername("mulesoft");
     provider.setPassword("mulesoft");
-
-    provider.setClientFactory(new SmbClientFactory() {
-
-      @Override
-      public SmbClient createInstance(String host, int port, String shareRoot, LogLevel logLevel) {
-        return new SmbjSmbClient(host, port, shareRoot, logLevel);
-      }
-    });
+    provider.setClientFactory(new SmbClientFactory());
   }
 
 }

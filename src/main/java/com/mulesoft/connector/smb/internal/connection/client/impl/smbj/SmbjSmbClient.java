@@ -37,12 +37,12 @@ import org.mule.runtime.core.api.util.IOUtils;
 import java.io.*;
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.mule.extension.file.common.api.exceptions.FileError.*;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 
 public class SmbjSmbClient extends AbstractSmbClient {
-
 
   private DiskShare share;
   private HashMap<NtStatus, FileError> errorMap = new HashMap<>();
@@ -53,8 +53,8 @@ public class SmbjSmbClient extends AbstractSmbClient {
     this.errorMap.put(NtStatus.STATUS_ACCESS_DENIED, ACCESS_DENIED);
   }
 
-  public SmbjSmbClient(String host, int port, String shareRoot, LogLevel logLevel) {
-    super(host, port, shareRoot, logLevel);
+  public SmbjSmbClient(String host, int port, String shareRoot, LogLevel logLevel, boolean dfsEnabled) {
+    super(host, port, shareRoot, logLevel, dfsEnabled);
   }
 
   @Override
@@ -85,7 +85,14 @@ public class SmbjSmbClient extends AbstractSmbClient {
   public void login(String domain, String username, String password) throws Exception {
     if (share == null) {
       SmbConfig config = SmbConfig.builder()
-          .withSecurityProvider(new BCSecurityProvider()).build();
+          .withSecurityProvider(new BCSecurityProvider())
+          .withReadTimeout(this.getReadTimeout(), this.getReadTimeoutUnit())
+          .withWriteTimeout(this.getWriteTimeout(), this.getWriteTimeoutUnit())
+          .withSoTimeout(this.getSocketTimeout(), this.getSocketTimeoutUnit())
+          .withTransactTimeout(this.getTransactionTimeout(),
+                               this.getTransactionTimeoutUnit())
+          .withDfsEnabled(this.getDfsEnabled())
+          .build();
       SMBClient client = new SMBClient(config);
       Connection connection = client.connect(this.getHost());
 
@@ -292,7 +299,6 @@ public class SmbjSmbClient extends AbstractSmbClient {
     return result;
   }
 
-
   @Override
   protected boolean isApiException(Exception cause) {
     return cause instanceof SMBApiException;
@@ -311,7 +317,6 @@ public class SmbjSmbClient extends AbstractSmbClient {
       throw new MuleRuntimeException(createStaticMessage("Could not resolve URI: " + e.getMessage()), e);
     }
   }
-
 
 
 }

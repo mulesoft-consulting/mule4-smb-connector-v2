@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * SmbClient
@@ -68,4 +69,15 @@ public interface SmbClient {
   boolean isLogLevelEnabled(LogLevel logLevel);
 
   FileError getFileErrorFor(Exception e);
+
+  void setConnectionTimeout(TimeUnit unit, Integer timeout);
+
+  void setSocketTimeout(TimeUnit unit, Integer timeout);
+
+  public void setReadTimeout(TimeUnit unit, Integer timeout);
+
+  public void setWriteTimeout(TimeUnit unit, Integer timeout);
+
+  public void setTransactionTimeout(TimeUnit unit, Integer timeout);
+
 }

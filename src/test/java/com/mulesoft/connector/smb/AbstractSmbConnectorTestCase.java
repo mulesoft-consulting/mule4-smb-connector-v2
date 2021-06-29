@@ -6,6 +6,7 @@
  */
 package com.mulesoft.connector.smb;
 
+import com.mulesoft.connector.smb.internal.connection.provider.TimeoutSettings;
 import com.mulesoft.connector.smb.internal.error.exception.SmbConnectionException;
 import com.mulesoft.connector.smb.internal.utils.SmbUtils;
 import com.mulesoft.connector.smb.internal.connection.SmbClient;
@@ -14,7 +15,7 @@ import org.mule.functional.junit4.MuleArtifactFunctionalTestCase;
 import org.mule.test.runner.ArtifactClassLoaderRunnerConfig;
 
 @ArtifactClassLoaderRunnerConfig(exportPluginClasses = {SmbClientFactory.class, SmbClient.class, SmbUtils.class,
-    SmbConnectionException.class})
+    SmbConnectionException.class, TimeoutSettings.class})
 public abstract class AbstractSmbConnectorTestCase extends MuleArtifactFunctionalTestCase {
 
 }

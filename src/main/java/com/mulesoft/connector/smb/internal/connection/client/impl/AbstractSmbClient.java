@@ -19,6 +19,7 @@ import org.mule.runtime.core.api.connector.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 import static com.mulesoft.connector.smb.internal.utils.SmbUtils.normalizePath;
 import static org.mule.extension.file.common.api.exceptions.FileError.*;
@@ -29,14 +30,30 @@ public abstract class AbstractSmbClient implements SmbClient {
   private String host;
   private int port;
   private String shareRoot;
-
   private LogLevel logLevel;
+  private boolean dfsEnabled;
 
-  public AbstractSmbClient(String host, int port, String shareRoot, LogLevel logLevel) {
+  private TimeUnit connectionTimeoutUnit = TimeUnit.SECONDS;
+  private Integer connectionTimeout = Integer.valueOf(10);
+
+  private TimeUnit socketTimeoutUnit = TimeUnit.SECONDS;
+  private Integer socketTimeout = Integer.valueOf(10);
+
+  private TimeUnit readTimeoutUnit = TimeUnit.SECONDS;
+  private Integer readTimeout = Integer.valueOf(60);
+
+  private TimeUnit writeTimeoutUnit = TimeUnit.SECONDS;
+  private Integer writeTimeout = Integer.valueOf(60);
+
+  private TimeUnit transactionTimeoutUnit = TimeUnit.SECONDS;
+  private Integer transactionTimeout = Integer.valueOf(60);
+
+  public AbstractSmbClient(String host, int port, String shareRoot, LogLevel logLevel, boolean dfsEnabled) {
     this.host = host;
     this.port = port;
     this.shareRoot = shareRoot;
     this.logLevel = logLevel;
+    this.dfsEnabled = dfsEnabled;
   }
 
   @Override
@@ -183,5 +200,79 @@ public abstract class AbstractSmbClient implements SmbClient {
   }
 
   protected abstract FileError doGetFileErrorFor(Exception e);
+
+  protected boolean getDfsEnabled() {
+    return this.dfsEnabled;
+  }
+
+  protected TimeUnit getConnectionTimeoutUnit() {
+    return connectionTimeoutUnit;
+  }
+
+  protected Integer getConnectionTimeout() {
+    return connectionTimeout;
+  }
+
+  protected TimeUnit getSocketTimeoutUnit() {
+    return socketTimeoutUnit;
+  }
+
+  protected Integer getSocketTimeout() {
+    return socketTimeout;
+  }
+
+  protected TimeUnit getReadTimeoutUnit() {
+    return readTimeoutUnit;
+  }
+
+  protected Integer getReadTimeout() {
+    return readTimeout;
+  }
+
+  protected TimeUnit getWriteTimeoutUnit() {
+    return writeTimeoutUnit;
+  }
+
+  protected Integer getWriteTimeout() {
+    return writeTimeout;
+  }
+
+  protected TimeUnit getTransactionTimeoutUnit() {
+    return transactionTimeoutUnit;
+  }
+
+  protected Integer getTransactionTimeout() {
+    return transactionTimeout;
+  }
+
+  @Override
+  public void setConnectionTimeout(TimeUnit unit, Integer timeout) {
+    this.connectionTimeoutUnit = unit;
+    this.connectionTimeout = timeout;
+  }
+
+  @Override
+  public void setSocketTimeout(TimeUnit unit, Integer timeout) {
+    this.socketTimeoutUnit = unit;
+    this.socketTimeout = timeout;
+  }
+
+  @Override
+  public void setReadTimeout(TimeUnit unit, Integer timeout) {
+    this.readTimeoutUnit = unit;
+    this.readTimeout = timeout;
+  }
+
+  @Override
+  public void setWriteTimeout(TimeUnit unit, Integer timeout) {
+    this.writeTimeoutUnit = unit;
+    this.writeTimeout = timeout;
+  }
+
+  @Override
+  public void setTransactionTimeout(TimeUnit unit, Integer timeout) {
+    this.transactionTimeoutUnit = unit;
+    this.transactionTimeout = timeout;
+  }
 
 }
