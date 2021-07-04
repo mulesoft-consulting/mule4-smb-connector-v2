@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Objects;
 
+import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 import org.mule.extension.file.common.api.AbstractFileAttributes;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 
@@ -21,7 +22,7 @@ import org.mule.runtime.extension.api.annotation.param.Parameter;
  *
  * @since 1.0
  */
-public abstract class SmbFileAttributes<T> extends AbstractFileAttributes {
+public class SmbFileAttributes extends AbstractFileAttributes {
 
   /**
    *
@@ -29,19 +30,19 @@ public abstract class SmbFileAttributes<T> extends AbstractFileAttributes {
   private static final long serialVersionUID = -2357110369914630644L;
 
   @Parameter
-  private long size;
+  private LocalDateTime timestamp;
 
   @Parameter
-  private boolean directory;
+  private long size;
 
   @Parameter
   private boolean regularFile;
 
   @Parameter
-  private boolean exists;
+  private boolean directory;
 
   @Parameter
-  private LocalDateTime timestamp;
+  private boolean exists;
 
   @Parameter
   private LocalDateTime createTime;
@@ -61,12 +62,24 @@ public abstract class SmbFileAttributes<T> extends AbstractFileAttributes {
    * @param file the file from which the attributes will be read
    * @throws Exception
    */
-  public SmbFileAttributes(URI uri, T file) throws Exception {
+  public SmbFileAttributes(URI uri, FileAllInformation file) throws Exception {
     super(uri);
     this.populate(file);
   }
 
-  protected abstract void populate(T file) throws Exception;
+  protected void populate(FileAllInformation file) throws Exception {
+    this.setExists(file != null);
+    if (file != null) {
+      this.setAbsolutePath(file.getNameInformation().replaceAll("\\\\", "/"));
+      this.setSize(file.getStandardInformation().getEndOfFile());
+      this.setDirectory(file.getStandardInformation().isDirectory());
+      this.setRegularFile(!this.isDirectory());
+      this.setCreateTime(this.localDateTimeFromEpoch(file.getBasicInformation().getCreationTime().toEpochMillis()));
+      this.setLastModified(localDateTimeFromEpoch(file.getBasicInformation().getLastWriteTime().toEpochMillis()));
+      this.setLastAccess(localDateTimeFromEpoch(file.getBasicInformation().getLastAccessTime().toEpochMillis()));
+      this.setTimestamp(localDateTimeFromEpoch(file.getBasicInformation().getLastWriteTime().toEpochMillis()));
+    }
+  }
 
   protected LocalDateTime localDateTimeFromEpoch(long epochMilli) {
     return LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMilli), ZoneId.systemDefault());

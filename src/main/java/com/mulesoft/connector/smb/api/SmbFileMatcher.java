@@ -88,13 +88,13 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
   @Override
   protected Predicate<SmbFileAttributes> addConditions(Predicate<SmbFileAttributes> predicate) {
     if (timestampSince != null) {
-      predicate = predicate.and(attributes -> attributes.getLastModified() == null
-          || FILE_TIME_SINCE.apply(timestampSince, attributes.getLastModified()));
+      predicate = predicate.and(attributes -> attributes.getTimestamp() == null
+          || FILE_TIME_SINCE.apply(timestampSince, attributes.getTimestamp()));
     }
 
     if (timestampUntil != null) {
-      predicate = predicate.and(attributes -> attributes.getLastModified() == null
-          || FILE_TIME_UNTIL.apply(timestampUntil, attributes.getLastModified()));
+      predicate = predicate.and(attributes -> attributes.getTimestamp() == null
+          || FILE_TIME_UNTIL.apply(timestampUntil, attributes.getTimestamp()));
     }
 
     // We want to make sure that the same time is used when comparing multiple files consecutively.
@@ -103,16 +103,16 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
     if (notUpdatedInTheLast != null) {
       predicate = predicate.and(attributes -> {
         checkTimestampPrecision(attributes);
-        return attributes.getLastModified() == null
-            || FILE_TIME_UNTIL.apply(minusTime(now, notUpdatedInTheLast, timeUnit), attributes.getLastModified());
+        return attributes.getTimestamp() == null
+            || FILE_TIME_UNTIL.apply(minusTime(now, notUpdatedInTheLast, timeUnit), attributes.getTimestamp());
       });
     }
 
     if (updatedInTheLast != null) {
       predicate = predicate.and(attributes -> {
         checkTimestampPrecision(attributes);
-        return attributes.getLastModified() == null
-            || FILE_TIME_SINCE.apply(minusTime(now, updatedInTheLast, timeUnit), attributes.getLastModified());
+        return attributes.getTimestamp() == null
+            || FILE_TIME_SINCE.apply(minusTime(now, updatedInTheLast, timeUnit), attributes.getTimestamp());
       });
     }
 
@@ -121,7 +121,7 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
 
   private void checkTimestampPrecision(SmbFileAttributes attributes) {
     if (alreadyLoggedWarning.compareAndSet(false, true) && isSecondsOrLower(timeUnit)
-        && attributes.getLastModified().getSecond() == 0 && attributes.getLastModified().getNano() == 0) {
+        && attributes.getTimestamp().getSecond() == 0 && attributes.getTimestamp().getNano() == 0) {
       LOGGER
           .debug(format("The required timestamp precision %s cannot be met. The server may not support it.",
                         timeUnit));
@@ -149,6 +149,18 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
   public SmbFileMatcher setTimestampUntil(LocalDateTime timestampUntil) {
     this.timestampUntil = timestampUntil;
     return this;
+  }
+
+  public void setTimeUnit(TimeUnit timeUnit) {
+    this.timeUnit = timeUnit;
+  }
+
+  public void setUpdatedInTheLast(Long updatedInTheLast) {
+    this.updatedInTheLast = updatedInTheLast;
+  }
+
+  public void setNotUpdatedInTheLast(Long notUpdatedInTheLast) {
+    this.notUpdatedInTheLast = notUpdatedInTheLast;
   }
 
   public LocalDateTime getTimestampSince() {

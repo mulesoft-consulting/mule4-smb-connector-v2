@@ -113,6 +113,10 @@ public final class SmbConnectionSettings {
     this.host = host;
   }
 
+  void setPort(int port) {
+    this.port = port;
+  }
+
   void setShareRoot(String shareRoot) {
     this.shareRoot = shareRoot;
   }
@@ -145,4 +149,5 @@ public final class SmbConnectionSettings {
   public int hashCode() {
     return Objects.hash(host, port, domain, username, password, shareRoot, dfsEnabled);
   }
+
 }

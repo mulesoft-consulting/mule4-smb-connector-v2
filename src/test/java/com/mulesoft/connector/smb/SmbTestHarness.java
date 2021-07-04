@@ -6,17 +6,18 @@
  */
 package com.mulesoft.connector.smb;
 
+import com.mulesoft.connector.AbstractSmbTestHarness;
 import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
-import com.mulesoft.connector.smb.internal.connection.provider.TimeoutSettings;
+import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileWriteMode;
-import com.mulesoft.connector.smb.internal.connection.SmbClient;
+import org.mule.tck.junit4.rule.DynamicPort;
 import org.mule.test.extension.file.common.api.FileTestHarness;
 
 import java.io.ByteArrayInputStream;
@@ -40,7 +41,11 @@ import static org.mule.extension.file.common.api.util.UriUtils.trimLastFragment;
  */
 public class SmbTestHarness extends AbstractSmbTestHarness {
 
+  private static final String SMB_PORT = "SMB_PORT";
+
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private DynamicPort smbPort = new DynamicPort(SMB_PORT);
+
   private SmbClient smbClient;
 
   /**
@@ -62,18 +67,19 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
     List<SmbFileAttributes> files = smbClient.list("/");
     if (files != null && !files.isEmpty()) {
       for (SmbFileAttributes file : files) {
-        smbClient.delete(file.getPath());
+        if (smbClient.exists(file.getPath())) {
+          smbClient.delete(file.getPath());
+        }
       }
     }
 
     try {
-      smbClient.delete(".deleted");
+      //smbClient.delete(".deleted");
     } catch (Exception e) {
       //Do nothing
     }
 
     assertTrue(smbClient.list("/").isEmpty());
-
   }
 
   /**
@@ -92,25 +98,20 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
     }
   }
 
-  private SmbClient createDefaultSmbClient() throws Exception {
+  public static SmbClient createDefaultSmbClient() throws Exception {
     SmbClient smbClient =
-        new SmbClientFactory().createInstance(SmbServer.HOSTNAME, SmbServer.PORT, SmbServer.SHARE_ROOT, LogLevel.WARN, true,
-                                              getDefaultTimeoutSettings());
-    smbClient.login(SmbServer.DOMAIN, SmbServer.USERNAME, SmbServer.PASSWORD);
+        new SmbClientFactory().createInstance(SmbServer.HOSTNAME, SmbServer.PORT, SmbServer.SHARE_ROOT, true, LogLevel.WARN);
+    smbClient.setPassword(SmbServer.PASSWORD);
+    smbClient.login(SmbServer.DOMAIN, SmbServer.USERNAME);
     return smbClient;
   }
 
-  private TimeoutSettings getDefaultTimeoutSettings() {
-    TimeoutSettings result = new TimeoutSettings();
-    return result;
-  }
-
   /**
-   * @inheritDoc
+   * @return {@link #smbPort}
    */
   @Override
   protected TestRule[] getChildRules() {
-    return new TestRule[] {};
+    return new TestRule[] {smbPort};
   }
 
   /**
@@ -145,7 +146,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
   @Override
   public String getWorkingDirectory() throws Exception {
     // Assume the share root as the working dir
-    return smbClient.getShareRoot();
+    return "/";
   }
 
   /**
@@ -243,6 +244,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
     OutputStream os = smbClient.getOutputStream(path, FileWriteMode.CREATE_NEW);
 
     new Thread(() -> {
+
       try {
         byte[] bytes = content.getBytes();
         for (int i = 0; i < bytes.length; i++) {

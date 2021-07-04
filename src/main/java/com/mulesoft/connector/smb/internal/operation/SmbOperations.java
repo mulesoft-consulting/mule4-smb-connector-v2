@@ -27,6 +27,8 @@ import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.api.SmbFileMatcher;
 import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.internal.utils.SmbUtils;
+import org.mule.runtime.api.exception.MuleException;
+import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.core.api.util.StringUtils;
 import org.mule.runtime.extension.api.annotation.error.Throws;
@@ -296,13 +298,21 @@ public final class SmbOperations extends BaseFileSystemOperations {
    */
   @Summary("Deletes a file")
   @Throws(FileDeleteErrorTypeProvider.class)
-  public void delete(@Connection FileSystem fileSystem, @Path(location = EXTERNAL) String path,
+  public void delete(@Connection FileSystem fileSystem,
+                     @Path(location = EXTERNAL) String path,
+                     @Optional(defaultValue = "true") boolean failIfNotExists,
                      CompletionCallback<Void, Void> callback) {
     try {
       super.doDelete(fileSystem, path);
       callback.success(Result.<Void, Void>builder().build());
     } catch (Exception e) {
-      callback.error(e);
+      if (e instanceof IllegalPathException) {
+        if (failIfNotExists) {
+          callback.error(e);
+        } else {
+          callback.success(Result.<Void, Void>builder().build());
+        }
+      }
     }
   }
 

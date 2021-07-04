@@ -14,12 +14,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
+import static org.mule.extension.file.common.api.exceptions.FileError.CONNECTIVITY;
 import static org.mule.extension.file.common.api.exceptions.FileError.ILLEGAL_PATH;
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
 import static org.mule.runtime.core.api.util.IOUtils.toByteArray;
+
+import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.exceptions.IllegalPathException;
-import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.streaming.CursorProvider;
@@ -36,7 +37,7 @@ import java.util.List;
 import io.qameta.allure.Feature;
 import org.junit.Test;
 
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbListTestCase extends CommonSmbConnectorTestCase {
 
   private static final String TEST_FILE_PATTERN = "test-file-%d.html";
@@ -327,7 +328,7 @@ public class SmbListTestCase extends CommonSmbConnectorTestCase {
     }
 
     @Override
-    public CoreEvent process(CoreEvent event) {
+    public CoreEvent process(CoreEvent event) throws MuleException {
       filePaths.add(((SmbFileAttributes) event.getMessage().getAttributes().getValue()).getPath());
       return event;
     }

@@ -9,7 +9,7 @@ package com.mulesoft.connector.smb;
 import static org.mockito.Mockito.when;
 import static org.mule.extension.file.common.api.matcher.MatchPolicy.INCLUDE;
 import static org.mule.extension.file.common.api.matcher.MatchPolicy.REQUIRE;
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
+
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.api.SmbFileMatcher;
 import org.mule.test.extension.file.common.FileMatcherContractTestCase;
@@ -20,7 +20,7 @@ import io.qameta.allure.Feature;
 import org.junit.Before;
 import org.junit.Test;
 
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbFileMatcherTestCase
     extends FileMatcherContractTestCase<SmbFileMatcher, SmbFileAttributes> {
 
@@ -40,7 +40,7 @@ public class SmbFileMatcherTestCase
   @Override
   public void before() {
     super.before();
-    when(attributes.getLastModified()).thenReturn(TIMESTAMP);
+    when(attributes.getTimestamp()).thenReturn(TIMESTAMP);
   }
 
   @Test

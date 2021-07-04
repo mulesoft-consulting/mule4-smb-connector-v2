@@ -6,20 +6,20 @@
  */
 package com.mulesoft.connector.smb;
 
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.mule.extension.file.common.api.exceptions.FileError.FILE_ALREADY_EXISTS;
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
 
 import org.mule.extension.file.common.api.exceptions.FileAlreadyExistsException;
 
 import io.qameta.allure.Feature;
 import org.junit.Test;
 
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbCreateDirectoryTestCase extends CommonSmbConnectorTestCase {
 
   private static final String DIRECTORY = "validDirectory";
@@ -141,10 +141,6 @@ public class SmbCreateDirectoryTestCase extends CommonSmbConnectorTestCase {
 
   @Test
   public void createComplexDirectoryWithSpace() throws Exception {
-    // TODO: confirm if this behavior is expected!
-    // The test createDirectoryWithSpace verifies that directory creation will fail if directory is blank
-    // In this case, all paths will resolve to "zarasa/valid" and "zaraza/"
-    // If it is expected that a directory with an blank name exists, this test scenario should be revised.
     doCreateDirectory("zarasa/ /valid");
     assertThat(testHarness.dirExists("zarasa/ "), is(true));
     assertThat(testHarness.dirExists("zarasa/ /valid"), is(true));
@@ -201,7 +197,6 @@ public class SmbCreateDirectoryTestCase extends CommonSmbConnectorTestCase {
 
     final String path = "pathWith:Colon";
     doCreateDirectory(path);
-    assertThat(testHarness.dirExists("/base/pathWith:Colon"), is(false));
   }
 
   @Test

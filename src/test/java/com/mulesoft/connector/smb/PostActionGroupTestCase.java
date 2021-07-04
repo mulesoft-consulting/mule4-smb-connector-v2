@@ -6,7 +6,6 @@
  */
 package com.mulesoft.connector.smb;
 
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
 import com.mulesoft.connector.smb.internal.source.PostActionGroup;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
@@ -16,7 +15,7 @@ import io.qameta.allure.Feature;
 import org.junit.Test;
 
 @SmallTest
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class PostActionGroupTestCase extends AbstractMuleTestCase {
 
   @Test

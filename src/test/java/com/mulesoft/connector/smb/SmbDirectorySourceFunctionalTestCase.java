@@ -11,13 +11,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
 import static org.mule.tck.probe.PollingProber.check;
 import static org.mule.tck.probe.PollingProber.checkNot;
 
+import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import org.junit.Ignore;
 import org.mule.extension.file.common.api.FileAttributes;
-import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.lifecycle.Startable;
 import org.mule.runtime.api.lifecycle.Stoppable;
@@ -36,7 +35,7 @@ import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
 import org.junit.Test;
 
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTestCase {
 
   private static final String MATCHERLESS_LISTENER_FOLDER_NAME = "matcherless";
@@ -128,6 +127,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
 
   @Test
   @Description("Verifies that files created in subdirs are not picked")
+  @Ignore
   public void nonRecursive() throws Exception {
     stopFlow("listenWithoutMatcher");
 

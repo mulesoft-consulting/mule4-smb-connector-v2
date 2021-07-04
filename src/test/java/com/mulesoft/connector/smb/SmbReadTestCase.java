@@ -14,15 +14,15 @@ import static org.junit.internal.matchers.ThrowableCauseMatcher.hasCause;
 import static org.junit.rules.ExpectedException.none;
 import static org.mule.extension.file.common.api.exceptions.FileError.ILLEGAL_PATH;
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
 import static org.mule.runtime.api.metadata.MediaType.JSON;
 import static org.mule.test.extension.file.common.api.FileTestHarness.BINARY_FILE_NAME;
 import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_PATH;
 import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_WORLD;
+
+import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import org.mule.extension.file.common.api.exceptions.DeletedFileWhileReadException;
 import org.mule.extension.file.common.api.exceptions.FileBeingModifiedException;
 import org.mule.extension.file.common.api.exceptions.IllegalPathException;
-import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.event.CoreEvent;
@@ -35,7 +35,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbReadTestCase extends CommonSmbConnectorTestCase {
 
   private static String DELETED_FILE_NAME = "deleted.txt";
@@ -114,7 +114,6 @@ public class SmbReadTestCase extends CommonSmbConnectorTestCase {
 
   @Test
   public void readFileThatIsDeleted() throws Exception {
-    // FIXME olamiral: try to reproduce this scenario and implement error handling accordingly
     expectedException.expectCause(hasCause(instanceOf(DeletedFileWhileReadException.class)));
     expectedException.expectMessage("was read but does not exist anymore.");
     testHarness.write(DELETED_FILE_NAME, DELETED_FILE_CONTENT);

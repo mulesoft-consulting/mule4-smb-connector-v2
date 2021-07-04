@@ -6,15 +6,14 @@
  */
 package com.mulesoft.connector.smb;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.mule.extension.file.common.api.exceptions.FileError.*;
+import static org.mule.functional.junit4.matchers.ThrowableCauseMatcher.hasCause;
+import static org.mule.tck.junit4.matcher.ErrorTypeMatcher.errorType;
+
 import com.mulesoft.connector.smb.internal.error.exception.SmbConnectionException;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Story;
-import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runners.Parameterized;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.tck.junit4.rule.SystemProperty;
 import org.mule.tck.util.TestConnectivityUtils;
@@ -22,13 +21,15 @@ import org.mule.tck.util.TestConnectivityUtils;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
-import static org.hamcrest.CoreMatchers.*;
-import static org.mule.extension.file.common.api.exceptions.FileError.*;
-import static org.mule.functional.junit4.matchers.ThrowableCauseMatcher.hasCause;
-import static org.mule.tck.junit4.matcher.ErrorTypeMatcher.errorType;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Story;
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runners.Parameterized;
 
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 @Story("Negative Connectivity Testing")
 public class SmbNegativeConnectivityTestCase extends CommonSmbConnectorTestCase {
 
@@ -71,16 +72,15 @@ public class SmbNegativeConnectivityTestCase extends CommonSmbConnectorTestCase 
     utils.assertFailedConnection(name + "ConfigConnectionTimeout", ANYTHING, is(errorType(CONNECTION_TIMEOUT)));
   }
 
-  /*
   @Test
-  @Ignore
-  //TODO olamiral: if missing credentials, should try as anonymous.
-  //Need to detail the unit tests regarding anonymous access (both positive and negative).
-  //For now, this negative test will be ignored
-  public void configMissingCredentials() {
-    utils.assertFailedConnection(name + "ConfigMissingCredentials", ANYTHING, is(errorType(INVALID_CREDENTIALS)));
+  public void connectionRefused() {
+    utils.assertFailedConnection(name + "ConfigConnectionRefused", ANYTHING, is(errorType(CONNECTION_TIMEOUT)));
   }
-  */
+
+  @Test
+  public void configMissingCredentials() {
+    utils.assertFailedConnection(name + "ConfigMissingCredentials", ANYTHING, is(errorType(ACCESS_DENIED)));
+  }
 
   @Test
   public void configUnknownHost() {

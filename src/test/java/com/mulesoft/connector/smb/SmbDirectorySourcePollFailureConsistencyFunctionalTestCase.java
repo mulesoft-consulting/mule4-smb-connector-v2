@@ -6,11 +6,13 @@
  */
 package com.mulesoft.connector.smb;
 
+import static java.lang.Thread.sleep;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.mule.tck.probe.PollingProber.check;
+
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
-import io.qameta.allure.Description;
-import io.qameta.allure.Feature;
 import org.junit.Ignore;
-import org.junit.Test;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.processor.Processor;
@@ -22,13 +24,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
-import static java.lang.Thread.sleep;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.mule.tck.probe.PollingProber.check;
+import io.qameta.allure.Description;
+import io.qameta.allure.Feature;
+import org.junit.Test;
 
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbDirectorySourcePollFailureConsistencyFunctionalTestCase extends CommonSmbConnectorTestCase {
 
   private static final String CONTENT = "File Content.";
@@ -87,6 +87,7 @@ public class SmbDirectorySourcePollFailureConsistencyFunctionalTestCase extends 
   }
 
   @Test
+  @Ignore
   @Description("Verifies that a the failure of a poll does not make the next poll iteration skip unprocessed files")
   public void filesAreNotSkippedWithPollFailures() throws Exception {
     createShuffledFilesWithDelay();

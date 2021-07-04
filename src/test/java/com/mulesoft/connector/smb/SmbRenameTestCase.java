@@ -12,7 +12,6 @@ import static org.mule.extension.file.common.api.exceptions.FileError.FILE_ALREA
 import static org.mule.extension.file.common.api.exceptions.FileError.ILLEGAL_PATH;
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
 import static org.mule.extension.file.common.api.util.UriUtils.trimLastFragment;
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
 import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_FILE_NAME;
 import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_PATH;
 import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_WORLD;
@@ -22,7 +21,7 @@ import org.mule.extension.file.common.api.exceptions.IllegalPathException;
 import io.qameta.allure.Feature;
 import org.junit.Test;
 
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbRenameTestCase extends CommonSmbConnectorTestCase {
 
   private static final String RENAME_TO = "renamed";

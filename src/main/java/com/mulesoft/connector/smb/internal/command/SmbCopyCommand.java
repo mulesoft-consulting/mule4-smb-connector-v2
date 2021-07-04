@@ -9,10 +9,10 @@ package com.mulesoft.connector.smb.internal.command;
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
 
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
+import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.command.CopyCommand;
-import com.mulesoft.connector.smb.internal.connection.SmbClient;
 
 import java.net.URI;
 

@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+      xmlns:java="http://www.mulesoft.org/schema/mule/java"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
+        http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+        http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+
+    <munit:config name="smb-connectivity-error-test-case.xml"/>
+
+    <munit:dynamic-port propertyName="smb.server.port"/>
+
+    <munit:before-suite name="start-test-smb-server">
+        <flow-ref name="delete-all-files" />
+    </munit:before-suite>
+
+    <munit:test name="smb-connectivity-error-namespace-write" description="Connectivity error throws SMB:CONNECTIVITY for write operation">
+        <munit:behavior>
+            <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+            <set-variable variableName="operationSucceeded" value="#[false]" />
+        </munit:behavior>
+        <munit:execution>
+            <smb:write config-ref="config" path="/happiness-to-do-list.txt" >
+                <smb:content>Read Good Omens</smb:content>
+            </smb:write>
+
+            <try>
+                <smb:write config-ref="config-invalid-port" path="/happiness-to-do-list.txt">
+                    <smb:content>Read it now</smb:content>
+                </smb:write>
+                <set-variable variableName="operationSucceeded" value="#[true]" />
+                <error-handler>
+                    <on-error-continue type="SMB:CONNECTIVITY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[true]" />
+                    </on-error-continue>
+                    <on-error-continue type="ANY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+                        <logger level="ERROR" message="Expected 'SMB:CONNECTIVITY' but a different exception was thrown. Error details: #[write(error, 'application/json', {'indent': false})]" />
+                    </on-error-continue>
+                </error-handler>
+            </try>
+
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[vars.operationSucceeded]" is="#[MunitTools::equalTo(false)]"/>
+            <munit-tools:assert-that expression="#[vars.smbConnectivityExceptionThrown]" is="#[MunitTools::equalTo(true)]"/>
+        </munit:validation>
+    </munit:test>
+
+    <munit:test name="smb-connectivity-error-namespace-read" description="Connectivity error throws SMB:CONNECTIVITY for read operation">
+        <munit:behavior>
+            <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+            <set-variable variableName="operationSucceeded" value="#[false]" />
+        </munit:behavior>
+        <munit:execution>
+            <try>
+
+                <smb:read config-ref="config-invalid-port" path="/good-omens.txt" />
+                <set-variable variableName="operationSucceeded" value="#[true]" />
+                <error-handler>
+                    <on-error-continue type="SMB:CONNECTIVITY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[true]" />
+                    </on-error-continue>
+                    <on-error-continue type="ANY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+                        <logger level="ERROR" message="Expected 'SMB:CONNECTIVITY' but a different exception was thrown. Error details: #[write(error, 'application/json', {'indent': false})]" />
+                    </on-error-continue>
+                </error-handler>
+            </try>
+
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[vars.operationSucceeded]" is="#[MunitTools::equalTo(false)]"/>
+            <munit-tools:assert-that expression="#[vars.smbConnectivityExceptionThrown]" is="#[MunitTools::equalTo(true)]"/>
+        </munit:validation>
+    </munit:test>
+
+    <munit:test name="smb-connectivity-error-namespace-delete" description="Connectivity error throws SMB:CONNECTIVITY for delete operation">
+        <munit:behavior>
+            <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+            <set-variable variableName="operationSucceeded" value="#[false]" />
+        </munit:behavior>
+        <munit:execution>
+            <try>
+
+                <smb:delete config-ref="config-invalid-port" path="/good-omens.txt" />
+                <set-variable variableName="operationSucceeded" value="#[true]" />
+                <error-handler>
+                    <on-error-continue type="SMB:CONNECTIVITY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[true]" />
+                    </on-error-continue>
+                    <on-error-continue type="ANY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+                        <logger level="ERROR" message="Expected 'SMB:CONNECTIVITY' but a different exception was thrown. Error details: #[write(error, 'application/json', {'indent': false})]" />
+                    </on-error-continue>
+                </error-handler>
+            </try>
+
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[vars.operationSucceeded]" is="#[MunitTools::equalTo(false)]"/>
+            <munit-tools:assert-that expression="#[vars.smbConnectivityExceptionThrown]" is="#[MunitTools::equalTo(true)]"/>
+        </munit:validation>
+    </munit:test>
+
+    <munit:test name="smb-connectivity-error-namespace-rename" description="Connectivity error throws SMB:CONNECTIVITY for rename operation">
+        <munit:behavior>
+            <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+            <set-variable variableName="operationSucceeded" value="#[false]" />
+        </munit:behavior>
+        <munit:execution>
+            <smb:write config-ref="config" path="/good-omens.txt" >
+                <smb:content>In the beginning, it was a nice day.</smb:content>
+            </smb:write>
+            <try>
+                <smb:rename config-ref="config-invalid-port" path="/good-omens.txt" to="/good-omens-the-nice-and-accurate-prophecies-of-agnes-nutter-witch.txt" overwrite="#[true]"/>
+                <set-variable variableName="operationSucceeded" value="#[true]" />
+                <error-handler>
+                    <on-error-continue type="SMB:CONNECTIVITY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[true]" />
+                    </on-error-continue>
+                    <on-error-continue type="ANY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+                        <logger level="ERROR" message="Expected 'SMB:CONNECTIVITY' but a different exception was thrown. Error details: #[write(error, 'application/json', {'indent': false})]" />
+                    </on-error-continue>
+                </error-handler>
+            </try>
+
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[vars.operationSucceeded]" is="#[MunitTools::equalTo(false)]"/>
+            <munit-tools:assert-that expression="#[vars.smbConnectivityExceptionThrown]" is="#[MunitTools::equalTo(true)]"/>
+        </munit:validation>
+    </munit:test>
+
+    <munit:test name="smb-connectivity-error-namespace-move" description="Connectivity error throws SMB:CONNECTIVITY for move operation">
+        <munit:behavior>
+            <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+            <set-variable variableName="operationSucceeded" value="#[false]" />
+        </munit:behavior>
+        <munit:execution>
+            <smb:write config-ref="config" path="/good-omens.txt" >
+                <smb:content>In the beginning, it was a nice day.</smb:content>
+            </smb:write>
+
+            <try>
+                <smb:move config-ref="config-invalid-port" sourcePath="/good-omens.txt" targetPath="/apocalypse" />
+                <set-variable variableName="operationSucceeded" value="#[true]" />
+                <error-handler>
+                    <on-error-continue type="SMB:CONNECTIVITY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[true]" />
+                    </on-error-continue>
+                    <on-error-continue type="ANY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+                        <logger level="ERROR" message="Expected 'SMB:CONNECTIVITY' but a different exception was thrown. Error details: #[write(error, 'application/json', {'indent': false})]" />
+                    </on-error-continue>
+                </error-handler>
+            </try>
+
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[vars.operationSucceeded]" is="#[MunitTools::equalTo(false)]"/>
+            <munit-tools:assert-that expression="#[vars.smbConnectivityExceptionThrown]" is="#[MunitTools::equalTo(true)]"/>
+        </munit:validation>
+    </munit:test>
+
+    <munit:test name="smb-connectivity-error-namespace-copy" description="Connectivity error throws SMB:CONNECTIVITY for copy operation">
+        <munit:behavior>
+            <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+            <set-variable variableName="operationSucceeded" value="#[false]" />
+        </munit:behavior>
+        <munit:execution>
+            <smb:write config-ref="config" path="/good-omens.txt" >
+                <smb:content>In the beginning, it was a nice day.</smb:content>
+            </smb:write>
+
+            <try>
+                <smb:copy config-ref="config-invalid-port" sourcePath="/good-omens.txt" targetPath="/apocalypse" />
+                <set-variable variableName="operationSucceeded" value="#[true]" />
+                <error-handler>
+                    <on-error-continue type="SMB:CONNECTIVITY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[true]" />
+                    </on-error-continue>
+                    <on-error-continue type="ANY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+                        <logger level="ERROR" message="Expected 'SMB:CONNECTIVITY' but a different exception was thrown. Error details: #[write(error, 'application/json', {'indent': false})]" />
+                    </on-error-continue>
+                </error-handler>
+            </try>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[vars.operationSucceeded]" is="#[MunitTools::equalTo(false)]"/>
+            <munit-tools:assert-that expression="#[vars.smbConnectivityExceptionThrown]" is="#[MunitTools::equalTo(true)]"/>
+        </munit:validation>
+    </munit:test>
+
+    <munit:test name="smb-connectivity-error-namespace-create-dir" description="Connectivity error throws SMB:CONNECTIVITY for create directory operation">
+        <munit:behavior>
+            <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+            <set-variable variableName="operationSucceeded" value="#[false]" />
+        </munit:behavior>
+        <munit:execution>
+            <smb:write config-ref="config" path="/good-omens.txt" >
+                <smb:content>In the beginning, it was a nice day.</smb:content>
+            </smb:write>
+
+            <try>
+                <smb:create-directory config-ref="config-invalid-port" directoryPath="apocalypse"/>
+                <set-variable variableName="operationSucceeded" value="#[true]" />
+                <error-handler>
+                    <on-error-continue type="SMB:CONNECTIVITY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[true]" />
+                    </on-error-continue>
+                    <on-error-continue type="ANY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+                        <logger level="ERROR" message="Expected 'SMB:CONNECTIVITY' but a different exception was thrown. Error details: #[write(error, 'application/json', {'indent': false})]" />
+                    </on-error-continue>
+                </error-handler>
+            </try>
+
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[vars.operationSucceeded]" is="#[MunitTools::equalTo(false)]"/>
+            <munit-tools:assert-that expression="#[vars.smbConnectivityExceptionThrown]" is="#[MunitTools::equalTo(true)]"/>
+        </munit:validation>
+    </munit:test>
+
+    <!-- FIXME olamiral: had to ignore Mule versions prior to 4.3.0
+    Instead of throwing SMB:CONNECTIVITY, prior versions throw MULE:UNKNOWN, with NPE.
+    Couldn't find a way to handle the exception to convert it to SMB:CONNECTIVITY
+    -->
+    <munit:test name="smb-connectivity-error-namespace-list"
+                description="Connectivity error throws SMB:CONNECTIVITY for list operation"
+                ignore="#[Munit::muleVersionPriorTo('4.3.0')]">
+        <munit:behavior>
+            <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+            <set-variable variableName="operationSucceeded" value="#[false]" />
+        </munit:behavior>
+        <munit:execution>
+            <smb:write config-ref="config" path="/good-omens.txt" >
+                <smb:content>In the beginning, it was a nice day.</smb:content>
+            </smb:write>
+
+            <try>
+                <smb:list config-ref="config-invalid-port" directoryPath="." />
+                <set-variable variableName="operationSucceeded" value="#[true]" />
+                <error-handler>
+                    <on-error-continue type="SMB:CONNECTIVITY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[true]" />
+                    </on-error-continue>
+                    <on-error-continue type="ANY">
+                        <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
+                        <logger level="ERROR" message="Expected 'SMB:CONNECTIVITY' but a different exception was thrown. Error details: #[write(error, 'application/json', {'indent': false})]" />
+                    </on-error-continue>
+                </error-handler>
+            </try>
+
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[vars.operationSucceeded]" is="#[MunitTools::equalTo(false)]"/>
+            <munit-tools:assert-that expression="#[vars.smbConnectivityExceptionThrown]" is="#[MunitTools::equalTo(true)]"/>
+        </munit:validation>
+    </munit:test>
+
+</mule>

@@ -1,12 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xsi:schemaLocation="
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+      xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:test="http://www.mulesoft.org/schema/mule/test"
+      xsi:schemaLocation="
 		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
-		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
-	<munit:config name="smb-copy-test-case.xml" />
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
+        http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+
+    <munit:config name="smb-copy-test-case.xml"/>
+
+    <munit:dynamic-port propertyName="smb.server.port"/>
+
+    <munit:before-suite name="startCopyTestServer">
+        <flow-ref name="delete-all-files" />
+    </munit:before-suite>
+
+    <munit:test name="smb-copy-directories" description="Perform a copy operation that copies a whole directory">
+        <munit:behavior>
+            <set-variable variableName="fileContent" value="I just want to impress Mr. Stark"/>
+
+            <smb:create-directory config-ref="config" directoryPath="copy-dir-test"/>
+            <smb:create-directory config-ref="config" directoryPath="copy-dir-test/folder-to-copy"/>
+
+            <smb:write config-ref="config" path="copy-dir-test/folder-to-copy/file1.txt">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+            <smb:write config-ref="config" path="copy-dir-test/folder-to-copy/file2.txt">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+            <smb:write config-ref="config" path="copy-dir-test/folder-to-copy/file3.txt">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+        </munit:behavior>
+        <munit:execution>
+            <smb:copy config-ref="config" sourcePath="copy-dir-test/folder-to-copy/"
+                      targetPath="copy-dir-test/folder-copied" overwrite="false"
+                      createParentDirectories="true"/>
+        </munit:execution>
+        <munit:validation>
+            <smb:read config-ref="config" path="copy-dir-test/folder-copied/folder-to-copy/file1.txt"/>
+            <munit-tools:assert>
+                <munit-tools:that><![CDATA[#[import * from dw::test::Asserts
+                                     ---
+                                    payload must equalTo(vars.fileContent)
+                                    ]]]>
+                </munit-tools:that>
+            </munit-tools:assert>
+            <smb:read config-ref="config" path="copy-dir-test/folder-copied/folder-to-copy/file2.txt"/>
+            <munit-tools:assert>
+                <munit-tools:that><![CDATA[#[import * from dw::test::Asserts
+                                     ---
+                                    payload must equalTo(vars.fileContent)
+                                    ]]]>
+                </munit-tools:that>
+            </munit-tools:assert>
+            <smb:read config-ref="config" path="copy-dir-test/folder-copied/folder-to-copy/file3.txt"/>
+            <munit-tools:assert>
+                <munit-tools:that><![CDATA[#[import * from dw::test::Asserts
+                                     ---
+                                    payload must equalTo(vars.fileContent)
+                                    ]]]>
+                </munit-tools:that>
+            </munit-tools:assert>
+        </munit:validation>
+    </munit:test>
+
+    <munit:test name="smb-copy-to-target-ending-in-separator" description="Perform copy operations of a file with a destination that ends in a separator">
+        <munit:behavior>
+            <set-variable variableName="fileContent" value="I just want to impress Mr. Stark"/>
+
+            <smb:create-directory config-ref="config" directoryPath="copy-test"/>
+            <smb:create-directory config-ref="config" directoryPath="copy-test/folder-input"/>
+
+            <smb:write config-ref="config" path="copy-test/folder-input/hello-world.txt">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+        </munit:behavior>
+        <munit:execution>
+            <smb:copy config-ref="config" sourcePath="copy-test/folder-input/hello-world.txt"
+                      targetPath="copy-test/folder-output/" overwrite="false"
+                      createParentDirectories="true"/>
+            <set-payload value="Copy with SMB works fine!!"/>
+        </munit:execution>
+        <munit:validation>
+            <smb:read config-ref="config" path="copy-test/folder-output/hello-world.txt"/>
+            <munit-tools:assert>
+                <munit-tools:that><![CDATA[#[import * from dw::test::Asserts
+                                     ---
+                                    payload must equalTo(vars.fileContent)
+                                    ]]]>
+                </munit-tools:that>
+            </munit-tools:assert>
+        </munit:validation>
+    </munit:test>
 
 </mule>

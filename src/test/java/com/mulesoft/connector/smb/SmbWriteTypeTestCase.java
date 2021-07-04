@@ -8,7 +8,6 @@ package com.mulesoft.connector.smb;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
 import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_WORLD;
 import org.mule.extension.file.common.api.FileWriteMode;
 import org.mule.runtime.core.api.event.CoreEvent;
@@ -26,7 +25,7 @@ import org.junit.Test;
 import org.junit.runners.Parameterized;
 
 @RunnerDelegateTo(Parameterized.class)
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbWriteTypeTestCase extends CommonSmbConnectorTestCase {
 
   @Parameterized.Parameters(name = "{0}")

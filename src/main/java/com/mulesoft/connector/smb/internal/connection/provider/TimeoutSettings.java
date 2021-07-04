@@ -177,6 +177,46 @@ public final class TimeoutSettings {
     return transactionTimeout;
   }
 
+  public void setConnectionTimeoutUnit(TimeUnit connectionTimeoutUnit) {
+    this.connectionTimeoutUnit = connectionTimeoutUnit;
+  }
+
+  public void setConnectionTimeout(Integer connectionTimeout) {
+    this.connectionTimeout = connectionTimeout;
+  }
+
+  public void setSocketTimeoutUnit(TimeUnit socketTimeoutUnit) {
+    this.socketTimeoutUnit = socketTimeoutUnit;
+  }
+
+  public void setSocketTimeout(Integer socketTimeout) {
+    this.socketTimeout = socketTimeout;
+  }
+
+  public void setReadTimeoutUnit(TimeUnit readTimeoutUnit) {
+    this.readTimeoutUnit = readTimeoutUnit;
+  }
+
+  public void setReadTimeout(Integer readTimeout) {
+    this.readTimeout = readTimeout;
+  }
+
+  public void setWriteTimeoutUnit(TimeUnit writeTimeoutUnit) {
+    this.writeTimeoutUnit = writeTimeoutUnit;
+  }
+
+  public void setWriteTimeout(Integer writeTimeout) {
+    this.writeTimeout = writeTimeout;
+  }
+
+  public void setTransactionTimeoutUnit(TimeUnit transactionTimeoutUnit) {
+    this.transactionTimeoutUnit = transactionTimeoutUnit;
+  }
+
+  public void setTransactionTimeout(Integer transactionTimeout) {
+    this.transactionTimeout = transactionTimeout;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o)

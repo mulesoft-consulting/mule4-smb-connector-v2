@@ -6,8 +6,8 @@
  */
 package com.mulesoft.connector.smb.internal.command;
 
+import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.mule.extension.file.common.api.command.RenameCommand;
-import com.mulesoft.connector.smb.internal.connection.SmbClient;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 
 /**

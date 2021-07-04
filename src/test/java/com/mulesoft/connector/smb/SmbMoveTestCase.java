@@ -8,11 +8,10 @@ package com.mulesoft.connector.smb;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
 
 import io.qameta.allure.Feature;
 
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbMoveTestCase extends SmbCopyTestCase {
 
   public SmbMoveTestCase(String name, SmbTestHarness testHarness, String smbConfigFile) {

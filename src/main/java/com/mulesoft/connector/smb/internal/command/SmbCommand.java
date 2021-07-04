@@ -13,6 +13,7 @@ import static org.mule.extension.file.common.api.util.UriUtils.trimLastFragment;
 import static com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection.ROOT;
 import static com.mulesoft.connector.smb.internal.utils.SmbUtils.normalizePath;
 
+import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.FileSystem;
@@ -20,7 +21,6 @@ import org.mule.extension.file.common.api.command.ExternalFileCommand;
 import org.mule.extension.file.common.api.exceptions.FileAlreadyExistsException;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.utils.SmbUtils;
-import com.mulesoft.connector.smb.internal.connection.SmbClient;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 
 import java.net.URI;

@@ -50,6 +50,8 @@ import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.mule.runtime.core.api.util.ExceptionUtils.extractConnectionException;
+
 
 /**
  * Polls a directory looking for files that have been created on it. One message will be generated for each file that is found.
@@ -207,7 +209,8 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
         }
 
         if (!processFile(file, pollContext)) {
-          closeQuietly(file.getOutput());
+          //FIXME olamiral: uncomment after tests
+          //closeQuietly(file.getOutput());
           break;
         }
       }
@@ -215,6 +218,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
       LOGGER.error(format("Found exception trying to poll directory '%s'. Will try again on the next poll. ",
                           directoryUri.getPath(), e.getMessage()),
                    e);
+      extractConnectionException(e).ifPresent((connectionException) -> pollContext.onConnectionException(connectionException));
     } finally {
       fileSystemProvider.disconnect(fileSystem);
     }
@@ -231,8 +235,8 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
       fileSystem.changeToBaseDir();
     } catch (Exception e) {
       LOGGER.debug("Exception while trying to open connection. Cause: {} . Message: {}", e.getCause(), e.getMessage());
-      if (e.getCause() instanceof ConnectionException) {
-        pollContext.onConnectionException((ConnectionException) e.getCause());
+      if (extractConnectionException(e).isPresent()) {
+        extractConnectionException(e).ifPresent((connectionException) -> pollContext.onConnectionException(connectionException));
       } else {
         fileSystemProvider.disconnect(fileSystem);
       }
@@ -247,6 +251,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
     String fullPath = attributes.getPath();
     PollItemStatus status = pollContext.accept(item -> {
       final SourceCallbackContext ctx = item.getSourceCallbackContext();
+      Result result = null;
 
       try {
         ctx.addVariable(ATTRIBUTES_CONTEXT_VAR, attributes);
@@ -260,7 +265,9 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
                             fullPath, t.getMessage()),
                      t);
 
-        onRejectedItem(file, ctx);
+        if (result != null) {
+          onRejectedItem(result, ctx);
+        }
 
         throw new MuleRuntimeException(t);
       }

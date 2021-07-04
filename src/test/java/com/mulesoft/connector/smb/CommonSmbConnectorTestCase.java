@@ -6,7 +6,6 @@
  */
 package com.mulesoft.connector.smb;
 
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
 import static org.mule.runtime.core.api.util.IOUtils.closeQuietly;
 import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_PATH;
 
@@ -30,7 +29,7 @@ import org.junit.runners.Parameterized.Parameters;
 import io.qameta.allure.Feature;
 
 @RunnerDelegateTo(Parameterized.class)
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public abstract class CommonSmbConnectorTestCase extends AbstractSmbConnectorTestCase {
 
   public static final String SMB_CONNECTION_XML = "smb-connection-config.xml";
@@ -91,6 +90,8 @@ public abstract class CommonSmbConnectorTestCase extends AbstractSmbConnectorTes
     return flowRunner("read")
         .withVariable("path", path)
         .withVariable("streaming", streaming)
+        //FIXME olamiral: check how this setting affects the tests
+        .keepStreamsOpen()
         .run();
   }
 

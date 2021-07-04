@@ -9,6 +9,7 @@ package com.mulesoft.connector.smb.internal.command;
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.command.ReadCommand;
 import org.mule.extension.file.common.api.lock.NullUriLock;
@@ -16,7 +17,6 @@ import org.mule.extension.file.common.api.lock.UriLock;
 import org.mule.extension.file.common.api.util.UriUtils;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.extension.SmbConnector;
-import com.mulesoft.connector.smb.internal.connection.SmbClient;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.metadata.MediaType;

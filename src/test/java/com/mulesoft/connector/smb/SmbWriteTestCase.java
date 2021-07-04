@@ -10,13 +10,13 @@ import static java.nio.charset.Charset.availableCharsets;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 import static org.mule.extension.file.common.api.FileWriteMode.APPEND;
 import static org.mule.extension.file.common.api.FileWriteMode.CREATE_NEW;
 import static org.mule.extension.file.common.api.FileWriteMode.OVERWRITE;
 import static org.mule.extension.file.common.api.exceptions.FileError.FILE_ALREADY_EXISTS;
 import static org.mule.extension.file.common.api.exceptions.FileError.ILLEGAL_PATH;
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-import static com.mulesoft.connector.smb.AllureConstants.SmbFeature.SMB_EXTENSION;
 import static org.mule.runtime.core.api.util.IOUtils.toByteArray;
 import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_WORLD;
 
@@ -35,7 +35,7 @@ import io.qameta.allure.Feature;
 import org.junit.Ignore;
 import org.junit.Test;
 
-@Feature(SMB_EXTENSION)
+@Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbWriteTestCase extends CommonSmbConnectorTestCase {
 
   private static final String TEMP_DIRECTORY = "files";
@@ -149,13 +149,6 @@ public class SmbWriteTestCase extends CommonSmbConnectorTestCase {
   @Test
   public void writeWithLock() throws Exception {
     testHarness.makeDir(TEMP_DIRECTORY);
-
-    // TODO: verify if modification is valid
-
-    // Old path assignment:
-    // String path = createUri(createUri(testHarness.getWorkingDirectory(), TEMP_DIRECTORY).getPath(), "test.txt").getPath();
-
-    // New path assignment
     String path = createUri(TEMP_DIRECTORY, "test.txt").getPath();
     doWrite("writeWithLock", path, HELLO_WORLD, CREATE_NEW, false);
 
@@ -177,14 +170,7 @@ public class SmbWriteTestCase extends CommonSmbConnectorTestCase {
   @Test
   public void writeStaticContent() throws Exception {
     testHarness.makeDir(TEMP_DIRECTORY);
-
-    // TODO: verify if modification is valid
-    // Old path assignment:
-    // String path = createUri(createUri(testHarness.getWorkingDirectory(), TEMP_DIRECTORY).getPath(), "test.txt").getPath();
-
-    // New path assignment
     String path = createUri(TEMP_DIRECTORY, "test.txt").getPath();
-
     doWrite("writeStaticContent", path, "", CREATE_NEW, false);
 
     String content = toString(readPath(path).getPayload().getValue());
@@ -203,11 +189,6 @@ public class SmbWriteTestCase extends CommonSmbConnectorTestCase {
     final String filename = "encoding.txt";
 
     doWrite("write", filename, HELLO_WORLD, CREATE_NEW, false, customEncoding);
-
-    // TODO: verify if modification is valid
-    // Old path assignment
-    // String path = createUri(testHarness.getWorkingDirectory(), filename).getPath();
-    // New path assignment
     String path = filename;
     InputStream content = (InputStream) readPath(path, false).getPayload().getValue();
 
@@ -216,9 +197,8 @@ public class SmbWriteTestCase extends CommonSmbConnectorTestCase {
 
   private void doWriteNotExistingFileWithCreatedParent(FileWriteMode mode) throws Exception {
     testHarness.makeDir(TEMP_DIRECTORY);
-    // TODO: verify if modification is valid
     String path = createUri(createUri(testHarness.getWorkingDirectory(), TEMP_DIRECTORY).getPath(), "a/b/test.txt").getPath();
-    // String path = createUri(TEMP_DIRECTORY, "a/b/test.txt").getPath();
+
 
     doWrite(path, HELLO_WORLD, mode, true);
 
@@ -229,15 +209,6 @@ public class SmbWriteTestCase extends CommonSmbConnectorTestCase {
 
   private void doWriteOnNotExistingFile(FileWriteMode mode) throws Exception {
     testHarness.makeDir(TEMP_DIRECTORY);
-    // TODO: verify if it's necessary to add the working directory
-    // SmbWriteCommand considers the fileSystem.basePath, and fileSystem.basePath is populated according to
-    // the workingDir connection provider property (set by default with the value "base", in test harness
-    // Because of that, the working directory will be removed from the URI creation.
-    // This adjusment will be applied to all test scenarios.
-    // Original path assignment statement:
-    //String path = createUri(createUri(testHarness.getWorkingDirectory(), TEMP_DIRECTORY).getPath(), "test.txt").getPath();
-
-    // New path assignment statement:
     String path = createUri(TEMP_DIRECTORY, "test.txt").getPath();
     doWrite(path, HELLO_WORLD, mode, false);
 

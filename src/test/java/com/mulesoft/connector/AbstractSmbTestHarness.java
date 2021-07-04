@@ -4,18 +4,17 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package com.mulesoft.connector.smb;
-
-import static org.mule.functional.api.exception.ExpectedError.none;
-
-import org.mule.functional.api.exception.ExpectedError;
-import org.mule.tck.junit4.rule.SystemProperty;
-import org.mule.test.extension.file.common.api.FileTestHarness;
+package com.mulesoft.connector;
 
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+import org.mule.functional.api.exception.ExpectedError;
+import org.mule.tck.junit4.rule.SystemProperty;
+import org.mule.test.extension.file.common.api.FileTestHarness;
+
+import static org.mule.functional.api.exception.ExpectedError.none;
 
 /**
  * Base class for {@link FileTestHarness} implementations

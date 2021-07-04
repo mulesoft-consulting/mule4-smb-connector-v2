@@ -10,13 +10,16 @@ import static java.lang.String.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
+import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileWriteMode;
 import org.mule.extension.file.common.api.command.WriteCommand;
+import org.mule.extension.file.common.api.exceptions.DeletedFileWhileReadException;
 import org.mule.extension.file.common.api.exceptions.FileAlreadyExistsException;
+import org.mule.extension.file.common.api.exceptions.FileError;
 import org.mule.extension.file.common.api.lock.NullUriLock;
 import org.mule.extension.file.common.api.lock.UriLock;
-import com.mulesoft.connector.smb.internal.connection.SmbClient;
+import org.mule.runtime.extension.api.exception.ModuleException;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -32,6 +35,9 @@ public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
 
   private static final Logger LOGGER = getLogger(SmbWriteCommand.class);
 
+  /**
+   * {@inheritDoc}
+   */
   public SmbWriteCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
     super(fileSystem, client);
   }
@@ -71,6 +77,9 @@ public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
       client.write(uri.getPath(), content, mode);
       LOGGER.debug("Successfully wrote to path {}", uri.getPath());
     } catch (Exception e) {
+      if (e.getCause() instanceof DeletedFileWhileReadException) {
+        throw new ModuleException(e.getCause().getMessage(), FileError.FILE_DOESNT_EXIST, e.getCause());
+      }
       throw exception(format("Exception was found writing to file '%s'", uri.getPath()), e);
     } finally {
       if (pathLock != null) {
