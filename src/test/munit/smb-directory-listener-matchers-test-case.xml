@@ -43,7 +43,7 @@
         <flow-ref name="delete-all-files" />
     </munit:before-suite>
 
-    <munit:test name="listenerProcessesAllFiles">
+    <munit:test name="listenerProcessesAllFiles" ignore="#[true]">
 
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="fileListenerFlow"/>
