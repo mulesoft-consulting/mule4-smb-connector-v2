@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
       xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
       xmlns="http://www.mulesoft.org/schema/mule/core"
-      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
-      xsi:schemaLocation="
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb" xsi:schemaLocation="
 		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
         http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd">
 
     <smb:config name="config">
-        <smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share">
+        <smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share" socketTimeoutUnit="MILLISECONDS" socketTimeout="10000" readTimeoutUnit="MINUTES" readTimeout="1" writeTimeoutUnit="MINUTES" writeTimeout="1" transactionTimeoutUnit="MINUTES" transactionTimeout="1">
             <pooling-profile exhaustedAction="WHEN_EXHAUSTED_WAIT" maxActive="7" maxIdle="3" maxWait="5000"/>
         </smb:connection>
     </smb:config>
@@ -21,7 +21,6 @@
         </smb:connection>
     </smb:config>
 
-
     <smb:config name="config-with-reconnection">
         <smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share">
             <reconnection >
@@ -31,17 +30,20 @@
         </smb:connection>
     </smb:config>
 
-    <smb:config name="config-without-working-dir">
-        <smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share">
-            <pooling-profile exhaustedAction="WHEN_EXHAUSTED_WAIT" maxActive="7" maxIdle="3" maxWait="5000"/>
-        </smb:connection>
-    </smb:config>
-    
     <smb:config name="SMB_Config">
         <smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share"/>
     </smb:config>
 
-    <flow name="wait-2-seconds">
+	<smb:config name="config-invalid-host" doc:name="SMB Config" doc:id="6b3a5678-4c66-4817-a6ca-90d83b4c8170" >
+		<smb:connection host="invalid-hostname" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="/share" />
+	</smb:config>
+	<smb:config name="config-invalid-credentials" doc:name="SMB Config" doc:id="228c751c-6e86-471f-bd18-4aff5ad5e9a8" >
+		<smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="invalidpassword" shareRoot="/share" />
+	</smb:config>
+	<smb:config name="config-with-small-socket-timeout" doc:name="SMB Config" doc:id="7a4fafbb-c073-4a67-85c8-2e40a6dde9b6" >
+		<smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="/share" socketTimeoutUnit="MILLISECONDS" socketTimeout="1" />
+	</smb:config>
+	<flow name="wait-2-seconds">
         <logger level="ERROR" message="Waiting for 2 seconds"/>
         <munit-tools:sleep time="2000"/>
     </flow>
@@ -57,10 +59,7 @@
     </flow>
 
     <flow name="delete-all-files">
-        <smb:list config-ref="config" directoryPath="/" recursive="true"/>
-        <foreach collection="#[payload.attributes default []]">
-            <smb:delete config-ref="config" path="#[payload.path]" failIfNotExists="false" />
-        </foreach>
+    	<smb:delete config-ref="config" path="/" />
     </flow>
 
     <smb:config name="config-invalid-share-root">
@@ -68,5 +67,30 @@
             <pooling-profile exhaustedAction="WHEN_EXHAUSTED_WAIT" maxActive="7" maxIdle="3" maxWait="5000"/>
         </smb:connection>
     </smb:config>
+    
+    <smb:config name="config-loglevel-trace">
+        <smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share" logLevel="TRACE"/>
+    </smb:config>
+    
+    <smb:config name="config-loglevel-debug">
+        <smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share" logLevel="DEBUG"/>
+    </smb:config>
+    
+    <smb:config name="config-loglevel-info">
+        <smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share" logLevel="INFO"/>
+    </smb:config>
+    
+    <smb:config name="config-loglevel-warn">
+        <smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share" logLevel="WARN"/>
+    </smb:config>
+    
+    <smb:config name="config-loglevel-error">
+        <smb:connection host="localhost" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share" logLevel="ERROR"/>
+    </smb:config>
+    
+    
+    
+    
+    
 
 </mule>

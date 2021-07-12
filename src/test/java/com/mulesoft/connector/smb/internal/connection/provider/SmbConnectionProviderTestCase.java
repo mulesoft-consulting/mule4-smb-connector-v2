@@ -6,101 +6,432 @@
  */
 package com.mulesoft.connector.smb.internal.connection.provider;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.hierynomus.smbj.SMBClient;
-import com.hierynomus.smbj.auth.AuthenticationContext;
-import com.hierynomus.smbj.connection.Connection;
-import com.hierynomus.smbj.session.Session;
-import com.hierynomus.smbj.share.DiskShare;
-import com.mulesoft.connector.smb.SmbServer;
+import com.hierynomus.mssmb2.SMBApiException;
+import com.hierynomus.protocol.transport.TransportException;
 import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
-import com.mulesoft.connector.smb.internal.extension.SmbConnector;
-import org.junit.Before;
-import org.junit.Ignore;
+import com.mulesoft.connector.smb.internal.error.exception.SmbConnectionException;
+import org.apache.commons.io.IOUtils;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mule.tck.junit4.AbstractMuleTestCase;
-import org.mule.tck.size.SmallTest;
+import org.junit.rules.ExpectedException;
+import org.mule.extension.file.common.api.FileWriteMode;
+import org.mule.extension.file.common.api.exceptions.FileError;
+import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.api.connection.ConnectionValidationResult;
+import org.mule.runtime.api.exception.MuleRuntimeException;
+import org.mule.runtime.extension.api.exception.ModuleException;
 
-@SmallTest
-@RunWith(MockitoJUnitRunner.class)
-public class SmbConnectionProviderTestCase extends AbstractMuleTestCase {
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.util.concurrent.TimeUnit;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mule.extension.file.common.api.exceptions.FileError.*;
+
+//@RunWith(MockitoJUnitRunner.class)
+public class SmbConnectionProviderTestCase {
 
   private static final String HOST = "localhost";
   private static final int PORT = 445;
   private static final int TIMEOUT = 10;
   private static final String SHARE_ROOT = "share";
 
+  protected static final String NAMESPACE = "SMB";
+
+  private static final Matcher<Exception> SMB_CONNECTION_EXCEPTION =
+      is(CoreMatchers.instanceOf(SmbConnectionException.class));
+
   @Rule
-  public TemporaryFolder folder = new TemporaryFolder();
+  public ExpectedException expectedException = ExpectedException.none();
 
-  @Mock
-  private SmbConnector config;
+  @Test
+  public void connectWithNullShareRoot() throws Exception {
+    expectedException.expect(ConnectionException.class);
+    expectedException.expectCause(instanceOf(IllegalArgumentException.class));
+    expectedException.expectMessage("shareRoot is null");
 
-  @Mock
-  private SMBClient smbj;
-
-  @Mock
-  private Connection connection;
-
-  @Mock
-  private Session session;
-
-  @Mock
-  private DiskShare share;
-
-  private SmbConnectionProvider provider = new SmbConnectionProvider();
-
-
-  @Before
-  public void before() throws Exception {
-    provider.setHost(HOST);
-    provider.setUsername(SmbServer.USERNAME);
-
-    provider.setClientFactory(new SmbClientFactory() {
-
-      public SmbClient createInstance(String host, int port, String shareRoot, boolean dfsEnabled, LogLevel logLevel) {
-        return new SmbClient(host, port, shareRoot, dfsEnabled, logLevel);
-      }
-    });
-
-    when(smbj.connect(HOST, PORT)).thenReturn(connection);
-    AuthenticationContext authContext =
-        new AuthenticationContext(SmbServer.USERNAME, SmbServer.PASSWORD.toCharArray(), SmbServer.DOMAIN);
-    when(connection.authenticate(authContext)).thenReturn(session);
-    when(session.connectShare(SHARE_ROOT)).thenReturn(this.share);
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.connect();
   }
 
   @Test
-  @Ignore
-  public void simpleCredentials() throws Exception {
-    provider.setPassword(SmbServer.PASSWORD);
-    login();
-    //TODO olamiral: define assertions
+  public void connectWithNullHost() throws Exception {
+    expectedException.expect(ConnectionException.class);
+    expectedException.expectCause(instanceOf(IllegalArgumentException.class));
+    expectedException.expectMessage("hostname can't be null");
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setShareRoot("invalid");
+    provider.connect();
   }
 
-  private void login() throws Exception {
-    SmbFileSystemConnection fileSystem = provider.connect();
-    SmbClient client = spy(fileSystem.getClient());
-    assertThat(fileSystem.getBasePath(), is(""));
-
-    verify(session).connectShare(SHARE_ROOT);
-
-    verify(client, never()).list(anyString());
+  @Test
+  public void connectToUnknownHost() throws Exception {
+    expectedException.expect(SmbConnectionException.class);
+    expectedException.expectCause(instanceOf(ModuleException.class));
+    expectedException.expectMessage("Could not establish SMB connection");
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("somehostname");
+    provider.setShareRoot("invalid");
+    provider.connect();
   }
+
+  @Test
+  public void connectUsingInvalidPort() throws Exception {
+    expectedException.expect(SmbConnectionException.class);
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setShareRoot("invalid");
+
+    try {
+      provider.connect();
+    } catch (SmbConnectionException sce) {
+      verifyConnectionException(sce, ConnectException.class, "Can't assign requested address (connect failed)", CANNOT_REACH);
+    }
+  }
+
+  @Test
+  public void connectToInvalidServer() throws Exception {
+    expectedException.expect(SmbConnectionException.class);
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(446);
+    provider.setShareRoot("invalid");
+    try {
+      provider.connect();
+    } catch (SmbConnectionException sce) {
+      verifyConnectionException(sce, ConnectException.class, "Connection refused", CANNOT_REACH);
+    }
+  }
+
+  @Test
+  public void connectWithInvalidShareRoot() throws Exception {
+    expectedException.expect(ConnectionException.class);
+    expectedException.expectCause(instanceOf(SMBApiException.class));
+    expectedException.expectMessage("STATUS_BAD_NETWORK_NAME");
+    expectedException.expectMessage("Could not connect to \\\\localhost\\invalid");
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("invalid");
+    provider.connect();
+  }
+
+  @Test
+  public void connectWithNullUsername() throws Exception {
+    expectedException.expect(SmbConnectionException.class);
+    expectedException.expectCause(instanceOf(ModuleException.class));
+    expectedException.expectMessage("STATUS_ACCESS_DENIED");
+    expectedException.expectMessage("Could not connect to \\\\localhost\\share");
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.connect();
+  }
+
+  @Test
+  public void connectWithNullPassword() throws Exception {
+    expectedException.expect(SmbConnectionException.class);
+    expectedException.expectCause(instanceOf(ModuleException.class));
+    expectedException.expectMessage("STATUS_ACCESS_DENIED");
+    expectedException.expectMessage("Could not connect to \\\\localhost\\share");
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.setUsername("invalid");
+    provider.connect();
+  }
+
+  @Test
+  public void connectWithInvalidCredentials() throws Exception {
+    expectedException.expect(SmbConnectionException.class);
+    expectedException.expectCause(instanceOf(ModuleException.class));
+    expectedException.expectMessage("STATUS_ACCESS_DENIED");
+    expectedException.expectMessage("Could not connect to \\\\localhost\\share");
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.setUsername("invalid");
+    provider.setPassword("invalid");
+    provider.connect();
+  }
+
+  @Test
+  public void connect() throws Exception {
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.setUsername("mulesoft");
+    provider.setPassword("mulesoft");
+    SmbFileSystemConnection fileSystemConnection = provider.connect();
+    ConnectionValidationResult validationResult = provider.validate(fileSystemConnection);
+    assertTrue(validationResult.isValid());
+  }
+
+  @Test
+  public void connectWithInvalidDomain() throws Exception {
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.setUsername("mulesoft");
+    provider.setPassword("mulesoft");
+    provider.setDomain("invalid");
+    SmbFileSystemConnection fileSystemConnection = provider.connect();
+    ConnectionValidationResult validationResult = provider.validate(fileSystemConnection);
+    assertTrue(validationResult.isValid());
+  }
+
+  @Test
+  public void disconnectWithNullFileSystemConnection() throws Exception {
+    expectedException.expect(NullPointerException.class);
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.disconnect(null);
+  }
+
+  @Test
+  public void disconnect() throws Exception {
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.setUsername("mulesoft");
+    provider.setPassword("mulesoft");
+    SmbFileSystemConnection fileSystemConnection = provider.connect();
+    provider.disconnect(fileSystemConnection);
+    ConnectionValidationResult validationResult = provider.validate(fileSystemConnection);
+    assertFalse(validationResult.isValid());
+    MatcherAssert.assertThat(validationResult.getException(), SMB_CONNECTION_EXCEPTION);
+    assertEquals("Connection is stale", validationResult.getMessage());
+  }
+
+  @Test
+  public void disconnectAlreadyDisconnected() throws Exception {
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.setUsername("mulesoft");
+    provider.setPassword("mulesoft");
+    SmbFileSystemConnection fileSystemConnection = provider.connect();
+    provider.disconnect(fileSystemConnection);
+    //TODO olamiral: verify if should throw exception or not
+    provider.disconnect(fileSystemConnection);
+
+    ConnectionValidationResult validationResult = provider.validate(fileSystemConnection);
+    assertFalse(validationResult.isValid());
+    MatcherAssert.assertThat(validationResult.getException(), SMB_CONNECTION_EXCEPTION);
+    assertEquals("Connection is stale", validationResult.getMessage());
+
+  }
+
+  @Test
+  public void validateConnectionWithNullFileSystemConnection() {
+    expectedException.expect(NullPointerException.class);
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.validate(null);
+  }
+
+  @Test
+  public void verifyGetWorkingDir() {
+    expectedException.expect(RuntimeException.class);
+    expectedException.expectMessage("workingDir property should not be used");
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.getWorkingDir();
+  }
+
+  @Test
+  public void verifySocketTimeoutExceptionWhenConnecting() throws Exception {
+    expectedException.expect(SmbConnectionException.class);
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    SmbClient mockedClient = mock(SmbClient.class);
+    doThrow(new SocketTimeoutException("connect timed out")).when(mockedClient).login(anyString(), anyString());
+    provider.setClientFactory(new SmbClientFactory() {
+
+      @Override
+      public SmbClient createInstance(String host, int port, String shareRoot, boolean dfsEnabled, LogLevel logLevel) {
+        return mockedClient;
+      }
+    });
+    try {
+      provider.connect();
+    } catch (SmbConnectionException sce) {
+      verifyConnectionException(sce, SocketTimeoutException.class, "connect timed out", CONNECTION_TIMEOUT);
+    }
+  }
+
+  @Test
+  public void verifyUnknownHostExceptionWhenConnecting() throws Exception {
+    expectedException.expect(SmbConnectionException.class);
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    SmbClient mockedClient = mock(SmbClient.class);
+    doThrow(new UnknownHostException("unknown host")).when(mockedClient).login(anyString(), anyString());
+    provider.setClientFactory(new SmbClientFactory() {
+
+      @Override
+      public SmbClient createInstance(String host, int port, String shareRoot, boolean dfsEnabled, LogLevel logLevel) {
+        return mockedClient;
+      }
+    });
+    try {
+      provider.connect();
+    } catch (SmbConnectionException sce) {
+      verifyConnectionException(sce, UnknownHostException.class, "unknown host", UNKNOWN_HOST);
+    }
+  }
+
+  private void verifyConnectionException(SmbConnectionException sce, Class<? extends Throwable> throwableClass,
+                                         String expectedMessage, FileError expectedFileError)
+      throws SmbConnectionException {
+    assertThat(sce.getMessage(), containsString(expectedMessage));
+    assertThat(sce.getCause(), instanceOf(ModuleException.class));
+    ModuleException me = (ModuleException) sce.getCause();
+    assertThat(me.getCause(), instanceOf(throwableClass));
+    assertThat(me.getType(), is(expectedFileError));
+    throw sce;
+  }
+
+  @Test
+  public void verifyExceptionWhenConnecting() throws Exception {
+    expectedException.expect(ConnectionException.class);
+    expectedException.expectCause(instanceOf(RuntimeException.class));
+    expectedException.expectMessage("Error occurred");
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    SmbClient mockedClient = mock(SmbClient.class);
+    doThrow(new RuntimeException("Error occurred")).when(mockedClient).login(anyString(), anyString());
+    provider.setClientFactory(new SmbClientFactory() {
+
+      @Override
+      public SmbClient createInstance(String host, int port, String shareRoot, boolean dfsEnabled, LogLevel logLevel) {
+        return mockedClient;
+      }
+    });
+    provider.connect();
+  }
+
+  @Test
+  public void connectUsingNegativeSocketTimeout() throws ConnectionException {
+    expectedException.expect(ConnectionException.class);
+    expectedException.expectCause(instanceOf(IllegalArgumentException.class));
+    expectedException.expectMessage("Socket timeout should be either 0 (no timeout) or a positive value");
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.setUsername("mulesoft");
+    provider.setPassword("mulesoft");
+    provider.setSocketTimeout(TimeUnit.MILLISECONDS, -1);
+    provider.connect();
+  }
+
+  @Test
+  public void verifySocketTimeoutSettings() throws ConnectionException {
+    expectedException.expect(ConnectionException.class);
+    expectedException.expectCause(instanceOf(TransportException.class));
+    expectedException.expectMessage("Read timed out");
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.setUsername("mulesoft");
+    provider.setPassword("mulesoft");
+    provider.setSocketTimeout(TimeUnit.MILLISECONDS, 1);
+    provider.connect();
+  }
+
+
+  @Test
+  public void verifyTransactionTimeoutSettings() throws ConnectionException {
+    expectedException.expect(ConnectionException.class);
+    expectedException.expectCause(instanceOf(TransportException.class));
+    expectedException.expectMessage("Timeout expired");
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.setUsername("mulesoft");
+    provider.setPassword("mulesoft");
+    provider.setTransactionTimeout(TimeUnit.MILLISECONDS, -1);
+    provider.connect();
+  }
+
+  @Test
+  public void verifyWriteTimeoutSettings() throws ConnectionException, IOException {
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.setUsername("mulesoft");
+    provider.setPassword("mulesoft");
+    provider.setWriteTimeout(TimeUnit.MILLISECONDS, -1);
+    provider.setReadTimeout(TimeUnit.MINUTES, 1);
+    SmbFileSystemConnection fileSystemConnection = provider.connect();
+    fileSystemConnection.getClient().write("test.txt", IOUtils.toInputStream("this is a test", Charset.defaultCharset()),
+                                           FileWriteMode.OVERWRITE);
+    InputStream fileContent = fileSystemConnection.getClient().read("test.txt");
+    assertEquals("this is a test", IOUtils.toString(fileContent, Charset.defaultCharset()));
+  }
+
+  @Test
+  public void verifyReadTimeoutSettings() throws ConnectionException, IOException {
+    expectedException.expect(MuleRuntimeException.class);
+    expectedException.expectCause(instanceOf(TransportException.class));
+    expectedException.expectMessage("Cannot read from file");
+
+    SmbConnectionProvider provider = new SmbConnectionProvider();
+    provider.setHost("localhost");
+    provider.setPort(445);
+    provider.setShareRoot("share");
+    provider.setUsername("mulesoft");
+    provider.setPassword("mulesoft");
+    provider.setWriteTimeout(TimeUnit.MILLISECONDS, -1);
+    provider.setReadTimeout(TimeUnit.MILLISECONDS, -1);
+    SmbFileSystemConnection fileSystemConnection = provider.connect();
+    fileSystemConnection.getClient().write("test.txt", IOUtils.toInputStream("this is a test", Charset.defaultCharset()),
+                                           FileWriteMode.OVERWRITE);
+    try {
+      fileSystemConnection.getClient().read("test.txt");
+    } catch (MuleRuntimeException mre) {
+      TransportException te = (TransportException) mre.getCause();
+      assertThat(te.getMessage(), containsString("Timeout expired"));
+      throw mre;
+    }
+  }
+
+
 
 }

@@ -6,9 +6,7 @@
  */
 package com.mulesoft.connector.smb.internal.command;
 
-import static java.lang.String.format;
-import static org.slf4j.LoggerFactory.getLogger;
-
+import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.mule.extension.file.common.api.FileAttributes;
@@ -20,11 +18,13 @@ import org.mule.extension.file.common.api.exceptions.FileError;
 import org.mule.extension.file.common.api.lock.NullUriLock;
 import org.mule.extension.file.common.api.lock.UriLock;
 import org.mule.runtime.extension.api.exception.ModuleException;
+import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.net.URI;
 
-import org.slf4j.Logger;
+import static java.lang.String.format;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * A {@link SmbCommand} which implements the {@link WriteCommand} contract
@@ -35,9 +35,6 @@ public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
 
   private static final Logger LOGGER = getLogger(SmbWriteCommand.class);
 
-  /**
-   * {@inheritDoc}
-   */
   public SmbWriteCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
     super(fileSystem, client);
   }
@@ -47,6 +44,7 @@ public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
    */
   @Deprecated
   @Override
+  @ExcludeFromGeneratedCoverageReport("Cannot remove method as it must be implemented, even if deprecated")
   public void write(String filePath, InputStream content, FileWriteMode mode,
                     boolean lock, boolean createParentDirectory, String encoding) {
     write(filePath, content, mode, lock, createParentDirectory);
@@ -82,12 +80,10 @@ public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
       }
       throw exception(format("Exception was found writing to file '%s'", uri.getPath()), e);
     } finally {
-      if (pathLock != null) {
-        try {
-          pathLock.release();
-        } catch (Exception e) {
-          LOGGER.warn("Could not release lock for path " + uri.toString(), e);
-        }
+      try {
+        pathLock.release();
+      } catch (Exception e) {
+        LOGGER.warn("Could not release lock for path " + uri.toString(), e);
       }
     }
   }

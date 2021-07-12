@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
       xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
       xmlns="http://www.mulesoft.org/schema/mule/core"
       xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
-      xmlns:java="http://www.mulesoft.org/schema/mule/java"
-      xsi:schemaLocation="
+      xmlns:java="http://www.mulesoft.org/schema/mule/java" xsi:schemaLocation="
 		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
 		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
@@ -19,8 +19,26 @@
     <munit:before-suite name="startDirectoryListenerMatcherTestServer">
         <flow-ref name="delete-all-files" />
     </munit:before-suite>
-
-    <munit:test name="renameTo" description="Verifies that files are renamed after processing">
+	<munit:test name="renameToAfterFailure" doc:id="1c3bf20e-7840-4561-92f1-85609aa272cd" description="Verifies that the file is renamed after a failure">
+		<munit:enable-flow-sources >
+			<munit:enable-flow-source value="executePostActionAfterFailure" />
+		</munit:enable-flow-sources>
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="259161b9-1f5b-468b-b7c3-8415fe13e880" config-ref="SMB_Config" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<munit-tools:sleep time="2000" doc:name="Sleep" doc:id="3d294fce-6951-490e-9aee-e1eb82fbd9ec" />
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="85f7f27b-89d0-4118-9d93-b03b9cdf5efd" config-ref="SMB_Config" path="renamedAfterFailure.bak" outputMimeType="text/plain" />
+			<munit-tools:assert doc:name="Assert expression" doc:id="bdcdb42c-8c2f-4c2a-9ffc-ce9e39d145d0" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo("This is a test")]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="renameTo" description="Verifies that files are renamed after processing">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="renameToFlow"/>
         </munit:enable-flow-sources>
@@ -148,7 +166,17 @@
         <logger level="INFO" message="#[attributes.fileName]"/>
     </flow>
 
-    <flow name="file-exists">
+    <flow name="executePostActionAfterFailure" doc:id="cccf15f2-76c3-43e5-b54f-b1ead62a8934" >
+		<smb:smb-directory-listener doc:name="On New or Updated File" doc:id="0e11dfe6-15ec-473f-a691-4ce051b6fb2c" config-ref="SMB_Config" renameTo="renamedAfterFailure.bak" directory="/">
+			<scheduling-strategy >
+				<fixed-frequency frequency="1" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+			<smb:matcher filenamePattern="*.txt" />
+		</smb:smb-directory-listener>
+		<logger level="INFO" doc:name="Logger" doc:id="e927f239-77d4-413e-bee3-f2adc414d666" message="New file: #[attributes.path]"/>
+		<raise-error doc:name="Raise error" doc:id="6680aedd-a31b-4be9-8c57-24fa4ee243da" type="APP:FILE_SHOULD_NOT_BE_PROCESSED"/>
+	</flow>
+	<flow name="file-exists">
         <try>
             <smb:read config-ref="SMB_Config" path="#[vars.fileExists]" />
             <set-payload value="#[true]" />

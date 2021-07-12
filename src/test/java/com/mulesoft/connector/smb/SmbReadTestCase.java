@@ -6,20 +6,12 @@
  */
 package com.mulesoft.connector.smb;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.internal.matchers.ThrowableCauseMatcher.hasCause;
-import static org.junit.rules.ExpectedException.none;
-import static org.mule.extension.file.common.api.exceptions.FileError.ILLEGAL_PATH;
-import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-import static org.mule.runtime.api.metadata.MediaType.JSON;
-import static org.mule.test.extension.file.common.api.FileTestHarness.BINARY_FILE_NAME;
-import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_PATH;
-import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_WORLD;
-
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
+import io.qameta.allure.Description;
+import io.qameta.allure.Feature;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mule.extension.file.common.api.exceptions.DeletedFileWhileReadException;
 import org.mule.extension.file.common.api.exceptions.FileBeingModifiedException;
 import org.mule.extension.file.common.api.exceptions.IllegalPathException;
@@ -29,18 +21,20 @@ import org.mule.runtime.core.api.event.CoreEvent;
 
 import java.io.InputStream;
 
-import io.qameta.allure.Description;
-import io.qameta.allure.Feature;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.internal.matchers.ThrowableCauseMatcher.hasCause;
+import static org.junit.rules.ExpectedException.none;
+import static org.mule.extension.file.common.api.exceptions.FileError.ILLEGAL_PATH;
+import static org.mule.runtime.api.metadata.MediaType.JSON;
+import static org.mule.test.extension.file.common.api.FileTestHarness.*;
 
 @Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbReadTestCase extends CommonSmbConnectorTestCase {
 
-  private static String DELETED_FILE_NAME = "deleted.txt";
-  private static String DELETED_FILE_CONTENT = "non existant content";
-  private static String WATCH_FILE = "watch.txt";
+  private static final String DELETED_FILE_NAME = "deleted.txt";
+  private static final String DELETED_FILE_CONTENT = "non existant content";
+  private static final String WATCH_FILE = "watch.txt";
 
   public SmbReadTestCase(String name, SmbTestHarness testHarness, String smbConfigFile) {
     super(name, testHarness, smbConfigFile);
@@ -136,12 +130,6 @@ public class SmbReadTestCase extends CommonSmbConnectorTestCase {
     String result = (String) flowRunner("readFileWithSizeCheck").withVariable("path", WATCH_FILE).run().getMessage()
         .getPayload().getValue();
     assertThat(result, is("aaa"));
-  }
-
-  private Message readWithLock() throws Exception {
-    Message message =
-        flowRunner("readWithLock").withVariable("readPath", createUri("files/hello.json").getPath()).run().getMessage();
-    return message;
   }
 
 }

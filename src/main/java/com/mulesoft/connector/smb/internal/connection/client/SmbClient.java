@@ -7,8 +7,6 @@
 package com.mulesoft.connector.smb.internal.connection.client;
 
 import com.hierynomus.msdtyp.AccessMask;
-import com.hierynomus.mserref.NtStatus;
-import com.hierynomus.msfscc.FileAttributes;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2CreateOptions;
@@ -26,13 +24,11 @@ import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
-import com.mulesoft.connector.smb.internal.connection.FileCopyMode;
 import com.mulesoft.connector.smb.internal.error.exception.SmbConnectionException;
 import com.mulesoft.connector.smb.internal.utils.SmbUtils;
 import org.mule.extension.file.common.api.FileWriteMode;
 import org.mule.extension.file.common.api.exceptions.FileError;
 import org.mule.extension.file.common.api.exceptions.IllegalPathException;
-import org.mule.extension.file.common.api.util.UriUtils;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.core.api.util.IOUtils;
@@ -40,36 +36,30 @@ import org.mule.runtime.core.api.util.IOUtils;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.mulesoft.connector.smb.internal.utils.SmbUtils.normalizePath;
-import static java.util.Collections.emptyList;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.mule.extension.file.common.api.exceptions.FileError.*;
-import static org.mule.extension.file.common.api.util.UriUtils.createUri;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.api.util.collection.Collectors.toImmutableList;
 
 public class SmbClient {
 
-  private String host;
-  private int port;
-  private String shareRoot;
+  private final String host;
+  private final int port;
+  private final String shareRoot;
   private String password;
-  private LogLevel logLevel;
-  private boolean dfsEnabled;
+  private final LogLevel logLevel;
+  private final boolean dfsEnabled;
 
-  private TimeUnit connectionTimeoutUnit = TimeUnit.SECONDS;
-  private Integer connectionTimeout = Integer.valueOf(10);
   private TimeUnit socketTimeoutUnit = TimeUnit.SECONDS;
-  private Integer socketTimeout = Integer.valueOf(10);
+  private Integer socketTimeout = 10;
   private TimeUnit readTimeoutUnit = TimeUnit.SECONDS;
-  private Integer readTimeout = Integer.valueOf(60);
+  private Integer readTimeout = 60;
   private TimeUnit writeTimeoutUnit = TimeUnit.SECONDS;
-  private Integer writeTimeout = Integer.valueOf(60);
+  private Integer writeTimeout = 60;
   private TimeUnit transactionTimeoutUnit = TimeUnit.SECONDS;
-  private Integer transactionTimeout = Integer.valueOf(60);
+  private Integer transactionTimeout = 60;
 
   private DiskShare share;
 
@@ -82,6 +72,9 @@ public class SmbClient {
   }
 
   public SmbFileAttributes getAttributes(URI uri) throws Exception {
+    if (uri == null) {
+      throw new ConnectionException("Invalid path: uri is null");
+    }
     String pathStr = uri.getPath();
     if (pathStr != null
         && pathStr.replace("smb://" + this.getHost() + ":" + this.getPort(), "").matches(".*(:|\\||>|<|\"|\\?|\\*)+.*")) {
@@ -96,7 +89,7 @@ public class SmbClient {
       pathStr = pathStr.substring(0, pathStr.length() - 1);
     }
 
-    if (pathStr.matches("^[/]{0,1} +$")) {
+    if (pathStr.matches("^[/]? +$")) {
       throw new ConnectionException("Invalid path: directory path cannot be null nor blank");
     }
 
@@ -111,22 +104,37 @@ public class SmbClient {
 
   public void login(String domain, String username) throws IOException {
     if (share == null || !share.isConnected()) {
-      SmbConfig config = SmbConfig.builder()
+      if (this.shareRoot == null) {
+        throw new IllegalArgumentException("shareRoot is null");
+      }
+      SmbConfig.Builder configBuilder = SmbConfig.builder()
           .withSecurityProvider(new BCSecurityProvider())
-          .withReadTimeout(this.readTimeout, this.readTimeoutUnit)
-          .withWriteTimeout(this.writeTimeout, this.writeTimeoutUnit)
-          .withSoTimeout(this.socketTimeout, this.socketTimeoutUnit)
-          .withTransactTimeout(this.transactionTimeout,
-                               this.transactionTimeoutUnit)
-          .withDfsEnabled(this.dfsEnabled)
-          .build();
-      SMBClient client = new SMBClient(config);
+          .withDfsEnabled(this.dfsEnabled);
+
+      if (this.socketTimeoutUnit != null && this.socketTimeout != null) {
+        configBuilder.withSoTimeout(this.socketTimeout, this.socketTimeoutUnit);
+      }
+
+      if (this.readTimeoutUnit != null && this.readTimeout != null) {
+        configBuilder.withReadTimeout(this.readTimeout, this.readTimeoutUnit);
+      }
+
+      if (this.writeTimeoutUnit != null && this.writeTimeout != null) {
+        configBuilder.withWriteTimeout(this.writeTimeout, this.writeTimeoutUnit);
+      }
+
+      if (this.transactionTimeoutUnit != null && this.transactionTimeout != null) {
+        configBuilder.withTransactTimeout(this.transactionTimeout,
+                                          this.transactionTimeoutUnit);
+      }
+
+      SMBClient client = new SMBClient(configBuilder.build());
       Connection connection = client.connect(this.getHost(), this.port);
-      AuthenticationContext ac = null;
-      if (username == null || username.trim().isEmpty()) {
+      AuthenticationContext ac;
+      if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
         ac = AuthenticationContext.anonymous();
       } else {
-        ac = new AuthenticationContext(username, password == null ? null : password.toCharArray(), domain);
+        ac = new AuthenticationContext(username, password.toCharArray(), domain);
       }
       Session session = connection.authenticate(ac);
       share = (DiskShare) session.connectShare(this.getShareRoot());
@@ -148,8 +156,8 @@ public class SmbClient {
   public void mkdir(String dirPath) {
     String[] dirs = dirPath.split("/");
     String partialDirPath = null;
-    for (int dirIdx = 0; dirIdx < dirs.length; dirIdx++) {
-      partialDirPath = (partialDirPath == null ? "" : partialDirPath + "/") + dirs[dirIdx];
+    for (String dir : dirs) {
+      partialDirPath = (partialDirPath == null ? "" : partialDirPath + "/") + dir;
       if (!this.share.folderExists(partialDirPath)) {
         this.share.mkdir(partialDirPath);
       }
@@ -164,10 +172,6 @@ public class SmbClient {
       files = this.share.list(path.getPath());
     } catch (SMBApiException e) {
       throw exception("Found exception trying to list path " + path, e);
-    }
-
-    if (isEmpty(files)) {
-      return emptyList();
     }
 
     return files.stream().filter(entry -> !".".equals(entry.getFileName()) && !"..".equals(entry.getFileName()))
@@ -213,12 +217,7 @@ public class SmbClient {
   }
 
   private File openFile(String filePath, FileWriteMode mode) {
-    Set<FileAttributes> fileAttributes = new HashSet<>();
-    fileAttributes.add(FileAttributes.FILE_ATTRIBUTE_NORMAL);
-    Set<SMB2CreateOptions> createOptions = new HashSet<>();
-    createOptions.add(SMB2CreateOptions.FILE_RANDOM_ACCESS);
-
-    File result = null;
+    File result;
     try {
       if (!this.share.fileExists(filePath)) {
         result = share.openFile(SmbUtils.normalizePath(filePath), EnumSet.of(AccessMask.GENERIC_WRITE), null, SMB2ShareAccess.ALL,
@@ -242,7 +241,7 @@ public class SmbClient {
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         File f = share.openFile(filePath, EnumSet.of(AccessMask.GENERIC_READ), null, SMB2ShareAccess.ALL,
                                 SMB2CreateDisposition.FILE_OPEN, null);
-        InputStream inputStream = f.getInputStream();) {
+        InputStream inputStream = f.getInputStream()) {
       byte[] buffer = new byte[1024];
       int length;
       while ((length = inputStream.read(buffer)) > 0)
@@ -264,10 +263,8 @@ public class SmbClient {
     }
 
     try {
-      if (exists(newName)) {
-        if (overwrite && exists(sourcePath)) {
-          delete(newName);
-        }
+      if (exists(newName) && (overwrite && exists(sourcePath))) {
+        delete(newName);
       }
       doRename(sourcePath, newName);
     } catch (Exception e) {
@@ -289,43 +286,6 @@ public class SmbClient {
     }
   }
 
-  public void copy(String sourcePath, String targetPath) {
-    copyOrMove(sourcePath, targetPath, FileCopyMode.COPY);
-  }
-
-  public void move(String sourcePath, String targetPath) {
-    copyOrMove(sourcePath, targetPath, FileCopyMode.MOVE);
-  }
-
-  private void copyOrMove(String sourcePath, String targetPath, FileCopyMode mode) {
-    try {
-      if (sourcePath == null) {
-        throw new MuleRuntimeException(createStaticMessage("Cannot " + mode.label()
-            + " sourcePath to targetDir: sourcePath is null."));
-      }
-
-      if (targetPath == null) {
-        throw new MuleRuntimeException(createStaticMessage("Cannot " + mode.label()
-            + " sourcePath to targetDir: targetDir is null."));
-      }
-
-      doCopy(sourcePath, targetPath);
-
-      if (this.exists(targetPath) && FileCopyMode.MOVE.equals(mode)) {
-        this.delete(sourcePath);
-      }
-    } catch (Exception e) {
-      throw exception("Could not " + mode.label() + "sourcePath to targetDir: " + e.getMessage(), e);
-    }
-  }
-
-  private void doCopy(String sourcePath, String targetPath) throws Exception {
-    try (File sourceFile = this.openFile(sourcePath, FileWriteMode.OVERWRITE);
-        File targetFile = this.openFile(targetPath, FileWriteMode.OVERWRITE)) {
-      sourceFile.remoteCopyTo(targetFile);
-    }
-  }
-
   public void delete(String path) {
 
     try {
@@ -340,34 +300,25 @@ public class SmbClient {
 
   }
 
-  public String getShareRootURL() {
-    return null;
-  }
-
   public boolean pathIsShareRoot(String path) {
     return path.equals("/");
   }
 
   public boolean isLogLevelEnabled(LogLevel logLevel) {
-    return false;
+    return logLevel != null && this.logLevel != null && logLevel.ordinal() <= this.logLevel.ordinal();
   }
 
   protected boolean isApiException(Exception cause) {
     return cause instanceof SMBApiException;
   }
 
-  public boolean exists(String targetPath) throws Exception {
+  public boolean exists(String targetPath) {
     return this.share.fileExists(targetPath) || this.share.folderExists(targetPath);
   }
 
   public URI resolve(URI uri) {
-    try {
-      return uri;
-    } catch (Exception e) {
-      throw new MuleRuntimeException(createStaticMessage("Could not resolve URI: " + e.getMessage()), e);
-    }
+    return uri;
   }
-
 
   public void setPassword(String password) {
     this.password = password;
@@ -385,33 +336,13 @@ public class SmbClient {
     return shareRoot;
   }
 
-  public LogLevel getLogLevel() {
-    return logLevel;
-  }
-
   private void close(AutoCloseable closeable) {
-    if (closeable != null) {
-      try {
-        closeable.close();
-      } catch (Exception e) {
-        //Does nothing
-      }
+    try {
+      closeable.close();
+    } catch (Exception e) {
+      //Does nothing
     }
   }
-
-  public URI resolvePath(String filePath) {
-    URI result = null;
-
-    if (filePath != null) {
-      String actualFilePath = filePath;
-      if (!actualFilePath.startsWith("/") && !actualFilePath.startsWith("smb://")) {
-        actualFilePath = "/" + actualFilePath;
-      }
-      result = resolve(UriUtils.createUri(normalizePath(actualFilePath)));
-    }
-    return result;
-  }
-
 
   protected RuntimeException exception(String message) {
     return this.exception(message, null);
@@ -433,6 +364,27 @@ public class SmbClient {
     }
 
     return new MuleRuntimeException(createStaticMessage(message), cause);
+
+  }
+
+  public void setSocketTimeout(TimeUnit socketTimeoutUnit, Integer socketTimeout) {
+    this.socketTimeoutUnit = socketTimeoutUnit;
+    this.socketTimeout = socketTimeout;
+  }
+
+  public void setReadTimeout(TimeUnit readTimeoutUnit, Integer readTimeout) {
+    this.readTimeoutUnit = readTimeoutUnit;
+    this.readTimeout = readTimeout;
+  }
+
+  public void setWriteTimeout(TimeUnit writeTimeoutUnit, Integer writeTimeout) {
+    this.writeTimeoutUnit = writeTimeoutUnit;
+    this.writeTimeout = writeTimeout;
+  }
+
+  public void setTransactionTimeout(TimeUnit transactionTimeoutUnit, Integer transactionTimeout) {
+    this.transactionTimeoutUnit = transactionTimeoutUnit;
+    this.transactionTimeout = transactionTimeout;
   }
 
 }

@@ -70,7 +70,7 @@ public class SmbFileSystemConnection extends AbstractExternalFileSystem {
     deleteCommand = new SmbDeleteCommand(this, client);
     moveCommand = new SmbMoveCommand(this, client);
     readCommand = new SmbReadCommand(this, client);
-    listCommand = new SmbListCommand(this, client, (SmbReadCommand) readCommand);
+    listCommand = new SmbListCommand(this, client, readCommand);
     renameCommand = new SmbRenameCommand(this, client);
     writeCommand = new SmbWriteCommand(this, client);
   }
@@ -187,11 +187,6 @@ public class SmbFileSystemConnection extends AbstractExternalFileSystem {
     if (!isConnected()) {
       return failure("Connection is stale", new SmbConnectionException("Connection is stale", DISCONNECTED));
     }
-    try {
-      changeToBaseDir();
-    } catch (Exception e) {
-      return failure("Configured workingDir is unavailable", e);
-    }
     return success();
   }
 
@@ -202,4 +197,5 @@ public class SmbFileSystemConnection extends AbstractExternalFileSystem {
   public boolean isLogLevelEnabled(LogLevel logLevel) {
     return this.getClient().isLogLevelEnabled(logLevel);
   }
+
 }

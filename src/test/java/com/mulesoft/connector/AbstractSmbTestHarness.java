@@ -23,7 +23,7 @@ import static org.mule.functional.api.exception.ExpectedError.none;
  */
 public abstract class AbstractSmbTestHarness extends ExternalResource implements FileTestHarness {
 
-  private SystemProperty profileSystemProperty;
+  private final SystemProperty profileSystemProperty;
   private ExpectedError expectedError = none();
 
   /**
@@ -76,7 +76,7 @@ public abstract class AbstractSmbTestHarness extends ExternalResource implements
   /**
    * Template method for performing cleanup actions
    */
-  protected void doAfter() throws Exception {
+  protected void doAfter() {
 
   }
 

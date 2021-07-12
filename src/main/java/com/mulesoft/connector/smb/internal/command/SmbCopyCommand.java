@@ -8,6 +8,7 @@ package com.mulesoft.connector.smb.internal.command;
 
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
 
+import com.mulesoft.connector.smb.internal.connection.FileCopyMode;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.mule.extension.file.common.api.FileAttributes;
@@ -44,9 +45,7 @@ public class SmbCopyCommand extends SmbCommand implements CopyCommand {
     }
 
     @Override
-    protected void copyDirectory(FileConnectorConfig config, URI sourceUri, URI target, boolean overwrite,
-                                 SmbFileSystemConnection writerConnection) {
-      // FIXME olamiral: assume that sourceUri is not resolved
+    protected void copyDirectory(URI sourceUri, URI target, boolean overwrite) {
       for (FileAttributes fileAttributes : client.list(sourceUri.toString())) {
         if (isVirtualDirectory(fileAttributes.getName())) {
           continue;
@@ -54,11 +53,16 @@ public class SmbCopyCommand extends SmbCommand implements CopyCommand {
 
         URI targetUri = createUri(target.getPath(), fileAttributes.getName());
         if (fileAttributes.isDirectory()) {
-          copyDirectory(config, URI.create(fileAttributes.getPath()), targetUri, overwrite, writerConnection);
+          copyDirectory(URI.create(fileAttributes.getPath()), targetUri, overwrite);
         } else {
-          copyFile(config, fileAttributes, targetUri, overwrite, writerConnection);
+          copyFile(fileAttributes, targetUri, overwrite);
         }
       }
+    }
+
+    @Override
+    public String getOperation() {
+      return FileCopyMode.COPY.label();
     }
   }
 }

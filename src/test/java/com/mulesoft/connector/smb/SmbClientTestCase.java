@@ -6,23 +6,20 @@
  */
 package com.mulesoft.connector.smb;
 
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-
-import com.hierynomus.smbj.SMBClient;
 import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
-import org.mule.tck.size.SmallTest;
-
-import java.net.URI;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mule.tck.size.SmallTest;
+
+import java.net.URI;
+
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.mule.extension.file.common.api.util.UriUtils.createUri;
 
 @SmallTest
 @RunWith(MockitoJUnitRunner.class)
@@ -33,13 +30,13 @@ public class SmbClientTestCase {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  private URI uri = createUri(FILE_PATH);
+  private final URI uri = createUri(FILE_PATH);
 
   @InjectMocks
-  private SmbClient client = new SmbClient(EMPTY, 0, EMPTY, false, LogLevel.WARN);
+  private final SmbClient client = new SmbClient(EMPTY, 0, EMPTY, false, LogLevel.WARN);
 
   @Test
-  public void returnNullOnUnexistingFile() throws Exception {
+  public void returnNullOnUnexistingFile() {
     //TODO olamiral: implement
     /*
     when(channel.stat(any())).thenThrow(new SmbException(SSH_FX_NO_SUCH_FILE, "No such file"));
@@ -48,7 +45,7 @@ public class SmbClientTestCase {
   }
 
   @Test
-  public void exceptionIsThrownOnError() throws Exception {
+  public void exceptionIsThrownOnError() {
     //TODO olamiral: implement
     /*
     expectedException.expect(MuleRuntimeException.class);
@@ -59,7 +56,7 @@ public class SmbClientTestCase {
   }
 
   @Test
-  public void expectConnectionExceptionWhenIOExceptionIsThrown() throws Exception {
+  public void expectConnectionExceptionWhenIOExceptionIsThrown() {
     //TODO olamiral: implement
     /*
     expectedException.expect(MuleRuntimeException.class);

@@ -6,34 +6,28 @@
  */
 package com.mulesoft.connector.smb;
 
-import static java.nio.charset.Charset.availableCharsets;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-import static org.mule.extension.file.common.api.FileWriteMode.APPEND;
-import static org.mule.extension.file.common.api.FileWriteMode.CREATE_NEW;
-import static org.mule.extension.file.common.api.FileWriteMode.OVERWRITE;
-import static org.mule.extension.file.common.api.exceptions.FileError.FILE_ALREADY_EXISTS;
-import static org.mule.extension.file.common.api.exceptions.FileError.ILLEGAL_PATH;
-import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-import static org.mule.runtime.core.api.util.IOUtils.toByteArray;
-import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_WORLD;
-
+import io.qameta.allure.Feature;
+import org.junit.Test;
 import org.mule.extension.file.common.api.FileWriteMode;
 import org.mule.extension.file.common.api.exceptions.FileAlreadyExistsException;
 import org.mule.extension.file.common.api.exceptions.IllegalPathException;
 import org.mule.runtime.core.api.event.CoreEvent;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
-import io.qameta.allure.Feature;
-import org.junit.Ignore;
-import org.junit.Test;
+import static java.nio.charset.Charset.availableCharsets;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mule.extension.file.common.api.FileWriteMode.*;
+import static org.mule.extension.file.common.api.exceptions.FileError.FILE_ALREADY_EXISTS;
+import static org.mule.extension.file.common.api.exceptions.FileError.ILLEGAL_PATH;
+import static org.mule.extension.file.common.api.util.UriUtils.createUri;
+import static org.mule.runtime.core.api.util.IOUtils.toByteArray;
+import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_WORLD;
 
 @Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbWriteTestCase extends CommonSmbConnectorTestCase {
@@ -189,8 +183,7 @@ public class SmbWriteTestCase extends CommonSmbConnectorTestCase {
     final String filename = "encoding.txt";
 
     doWrite("write", filename, HELLO_WORLD, CREATE_NEW, false, customEncoding);
-    String path = filename;
-    InputStream content = (InputStream) readPath(path, false).getPayload().getValue();
+    InputStream content = (InputStream) readPath(filename, false).getPayload().getValue();
 
     assertThat(Arrays.equals(toByteArray(content), HELLO_WORLD.getBytes(customEncoding)), is(true));
   }
@@ -233,12 +226,12 @@ public class SmbWriteTestCase extends CommonSmbConnectorTestCase {
   public static InputStream getContentStream() {
     return (new InputStream() {
 
-      String text = "Hello World!";
-      char[] textArray = text.toCharArray();
+      final String text = "Hello World!";
+      final char[] textArray = text.toCharArray();
       int index = -1;
 
       @Override
-      public int read() throws IOException {
+      public int read() {
         try {
           Thread.sleep(10);
         } catch (InterruptedException e) {
@@ -246,7 +239,7 @@ public class SmbWriteTestCase extends CommonSmbConnectorTestCase {
         }
         if (index < text.length() - 1) {
           index++;
-          return (int) textArray[index];
+          return textArray[index];
         }
         return -1;
       }

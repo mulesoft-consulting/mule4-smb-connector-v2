@@ -6,8 +6,7 @@
  */
 package com.mulesoft.connector.smb.internal.command;
 
-import static java.lang.String.format;
-
+import com.mulesoft.connector.smb.internal.connection.FileCopyMode;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileConnectorConfig;
@@ -15,10 +14,12 @@ import org.mule.runtime.extension.api.exception.ModuleException;
 
 import java.net.URI;
 
+import static java.lang.String.format;
+
 public class SmbMoveDelegate implements SmbCopyDelegate {
 
-  private SmbCommand command;
-  private SmbFileSystemConnection fileSystem;
+  private final SmbCommand command;
+  private final SmbFileSystemConnection fileSystem;
 
   public SmbMoveDelegate(SmbCommand command, SmbFileSystemConnection fileSystem) {
     this.command = command;
@@ -32,7 +33,7 @@ public class SmbMoveDelegate implements SmbCopyDelegate {
         if (overwrite) {
           fileSystem.delete(targetUri.getPath());
         } else {
-          command.alreadyExistsException(targetUri);
+          throw command.alreadyExistsException(targetUri);
         }
       }
 
@@ -42,5 +43,10 @@ public class SmbMoveDelegate implements SmbCopyDelegate {
     } catch (Exception e) {
       throw command.exception(format("Found exception copying file '%s' to '%s'", source.getPath(), targetUri.getPath()), e);
     }
+  }
+
+  @Override
+  public String getOperation() {
+    return FileCopyMode.MOVE.label();
   }
 }

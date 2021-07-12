@@ -6,11 +6,7 @@
  */
 package com.mulesoft.connector.smb;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
 import org.mule.extension.file.common.api.stream.AbstractNonFinalizableFileInputStream;
-import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.processor.Processor;
@@ -18,10 +14,13 @@ import org.mule.runtime.core.api.processor.Processor;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 public class StreamCloserTestMessageProcessor implements Processor {
 
   @Override
-  public CoreEvent process(CoreEvent event) throws MuleException {
+  public CoreEvent process(CoreEvent event) {
     try {
       assertThat(((AbstractNonFinalizableFileInputStream) event.getMessage().getPayload().getValue()).isLocked(), is(true));
       ((InputStream) event.getMessage().getPayload().getValue()).close();

@@ -17,7 +17,7 @@ import static java.lang.String.format;
 
 public class SmbServerContainerLifecycleManger {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(SmbServerContainerLifecycleManger.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SmbServerContainerLifecycleManger.class);
   private static final String SMB_SERVER_NAME = "samba";
 
   public static Container getContainerByName(String containerName) throws Exception {
@@ -34,7 +34,7 @@ public class SmbServerContainerLifecycleManger {
       }
     }
 
-    throw new Exception(format("No container found for name {}", containerName));
+    throw new Exception(format("No container found for name {%s}", containerName));
   }
 
 

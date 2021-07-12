@@ -6,18 +6,15 @@
  */
 package com.mulesoft.connector.smb;
 
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import io.qameta.allure.Feature;
+import org.junit.Test;
+import org.mule.extension.file.common.api.exceptions.FileAlreadyExistsException;
+
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeTrue;
 import static org.mule.extension.file.common.api.exceptions.FileError.FILE_ALREADY_EXISTS;
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-
-import org.mule.extension.file.common.api.exceptions.FileAlreadyExistsException;
-
-import io.qameta.allure.Feature;
-import org.junit.Test;
 
 @Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbCreateDirectoryTestCase extends CommonSmbConnectorTestCase {

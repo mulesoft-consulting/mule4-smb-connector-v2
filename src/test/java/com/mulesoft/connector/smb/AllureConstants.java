@@ -8,7 +8,7 @@ package com.mulesoft.connector.smb;
 
 public class AllureConstants {
 
-  interface SmbFeature {
+  public interface SmbFeature {
 
     String SMB_EXTENSION = "SMB Extension";
 

@@ -1,39 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
       xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
       xmlns="http://www.mulesoft.org/schema/mule/core"
       xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
-      xmlns:java="http://www.mulesoft.org/schema/mule/java"
-      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+      xmlns:java="http://www.mulesoft.org/schema/mule/java" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
       http://www.mulesoft.org/schema/mule/test http://www.mulesoft.org/schema/mule/test/current/mule-test.xsd
 		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
 		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
         http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
         http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
 
-    <munit:config name="smb-write-test-case.xml">
-        <munit:parameterizations>
-            <munit:parameterization name="config">
-                <munit:parameters>
-                    <munit:parameter propertyName="config" value="config"/>
-                </munit:parameters>
-            </munit:parameterization>
-            <munit:parameterization name="config-without-working-dir">
-                <munit:parameters>
-                    <munit:parameter propertyName="config" value="config-without-working-dir"/>
-                </munit:parameters>
-            </munit:parameterization>
-        </munit:parameterizations>
-    </munit:config>
+    <munit:config name="smb-write-test-case.xml" />
 
     <munit:dynamic-port propertyName="smb.server.port"/>
 
     <munit:before-suite name="startSmbTestServerForWriting">
         <flow-ref name="delete-all-files" />
     </munit:before-suite>
-
-    <munit:test name="smb-write-big-file"
+	<munit:test name="smb-write-null-content" doc:id="bbcd0391-cb87-4f34-9f2c-1df11e3913d0" description="Performs a write operation using null content" expectedErrorType="SMB:ILLEGAL_CONTENT" expectedErrorDescription="Cannot write a null content">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="0fa079a4-db4b-4882-90ff-8882822df7a5" config-ref="config" path="nullContentFile.txt">
+				<smb:content ><![CDATA[#[null]]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-write-to-blank-path" doc:id="9cb34c52-32a6-43ab-8785-13bb42d0e192" description="Performs a write operation using a blank file path" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="path cannot be null nor blank">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="cb4de9eb-f6f9-4834-91f4-f1c1d8fae054" config-ref="config" path='#[""]'>
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-write-to-directory" doc:id="8c4506e2-81ac-4a96-a7a8-826f8339a7b3" description="Perform a write operation in a directory" expectedErrorType="SMB:CONNECTIVITY">
+		<munit:behavior >
+			<set-variable value="somedir" doc:name="Set Variable" doc:id="75753592-ec70-4cbe-8fbc-f5a4256b07e4" variableName="dirName"/>
+			<smb:create-directory doc:name="Create directory" doc:id="8d0c80bf-7185-43ce-ab5c-6833a3885636" config-ref="config" directoryPath="#[vars.dirName]"/>
+		</munit:behavior>
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="d9309954-34df-4a19-82d0-a9b3b81e87fa" config-ref="config" path="#[vars.dirName]">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-write-invalid-path-with-create-parent-dir" doc:id="f80eb64c-30c0-4713-bd47-02efdbcf5017" description="Performs a write operation on a invalid path with create parent directories = true">
+		<munit:behavior >
+			<set-variable value="baseDir" doc:name="Set Variable" doc:id="1c67c2e4-b8d1-436b-b61e-f65dac7b46fc" variableName="baseDir"/>
+			<smb:list doc:name="List" doc:id="ed3359f6-ac9c-49e9-b70e-333b64ef3d0e" config-ref="config" directoryPath="/"/>
+			<munit-tools:assert doc:name="Assert expression" doc:id="e880b89f-b51f-4a41-8731-e8f8f4e4efbc" message="Assertion failed: baseDir should not exist">
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+(payload filter ((value, index) -> (value.attributes.fileName == vars.baseDir))) must beEmpty()]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:behavior>
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="c091f98d-46ba-48a2-a149-d699d3f84c20" config-ref="config" path='#[vars.baseDir ++ "/somefile.txt"]'>
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="8e658542-c4da-4b13-b9ae-02457e526554" config-ref="config" path='#[vars.baseDir ++ "/someFile.txt"]'/>
+			<munit-tools:assert doc:name="Assert expression" doc:id="590109c7-fa73-4e52-8c63-0888efa187e9" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo("This is a test")]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="smb-write-existing-file-with-create-new-mode" doc:id="6675e39c-c82d-4375-8f86-97b7822da5b0" description="Performs a write operation with CREATE_NEW mode on an existing file" expectedErrorType="SMB:FILE_ALREADY_EXISTS">
+		<munit:behavior >
+			<set-variable value="existingFile.txt" doc:name="Set Variable" doc:id="37a42aa8-dbaf-43df-89b4-212c0a36764c" variableName="filePath"/>
+			<smb:write doc:name="Write" doc:id="58d943b0-23b7-4a7d-9f00-12206bc60c73" config-ref="config" path="#[vars.filePath]">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:behavior>
+		<munit:execution >
+			<try doc:name="Try" doc:id="79da0fa0-9dc8-4b22-a613-f7c90554ac76" >
+				<smb:write doc:name="Write" doc:id="bfbe9000-acce-4e19-88f0-9fbb1fd65046" config-ref="config" path="#[vars.filePath]" mode="CREATE_NEW">
+				<smb:content><![CDATA[Trying to write in an existing file using the CREATE_NEW mode]]></smb:content>
+			</smb:write>
+				<error-handler >
+					<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="db39bf5f-5deb-4615-8d60-f824f0d9b5ab" >
+						<smb:read doc:name="Read" doc:id="2b991816-0202-443c-863d-6a63e5095b96" config-ref="config" path="#[vars.filePath]"/>
+						<munit-tools:assert doc:name="Assert expression" doc:id="bdcad10f-f6d8-4e23-b1ec-b02cf143c3c7" >
+							<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo("This is a test")]]]></munit-tools:that>
+						</munit-tools:assert>
+					</on-error-propagate>
+				</error-handler>
+			</try>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-write-big-file"
                 description="Perform a write operation with a big content" ignore="#[Munit::muleVersionPriorTo('4.2.0')]">
         <munit:behavior>
             <set-variable variableName="fileName" value="filePath.txt"/>
@@ -44,7 +104,7 @@
             <set-variable variableName="fileSize" value="#[vars.loopSize * vars.singleLineSize + vars.overheadSize]"/>
         </munit:behavior>
         <munit:execution>
-            <smb:write config-ref="${config}" path='#[vars.fileName]'>
+            <smb:write config-ref="config" path='#[vars.fileName]'>
                 <smb:content>
                     #[%dw 2.0
                     output application/json
@@ -54,26 +114,14 @@
             </smb:write>
         </munit:execution>
         <munit:validation>
-            <smb:read config-ref="${config}" path='#[vars.fileName]'/>
+            <smb:read config-ref="config" path='#[vars.fileName]'/>
             <munit-tools:assert>
                 <munit-tools:that><![CDATA[#[import * from dw::test::Asserts
                                      ---
-                                     attributes.size must equalTo(vars.fileSize)
-                                    ]]]>
+                                     attributes.size must equalTo(vars.fileSize)]]]>
                 </munit-tools:that>
             </munit-tools:assert>
         </munit:validation>
-    </munit:test>
-
-    <munit:test name="smb-write-on-invalid-working-directory" expectedErrorType="SMB:CONNECTIVITY">
-        <munit:behavior>
-            <set-variable variableName="fileName" value="filePath.txt"/>
-        </munit:behavior>
-        <munit:execution>
-            <smb:write config-ref="config-invalid-share-root" path='#[vars.fileName]' createParentDirectories="false">
-                <smb:content>test content</smb:content>
-            </smb:write>
-        </munit:execution>
     </munit:test>
 
     <munit:test name="smb-write-on-invalid-path-directory" expectedErrorType="SMB:ILLEGAL_PATH">
@@ -81,7 +129,7 @@
             <set-variable variableName="fileName" value="invalid/filePath.txt"/>
         </munit:behavior>
         <munit:execution>
-            <smb:write config-ref="${config}" path='#[vars.fileName]' createParentDirectories="false">
+            <smb:write config-ref="config" path='#[vars.fileName]' createParentDirectories="false">
                 <smb:content>test content</smb:content>
             </smb:write>
         </munit:execution>
@@ -92,7 +140,7 @@
             <set-variable variableName="fileName" value="/invalid/filePath.txt"/>
         </munit:behavior>
         <munit:execution>
-            <smb:write config-ref="${config}" path='#[vars.fileName]' createParentDirectories="false">
+            <smb:write config-ref="config" path='#[vars.fileName]' createParentDirectories="false">
                 <smb:content>test content</smb:content>
             </smb:write>
         </munit:execution>
@@ -109,7 +157,7 @@
         </choice>
         <set-payload value="#[payload as String]"/>
         <until-successful maxRetries="10" millisBetweenRetries="1000">
-            <smb:write config-ref="${config}" path="filePath.txt" lock="true" mode="#[vars.writeMode]">
+            <smb:write config-ref="config" path="filePath.txt" lock="true" mode="#[vars.writeMode]">
                 <smb:content>#[payload]</smb:content>
             </smb:write>
         </until-successful>
@@ -131,13 +179,13 @@
                 </async>
             </foreach>
             <until-successful maxRetries="10" millisBetweenRetries="1000">
-                <smb:write config-ref="${config}" path="#[vars.fileName]" lock="true" mode="APPEND">
+                <smb:write config-ref="config" path="#[vars.fileName]" lock="true" mode="APPEND">
                     <smb:content>7</smb:content>
                 </smb:write>
             </until-successful>
         </munit:execution>
         <munit:validation>
-            <smb:read config-ref="${config}" path='#[vars.fileName]'/>
+            <smb:read config-ref="config" path='#[vars.fileName]'/>
             <logger level="INFO" message="#[payload]" />
             <munit-tools:assert>
                 <munit-tools:that><![CDATA[#[import * from dw::test::Asserts
@@ -157,29 +205,34 @@
         </munit:enable-flow-sources>
         <munit:behavior>
             <set-variable variableName="fileName" value="/will-be-deleted.txt"/>
-            <smb:write config-ref="${config}" path='#[vars.fileName]' >
+            <smb:write config-ref="config" path='#[vars.fileName]' >
                 <smb:content>test content</smb:content>
             </smb:write>
         </munit:behavior>
         <munit:execution>
-            <smb:list config-ref="${config}" directoryPath="/">
+            <smb:list config-ref="config" directoryPath="/">
             </smb:list>
             <flow-ref name="wait-2-seconds"/>
             <foreach collection="#[payload]">
-                <smb:write config-ref="${config}" path="/copy-of-will-be-deleted.txt" createParentDirectories="false" >
+                <smb:write config-ref="config" path="/copy-of-will-be-deleted.txt" createParentDirectories="false" >
                 </smb:write>
             </foreach>
         </munit:execution>
     </munit:test>
 
-
-
-    <flow name="delete-created-files">
-        <smb:smb-directory-listener config-ref="${config}" directory="/">
+    <munit:test name="smb-write-with-encoding" doc:id="4887e960-7b35-44a5-9473-36048d976946" description="Performs a write operation with encoding">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="193643c1-ca43-4162-ab36-fc00d4dc8554" config-ref="config" path="/fileWithEncoding.txt" encoding="ISO-8859-1">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<flow name="delete-created-files">
+        <smb:smb-directory-listener config-ref="config" directory="/">
             <scheduling-strategy>
                 <fixed-frequency startDelay="1000"/>
             </scheduling-strategy>
         </smb:smb-directory-listener>
-        <smb:delete config-ref="${config}" path="#[attributes.path]" />
+        <smb:delete config-ref="config" path="#[attributes.path]" />
     </flow>
 </mule>

@@ -6,22 +6,11 @@
  */
 package com.mulesoft.connector.smb;
 
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.endsWith;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
-import static org.mule.extension.file.common.api.exceptions.FileError.CONNECTIVITY;
-import static org.mule.extension.file.common.api.exceptions.FileError.ILLEGAL_PATH;
-import static org.mule.runtime.core.api.util.IOUtils.toByteArray;
-
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
+import io.qameta.allure.Feature;
+import org.junit.Test;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.exceptions.IllegalPathException;
-import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.streaming.CursorProvider;
 import org.mule.runtime.api.streaming.object.CursorIteratorProvider;
@@ -34,8 +23,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import io.qameta.allure.Feature;
-import org.junit.Test;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
+import static org.mule.extension.file.common.api.exceptions.FileError.ILLEGAL_PATH;
+import static org.mule.runtime.core.api.util.IOUtils.toByteArray;
 
 @Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbListTestCase extends CommonSmbConnectorTestCase {
@@ -45,7 +39,7 @@ public class SmbListTestCase extends CommonSmbConnectorTestCase {
   private static final String CONTENT = "foo";
   private static final String LONG_CONTENT = "longcontentlongcontentlongcontentlongcontent";
   private static final String LONG_CONTENT_FILE_NAME = "longContent.txt";
-  private static int WRITE_DELAY = 1000;
+  private static final int WRITE_DELAY = 1000;
 
   public SmbListTestCase(String name, SmbTestHarness testHarness, String smbConfigFile) {
     super(name, testHarness, smbConfigFile);
@@ -197,7 +191,7 @@ public class SmbListTestCase extends CommonSmbConnectorTestCase {
     assertThat(messages, hasSize(8));
   }
 
-  private boolean assertListedFiles(List<Message> messages) throws Exception {
+  private boolean assertListedFiles(List<Message> messages) {
     boolean directoryWasFound = false;
 
     for (Message message : messages) {
@@ -209,7 +203,7 @@ public class SmbListTestCase extends CommonSmbConnectorTestCase {
       } else {
         assertThat(attributes.getName(), endsWith(".html"));
         assertThat(toString(message.getPayload().getValue()), equalTo(CONTENT));
-        assertThat(attributes.getSize(), is(new Long(CONTENT.length())));
+        assertThat(attributes.getSize(), is((long) CONTENT.length()));
       }
     }
 
@@ -265,7 +259,7 @@ public class SmbListTestCase extends CommonSmbConnectorTestCase {
 
   public static class TestProcessor implements Processor {
 
-    private static ArrayList<String> fileContents = new ArrayList<>();
+    private static final ArrayList<String> fileContents = new ArrayList<>();
 
     static ArrayList<String> getFileContents() {
       return fileContents;
@@ -276,7 +270,7 @@ public class SmbListTestCase extends CommonSmbConnectorTestCase {
     }
 
     @Override
-    public CoreEvent process(CoreEvent event) throws MuleException {
+    public CoreEvent process(CoreEvent event) {
 
       CursorIteratorProvider iteratorProvider = (CursorIteratorProvider) event.getMessage().getPayload().getValue();
       Iterator<Message> iterator = iteratorProvider.openCursor();
@@ -298,7 +292,7 @@ public class SmbListTestCase extends CommonSmbConnectorTestCase {
 
   public static class FilesWrittenProcessor implements Processor {
 
-    private static ArrayList<String> filePaths = new ArrayList<>();
+    private static final ArrayList<String> filePaths = new ArrayList<>();
 
     static ArrayList<String> getFilePaths() {
       return filePaths;
@@ -309,7 +303,7 @@ public class SmbListTestCase extends CommonSmbConnectorTestCase {
     }
 
     @Override
-    public CoreEvent process(CoreEvent event) throws MuleException {
+    public CoreEvent process(CoreEvent event) {
       filePaths.add(((SmbFileAttributes) event.getMessage().getAttributes().getValue()).getPath());
       return event;
     }
@@ -317,7 +311,7 @@ public class SmbListTestCase extends CommonSmbConnectorTestCase {
 
   public static class FilesBeingWrittenProcessor implements Processor {
 
-    private static ArrayList<String> filePaths = new ArrayList<>();
+    private static final ArrayList<String> filePaths = new ArrayList<>();
 
     static ArrayList<String> getFilePaths() {
       return filePaths;
@@ -328,7 +322,7 @@ public class SmbListTestCase extends CommonSmbConnectorTestCase {
     }
 
     @Override
-    public CoreEvent process(CoreEvent event) throws MuleException {
+    public CoreEvent process(CoreEvent event) {
       filePaths.add(((SmbFileAttributes) event.getMessage().getAttributes().getValue()).getPath());
       return event;
     }

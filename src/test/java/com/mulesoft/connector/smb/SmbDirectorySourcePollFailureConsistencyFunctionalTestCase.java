@@ -6,14 +6,11 @@
  */
 package com.mulesoft.connector.smb;
 
-import static java.lang.Thread.sleep;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.mule.tck.probe.PollingProber.check;
-
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
+import io.qameta.allure.Description;
+import io.qameta.allure.Feature;
 import org.junit.Ignore;
-import org.mule.runtime.api.exception.MuleException;
+import org.junit.Test;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.processor.Processor;
 
@@ -24,9 +21,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.qameta.allure.Description;
-import io.qameta.allure.Feature;
-import org.junit.Test;
+import static java.lang.Thread.sleep;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.mule.tck.probe.PollingProber.check;
 
 @Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbDirectorySourcePollFailureConsistencyFunctionalTestCase extends CommonSmbConnectorTestCase {
@@ -49,7 +47,7 @@ public class SmbDirectorySourcePollFailureConsistencyFunctionalTestCase extends 
   public static class TestProcessor implements Processor {
 
     @Override
-    public CoreEvent process(CoreEvent event) throws MuleException {
+    public CoreEvent process(CoreEvent event) {
       synchronized (FILES_PROCESSED) {
         if (FILES_PROCESSED != null) {
           FILES_PROCESSED.add(((SmbFileAttributes) (event.getMessage().getAttributes().getValue())).getName());
@@ -78,7 +76,7 @@ public class SmbDirectorySourcePollFailureConsistencyFunctionalTestCase extends 
   }
 
   @Override
-  protected void doTearDown() throws Exception {
+  protected void doTearDown() {
     FILES_PROCESSED = null;
   }
 
@@ -94,7 +92,7 @@ public class SmbDirectorySourcePollFailureConsistencyFunctionalTestCase extends 
     assertAllFilesArePolled();
   }
 
-  private void assertAllFilesArePolled() throws Exception {
+  private void assertAllFilesArePolled() {
     check(PROBER_TIMEOUT, PROBER_DELAY, () -> {
       assertThat(String.join(" , ", FILES_PROCESSED), FILES_PROCESSED, hasSize(100));
       return true;

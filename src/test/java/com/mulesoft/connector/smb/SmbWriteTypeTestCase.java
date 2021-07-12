@@ -17,6 +17,7 @@ import org.mule.test.runner.RunnerDelegateTo;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -33,7 +34,7 @@ public class SmbWriteTypeTestCase extends CommonSmbConnectorTestCase {
     return Arrays.asList(new Object[][] {
         {"Smb - String", new SmbTestHarness(), SMB_CONNECTION_XML, HELLO_WORLD, HELLO_WORLD},
         {"Smb - native byte", new SmbTestHarness(), SMB_CONNECTION_XML, "A".getBytes()[0], "A"},
-        {"Smb - Object byte", new SmbTestHarness(), SMB_CONNECTION_XML, new Byte("A".getBytes()[0]),
+        {"Smb - Object byte", new SmbTestHarness(), SMB_CONNECTION_XML, "A".getBytes()[0],
             "A"},
         {"Smb - byte[]", new SmbTestHarness(), SMB_CONNECTION_XML, HELLO_WORLD.getBytes(),
             HELLO_WORLD},
@@ -82,7 +83,7 @@ public class SmbWriteTypeTestCase extends CommonSmbConnectorTestCase {
 
     @Override
     public void write(CoreEvent event, OutputStream out) throws IOException {
-      org.apache.commons.io.IOUtils.write(HELLO_WORLD, out);
+      org.apache.commons.io.IOUtils.write(HELLO_WORLD, out, Charset.defaultCharset());
     }
   }
 

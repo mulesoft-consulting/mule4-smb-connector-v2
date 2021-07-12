@@ -6,16 +6,16 @@
  */
 package com.mulesoft.connector.smb.internal.connection;
 
-public enum FileCopyMode {
-  COPY("copy"), MOVE("move");
+import org.junit.Test;
 
-  private final String label;
+import static org.junit.Assert.assertEquals;
 
-  FileCopyMode(String label) {
-    this.label = label;
+public class FileCopyModeTestCase {
+
+  @Test
+  public void testLabels() {
+    assertEquals("copy", FileCopyMode.COPY.label());
+    assertEquals("move", FileCopyMode.MOVE.label());
   }
 
-  public String label() {
-    return this.label;
-  }
 }

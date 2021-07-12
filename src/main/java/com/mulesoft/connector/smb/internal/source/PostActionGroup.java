@@ -9,6 +9,7 @@ package com.mulesoft.connector.smb.internal.source;
 import static org.mule.runtime.api.meta.model.display.PathModel.Location.EXTERNAL;
 import static org.mule.runtime.api.meta.model.display.PathModel.Type.DIRECTORY;
 
+import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import org.mule.extension.file.common.api.source.AbstractPostActionGroup;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
@@ -55,6 +56,7 @@ public class PostActionGroup extends AbstractPostActionGroup {
 
   public PostActionGroup() {}
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public PostActionGroup(boolean autoDelete, String moveToDirectory, String renameTo, boolean applyPostActionWhenFailed) {
     this.autoDelete = autoDelete;
     this.moveToDirectory = moveToDirectory;

@@ -6,29 +6,27 @@
  */
 package com.mulesoft.connector.smb.internal.command;
 
-import static java.lang.String.format;
-import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-import static org.mule.extension.file.common.api.util.UriUtils.normalizeUri;
-import static org.mule.extension.file.common.api.util.UriUtils.trimLastFragment;
-import static com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection.ROOT;
-import static com.mulesoft.connector.smb.internal.utils.SmbUtils.normalizePath;
-
+import com.mulesoft.connector.smb.api.SmbFileAttributes;
+import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
+import com.mulesoft.connector.smb.internal.utils.SmbUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.FileSystem;
 import org.mule.extension.file.common.api.command.ExternalFileCommand;
 import org.mule.extension.file.common.api.exceptions.FileAlreadyExistsException;
-import com.mulesoft.connector.smb.api.SmbFileAttributes;
-import com.mulesoft.connector.smb.internal.utils.SmbUtils;
-import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
-
-import java.net.URI;
-
-import org.apache.commons.io.FilenameUtils;
+import org.mule.extension.file.common.api.exceptions.IllegalPathException;
 import org.mule.runtime.core.api.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+
+import static com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection.ROOT;
+import static com.mulesoft.connector.smb.internal.utils.SmbUtils.normalizePath;
+import static java.lang.String.format;
+import static org.mule.extension.file.common.api.util.UriUtils.*;
 
 /**
  * Base class for {@link ExternalFileCommand} implementations that target a SMB server
@@ -109,13 +107,7 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
 
   @Override
   protected URI resolvePath(String filePath) {
-    URI result = null;
-    if (filePath != null && filePath.startsWith("smb://")) {
-      result = URI.create(SmbUtils.urlEncodePathFragments(filePath));
-    } else {
-      result = super.resolvePath(filePath);
-    }
-    return result;
+    return super.resolvePath(filePath);
   }
 
   /**
@@ -156,7 +148,7 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
     }
 
     try {
-      doRename(sourceUri.toString(), targetUri.toString());
+      doRename(sourceUri.getPath(), targetUri.getPath());
       LOGGER.debug("{} renamed to {}", filePath, newName);
     } catch (Exception e) {
       throw exception(format("Exception was found renaming '%s' to '%s'", sourceUri.getPath(), newName), e);
@@ -172,7 +164,7 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
    * @param newName the new name
    * @throws Exception if anything goes wrong
    */
-  protected void doRename(String filePath, String newName) throws Exception {
+  protected void doRename(String filePath, String newName) {
     client.rename(filePath, newName, false);
   }
 
@@ -202,6 +194,8 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
                             boolean createParentDirectory, String renameTo, SmbCopyDelegate delegate) {
     FileAttributes sourceFile = getExistingFile(source);
     URI targetUri = resolvePath(target);
+    URI finalTargetUri = null;
+
     FileAttributes targetFile = getFile(targetUri.getPath());
     String targetFileName = StringUtils.isBlank(renameTo) ? getFileName(source) : renameTo;
 
@@ -209,22 +203,36 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
       if (targetFile.isDirectory()) {
         if (sourceFile.isDirectory() && sourceFile.getName().equals(targetFile.getName()) && !overwrite) {
           throw alreadyExistsException(targetUri);
-        } else {
-          targetUri = createUri(targetUri.getPath(), targetFileName);
         }
+        finalTargetUri = createUri(targetUri.getPath(), targetFileName);
       } else if (!overwrite) {
         throw alreadyExistsException(targetUri);
       }
     } else {
-      if (createParentDirectory) {
-        mkdirs(targetUri);
-        targetUri = createUri(targetUri.getPath(), targetFileName);
-      } else {
+      if (!createParentDirectory) {
         throw pathNotFoundException(targetUri);
       }
+      finalTargetUri = createUri(targetUri.getPath(), targetFileName);
     }
 
-    delegate.doCopy(config, sourceFile, targetUri, overwrite);
+    if (finalTargetUri != null) {
+      if (finalTargetUri.getPath().equals(sourceFile.getPath())) {
+        throw new IllegalPathException(format("Cannot %s '%s': source and target paths are the same", delegate.getOperation(),
+                                              sourceFile.getPath()));
+      }
+
+      if (sourceFile.isDirectory() && finalTargetUri.getPath().startsWith(sourceFile.getPath())) {
+        throw new IllegalPathException(format("Cannot %s '%s': source path is a directory and target path shares the same directory tree",
+                                              delegate.getOperation(),
+                                              sourceFile.getPath()));
+      }
+    } else {
+      finalTargetUri = targetUri;
+    }
+
+    mkdirs(targetUri);
+
+    delegate.doCopy(config, sourceFile, finalTargetUri, overwrite);
     LOGGER.debug("Copied '{}' to '{}'", sourceFile, targetUri);
   }
 
@@ -240,26 +248,6 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
   @Override
   protected void doMkDirs(URI directoryUri) {
     client.mkdir(directoryUri);
-
-    // SMB Client implement this algorithm (supports mkdirs)
-    /*
-    Stack<URI> fragments = new Stack<>();
-    String[] subPaths = directoryUri.getPath().split("/");
-    // This uri needs to be normalized so that if it has a trailing separator it is erased.
-    URI subUri = normalizeUri(directoryUri);
-    for (int i = subPaths.length - 1; i > 0; i--) {
-    	if (exists(subUri)) {
-    		break;
-    	}
-    	fragments.push(subUri);
-    	subUri = trimLastFragment(subUri);
-    }
-    
-    while (!fragments.isEmpty()) {
-    	URI fragment = fragments.pop();
-    	client.mkdir(fragment.getPath());
-    }
-    */
   }
 
   /**

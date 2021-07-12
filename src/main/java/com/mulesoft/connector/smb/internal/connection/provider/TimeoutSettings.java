@@ -7,6 +7,8 @@
 package com.mulesoft.connector.smb.internal.connection.provider;
 
 import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED_TAB;
+
+import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
@@ -21,29 +23,6 @@ import java.util.concurrent.TimeUnit;
  * @since 1.0
  */
 public final class TimeoutSettings {
-
-  /**
-   * A {@link TimeUnit} which qualifies the {@link #connectionTimeout} attribute.
-   * <p>
-   * Defaults to {@code SECONDS}
-   */
-  @Parameter
-  @Optional(defaultValue = "SECONDS")
-  @Placement(tab = ADVANCED_TAB, order = 1)
-  @Summary("Time unit to be used in the Connection Timeout")
-  private TimeUnit connectionTimeoutUnit;
-
-  /**
-   * A scalar value representing the amount of time to wait before a connection attempt times out. This attribute works in tandem
-   * with {@link #connectionTimeoutUnit}.
-   * <p>
-   * Defaults to {@code 10}
-   */
-  @Parameter
-  @Optional(defaultValue = "10")
-  @Placement(tab = ADVANCED_TAB, order = 2)
-  @Summary("Connection timeout value")
-  private Integer connectionTimeout;
 
   /**
    * A {@link TimeUnit} which qualifies the {@link #socketTimeout} attribute.
@@ -137,14 +116,6 @@ public final class TimeoutSettings {
   @Summary("Transaction (operation other than read and write) timeout value")
   private Integer transactionTimeout;
 
-  public TimeUnit getConnectionTimeoutUnit() {
-    return connectionTimeoutUnit;
-  }
-
-  public Integer getConnectionTimeout() {
-    return connectionTimeout;
-  }
-
   public TimeUnit getSocketTimeoutUnit() {
     return socketTimeoutUnit;
   }
@@ -177,63 +148,64 @@ public final class TimeoutSettings {
     return transactionTimeout;
   }
 
-  public void setConnectionTimeoutUnit(TimeUnit connectionTimeoutUnit) {
-    this.connectionTimeoutUnit = connectionTimeoutUnit;
-  }
-
-  public void setConnectionTimeout(Integer connectionTimeout) {
-    this.connectionTimeout = connectionTimeout;
-  }
-
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setSocketTimeoutUnit(TimeUnit socketTimeoutUnit) {
     this.socketTimeoutUnit = socketTimeoutUnit;
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setSocketTimeout(Integer socketTimeout) {
     this.socketTimeout = socketTimeout;
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setReadTimeoutUnit(TimeUnit readTimeoutUnit) {
     this.readTimeoutUnit = readTimeoutUnit;
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setReadTimeout(Integer readTimeout) {
     this.readTimeout = readTimeout;
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setWriteTimeoutUnit(TimeUnit writeTimeoutUnit) {
     this.writeTimeoutUnit = writeTimeoutUnit;
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setWriteTimeout(Integer writeTimeout) {
     this.writeTimeout = writeTimeout;
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setTransactionTimeoutUnit(TimeUnit transactionTimeoutUnit) {
     this.transactionTimeoutUnit = transactionTimeoutUnit;
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setTransactionTimeout(Integer transactionTimeout) {
     this.transactionTimeout = transactionTimeout;
   }
 
   @Override
+  @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public boolean equals(Object o) {
     if (this == o)
       return true;
     if (o == null || getClass() != o.getClass())
       return false;
     TimeoutSettings that = (TimeoutSettings) o;
-    return connectionTimeoutUnit == that.connectionTimeoutUnit && Objects.equals(connectionTimeout, that.connectionTimeout)
-        && socketTimeoutUnit == that.socketTimeoutUnit && Objects.equals(socketTimeout, that.socketTimeout)
+    return socketTimeoutUnit == that.socketTimeoutUnit && Objects.equals(socketTimeout, that.socketTimeout)
         && readTimeoutUnit == that.readTimeoutUnit && Objects.equals(readTimeout, that.readTimeout)
         && writeTimeoutUnit == that.writeTimeoutUnit && Objects.equals(writeTimeout, that.writeTimeout)
         && transactionTimeoutUnit == that.transactionTimeoutUnit && Objects.equals(transactionTimeout, that.transactionTimeout);
   }
 
   @Override
+  @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public int hashCode() {
-    return Objects.hash(connectionTimeoutUnit, connectionTimeout, socketTimeoutUnit, socketTimeout, readTimeoutUnit, readTimeout,
+    return Objects.hash(socketTimeoutUnit, socketTimeout, readTimeoutUnit, readTimeout,
                         writeTimeoutUnit, writeTimeout, transactionTimeoutUnit, transactionTimeout);
   }
 }

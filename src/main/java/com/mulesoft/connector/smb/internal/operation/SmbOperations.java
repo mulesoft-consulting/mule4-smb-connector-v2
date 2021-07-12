@@ -6,38 +6,21 @@
  */
 package com.mulesoft.connector.smb.internal.operation;
 
-import static org.mule.runtime.api.meta.model.display.PathModel.Location.EXTERNAL;
-import static org.mule.runtime.api.meta.model.display.PathModel.Type.DIRECTORY;
-import static org.mule.runtime.api.meta.model.display.PathModel.Type.FILE;
-import static org.mule.runtime.core.api.util.StringUtils.isBlank;
-import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
-import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED_TAB;
-import static org.slf4j.LoggerFactory.getLogger;
-
+import com.mulesoft.connector.smb.api.LogLevel;
+import com.mulesoft.connector.smb.api.SmbFileAttributes;
+import com.mulesoft.connector.smb.api.SmbFileMatcher;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
+import com.mulesoft.connector.smb.internal.utils.SmbUtils;
 import org.apache.commons.io.IOUtils;
 import org.mule.extension.file.common.api.BaseFileSystemOperations;
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.FileSystem;
 import org.mule.extension.file.common.api.FileWriteMode;
 import org.mule.extension.file.common.api.exceptions.*;
-import org.mule.extension.file.common.api.matcher.FileMatcher;
-import org.mule.extension.file.common.api.matcher.NullFilePayloadPredicate;
-import com.mulesoft.connector.smb.api.SmbFileAttributes;
-import com.mulesoft.connector.smb.api.SmbFileMatcher;
-import com.mulesoft.connector.smb.api.LogLevel;
-import com.mulesoft.connector.smb.internal.utils.SmbUtils;
-import org.mule.runtime.api.exception.MuleException;
-import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.core.api.util.StringUtils;
 import org.mule.runtime.extension.api.annotation.error.Throws;
-import org.mule.runtime.extension.api.annotation.param.Config;
-import org.mule.runtime.extension.api.annotation.param.ConfigOverride;
-import org.mule.runtime.extension.api.annotation.param.Connection;
-import org.mule.runtime.extension.api.annotation.param.Content;
-import org.mule.runtime.extension.api.annotation.param.MediaType;
-import org.mule.runtime.extension.api.annotation.param.Optional;
+import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Path;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
@@ -46,16 +29,23 @@ import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.mule.runtime.extension.api.runtime.streaming.PagingProvider;
 import org.mule.runtime.extension.api.runtime.streaming.StreamingHelper;
+import org.slf4j.Logger;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
-import org.slf4j.Logger;
+import static org.mule.runtime.api.meta.model.display.PathModel.Location.EXTERNAL;
+import static org.mule.runtime.api.meta.model.display.PathModel.Type.DIRECTORY;
+import static org.mule.runtime.api.meta.model.display.PathModel.Type.FILE;
+import static org.mule.runtime.core.api.util.StringUtils.isBlank;
+import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
+import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED_TAB;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Smb connector operations
@@ -65,8 +55,6 @@ import org.slf4j.Logger;
 public final class SmbOperations extends BaseFileSystemOperations {
 
   private static final Logger LOGGER = getLogger(SmbOperations.class);
-
-  private static final Integer LIST_PAGE_SIZE = 10;
 
   /**
    * Lists all the files in the {@code directoryPath} which match the given {@code matcher}.
@@ -101,11 +89,10 @@ public final class SmbOperations extends BaseFileSystemOperations {
                                                                                          @ConfigOverride @Placement(
                                                                                              tab = ADVANCED_TAB) TimeUnit timeBetweenSizeCheckUnit,
                                                                                          StreamingHelper streamingHelper) {
-    PagingProvider result =
-        doPagedList(config, directoryPath, recursive, matcher,
-                    config.getTimeBetweenSizeCheckInMillis(timeBetweenSizeCheck, timeBetweenSizeCheckUnit).orElse(null),
-                    streamingHelper);
-    return result;
+    return (PagingProvider) doPagedList(config, directoryPath, recursive, matcher,
+                                        config.getTimeBetweenSizeCheckInMillis(timeBetweenSizeCheck, timeBetweenSizeCheckUnit)
+                                            .orElse(null),
+                                        streamingHelper);
   }
 
   /**
@@ -190,7 +177,6 @@ public final class SmbOperations extends BaseFileSystemOperations {
           .warn("Deprecated parameter 'encoding' was configured for operation 'smb:write'. This parameter will be ignored, not altering the operation behavior");
     }
 
-    // TODO: Revert changes after removing changeToBaseDir() calls in File Commons (MULE-17483).
     if (content == null) {
       throw new IllegalContentException("Cannot write a null content");
     }
@@ -294,6 +280,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    *
    * @param fileSystem a reference to the host {@link FileSystem}
    * @param path the path to the file to be deleted
+   * @param failIfNotExists if true, returns an error if path does not exist.
    * @throws IllegalArgumentException if {@code filePath} doesn't exist or is locked
    */
   @Summary("Deletes a file")
@@ -305,14 +292,14 @@ public final class SmbOperations extends BaseFileSystemOperations {
     try {
       super.doDelete(fileSystem, path);
       callback.success(Result.<Void, Void>builder().build());
-    } catch (Exception e) {
-      if (e instanceof IllegalPathException) {
-        if (failIfNotExists) {
-          callback.error(e);
-        } else {
-          callback.success(Result.<Void, Void>builder().build());
-        }
+    } catch (IllegalPathException ipe) {
+      if (failIfNotExists) {
+        callback.error(ipe);
+      } else {
+        callback.success(Result.<Void, Void>builder().build());
       }
+    } catch (Exception e) {
+      callback.error(e);
     }
   }
 
@@ -358,10 +345,6 @@ public final class SmbOperations extends BaseFileSystemOperations {
     }
   }
 
-  private Predicate<SmbFileAttributes> getPredicate(FileMatcher builder) {
-    return builder != null ? builder.build() : new NullFilePayloadPredicate();
-  }
-
   /**
    * Writes the {@code content} into the file pointed by {@code path}.
    * <p>
@@ -388,9 +371,8 @@ public final class SmbOperations extends BaseFileSystemOperations {
                      @Path(type = DIRECTORY, location = EXTERNAL) String path,
                      @DisplayName("Message") String message,
                      @Optional(defaultValue = "INFO") @DisplayName("Log Level") LogLevel logLevel,
-                     @Optional(defaultValue = "true") boolean writeToLogger) {
-    // FIXME: implement this operation as a LogAppender!
-    // workaround to write logs in a SMB File server
+                     @Optional(defaultValue = "true") boolean writeToLogger,
+                     CompletionCallback<Void, Void> callback) {
 
     if (writeToLogger) {
       if (logLevel.isEnabled(LOGGER)) {
@@ -413,18 +395,20 @@ public final class SmbOperations extends BaseFileSystemOperations {
                                                                  .format(DateTimeFormatter
                                                                      .ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
                                                              + message
-                                                             + "\n"),
+                                                             + "\n",
+                                                         Charset.defaultCharset()),
                              FileWriteMode.APPEND, true, true);
             done = true;
           } catch (FileLockedException fle) {
             if (LOGGER.isDebugEnabled()) {
-              LOGGER.debug(fle.getMessage() + " - Retrying...");
+              LOGGER.warn("Log file is locked ({}). Retrying...", fle.getMessage());
             }
           }
         }
       } catch (Exception e) {
         LOGGER.error("Could not log message to remote file in async mode. File path: " + path + ", message: " + message, e);
       }
+      callback.success(Result.<Void, Void>builder().build());
     });
   }
 }

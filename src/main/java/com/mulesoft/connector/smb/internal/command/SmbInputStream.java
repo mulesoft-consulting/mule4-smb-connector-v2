@@ -8,15 +8,14 @@ package com.mulesoft.connector.smb.internal.command;
 
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.mssmb2.SMBApiException;
+import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
+import com.mulesoft.connector.smb.internal.extension.SmbConnector;
 import org.mule.extension.file.common.api.AbstractConnectedFileInputStreamSupplier;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.lock.UriLock;
 import org.mule.extension.file.common.api.stream.AbstractNonFinalizableFileInputStream;
 import org.mule.extension.file.common.api.stream.LazyStreamSupplier;
-import com.mulesoft.connector.smb.api.SmbFileAttributes;
-import com.mulesoft.connector.smb.internal.extension.SmbConnector;
-import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.core.api.connector.ConnectionManager;
 
@@ -31,7 +30,7 @@ import java.io.InputStream;
  */
 public class SmbInputStream extends AbstractNonFinalizableFileInputStream {
 
-  protected static ConnectionManager getConnectionManager(SmbConnector config) throws ConnectionException {
+  protected static ConnectionManager getConnectionManager(SmbConnector config) {
     return config.getConnectionManager();
   }
 
@@ -45,11 +44,9 @@ public class SmbInputStream extends AbstractNonFinalizableFileInputStream {
    * @param lock the {@link UriLock} to be used
    * @param timeBetweenSizeCheck time in milliseconds to wait between size checks to decide if a file is ready to be read
    * @return a new {@link SmbFileAttributes}
-   * @throws ConnectionException if a connection could not be established
    */
   public static SmbInputStream newInstance(SmbConnector config, SmbFileAttributes attributes, UriLock lock,
-                                           Long timeBetweenSizeCheck)
-      throws ConnectionException {
+                                           Long timeBetweenSizeCheck) {
     SmbFileInputStreamSupplier fileInputStreamSupplier =
         new SmbFileInputStreamSupplier(attributes, getConnectionManager(config), timeBetweenSizeCheck, config);
     return new SmbInputStream(fileInputStreamSupplier, lock);

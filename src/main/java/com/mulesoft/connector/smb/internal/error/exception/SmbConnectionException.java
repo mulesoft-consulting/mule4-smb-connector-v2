@@ -18,24 +18,12 @@ import org.mule.runtime.extension.api.exception.ModuleException;
  */
 public class SmbConnectionException extends ConnectionException {
 
-  public SmbConnectionException(String s) {
-    super(s);
-  }
-
   public SmbConnectionException(String message, FileError errors) {
     super(message, new ModuleException(message, errors));
   }
 
-  public SmbConnectionException(Throwable throwable, FileError fileError) {
-    super(new ModuleException(fileError, throwable));
-  }
-
   public SmbConnectionException(String message, Throwable throwable, FileError fileError) {
     super(message, new ModuleException(fileError, throwable));
-  }
-
-  public SmbConnectionException(String message, Throwable throwable, FileError fileError, Object connection) {
-    super(message, new ModuleException(fileError, throwable), null, connection);
   }
 
 }

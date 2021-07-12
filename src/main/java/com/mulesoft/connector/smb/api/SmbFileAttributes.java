@@ -13,6 +13,7 @@ import java.time.ZoneId;
 import java.util.Objects;
 
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
+import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import org.mule.extension.file.common.api.AbstractFileAttributes;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 
@@ -45,39 +46,27 @@ public class SmbFileAttributes extends AbstractFileAttributes {
   private boolean exists;
 
   @Parameter
-  private LocalDateTime createTime;
-
-  @Parameter
-  private LocalDateTime lastModified;
-
-  @Parameter
-  private LocalDateTime lastAccess;
-
-  @Parameter
   private String absolutePath;
 
   /**
    * Creates a new instance
    *
    * @param file the file from which the attributes will be read
-   * @throws Exception
+   * @throws Exception if any exception occurs
    */
   public SmbFileAttributes(URI uri, FileAllInformation file) throws Exception {
     super(uri);
     this.populate(file);
   }
 
-  protected void populate(FileAllInformation file) throws Exception {
+  protected void populate(FileAllInformation file) {
     this.setExists(file != null);
     if (file != null) {
-      this.setAbsolutePath(file.getNameInformation().replaceAll("\\\\", "/"));
-      this.setSize(file.getStandardInformation().getEndOfFile());
-      this.setDirectory(file.getStandardInformation().isDirectory());
-      this.setRegularFile(!this.isDirectory());
-      this.setCreateTime(this.localDateTimeFromEpoch(file.getBasicInformation().getCreationTime().toEpochMillis()));
-      this.setLastModified(localDateTimeFromEpoch(file.getBasicInformation().getLastWriteTime().toEpochMillis()));
-      this.setLastAccess(localDateTimeFromEpoch(file.getBasicInformation().getLastAccessTime().toEpochMillis()));
-      this.setTimestamp(localDateTimeFromEpoch(file.getBasicInformation().getLastWriteTime().toEpochMillis()));
+      this.absolutePath = file.getNameInformation().replaceAll("\\\\", "/");
+      this.size = file.getStandardInformation().getEndOfFile();
+      this.directory = file.getStandardInformation().isDirectory();
+      this.regularFile = !this.isDirectory();
+      this.timestamp = localDateTimeFromEpoch(file.getBasicInformation().getLastWriteTime().toEpochMillis());
     }
   }
 
@@ -112,28 +101,17 @@ public class SmbFileAttributes extends AbstractFileAttributes {
     return timestamp;
   }
 
-  public LocalDateTime getCreateTime() {
-    return createTime;
-  }
-
-  public LocalDateTime getLastModified() {
-    return lastModified;
-  }
-
-  public LocalDateTime getLastAccess() {
-    return lastAccess;
-  }
-
-  public boolean exists() {
-    return exists;
-  }
-
   @Override
   public String getPath() {
     return this.absolutePath;
   }
 
+  protected void setExists(boolean exists) {
+    this.exists = exists;
+  }
+
   @Override
+  @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public boolean equals(Object o) {
     if (this == o)
       return true;
@@ -141,50 +119,13 @@ public class SmbFileAttributes extends AbstractFileAttributes {
       return false;
     SmbFileAttributes that = (SmbFileAttributes) o;
     return size == that.size && directory == that.directory && regularFile == that.regularFile && exists == that.exists
-        && Objects.equals(timestamp, that.timestamp) && Objects.equals(createTime, that.createTime)
-        && Objects.equals(lastModified, that.lastModified) && Objects.equals(lastAccess, that.lastAccess)
-        && Objects.equals(absolutePath, that.absolutePath);
+        && Objects.equals(timestamp, that.timestamp) && Objects.equals(absolutePath, that.absolutePath);
   }
 
   @Override
+  @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public int hashCode() {
-    return Objects.hash(size, directory, regularFile, exists, timestamp, createTime, lastModified, lastAccess, absolutePath);
-  }
-
-  protected void setSize(long size) {
-    this.size = size;
-  }
-
-  protected void setDirectory(boolean directory) {
-    this.directory = directory;
-  }
-
-  protected void setRegularFile(boolean regularFile) {
-    this.regularFile = regularFile;
-  }
-
-  protected void setExists(boolean exists) {
-    this.exists = exists;
-  }
-
-  protected void setTimestamp(LocalDateTime timestamp) {
-    this.timestamp = timestamp;
-  }
-
-  protected void setCreateTime(LocalDateTime createTime) {
-    this.createTime = createTime;
-  }
-
-  protected void setLastModified(LocalDateTime lastModified) {
-    this.lastModified = lastModified;
-  }
-
-  protected void setLastAccess(LocalDateTime lastAccess) {
-    this.lastAccess = lastAccess;
-  }
-
-  protected void setAbsolutePath(String absolutePath) {
-    this.absolutePath = absolutePath;
+    return Objects.hash(size, directory, regularFile, exists, timestamp, absolutePath);
   }
 
 

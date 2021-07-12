@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd">
+	<munit:config name="smb-create-directory-test-case.xml" />
+	<munit:before-test name="smb-create-directory-delete-all-files" doc:id="8569bdb9-9aec-4477-898d-95b938744164" >
+		<smb:delete doc:name="Delete" doc:id="18d4c263-115f-4d89-bc97-156e1ff6de75" config-ref="config" path="/"/>
+	</munit:before-test>
+	<munit:test name="smb-create-directory-null-path" doc:id="485ed7c3-e82b-4d72-9735-7338e441cce9" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="directory path cannot be null nor blank" description="Performs a create directory operation with a null path">
+		<munit:execution >
+			<smb:create-directory doc:name="Create directory" doc:id="958f47e4-01aa-4e4c-9284-6a31444c9f42" config-ref="config" directoryPath="#[null]"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-create-directory" doc:id="30aab7e5-52e0-4a8a-8094-c99b50bb8c1c" description="Performs a create directory operation">
+		<munit:execution >
+			<smb:create-directory doc:name="Create directory" doc:id="bd045590-9ada-47ab-a99a-335568ce39e3" config-ref="config" directoryPath="/newdir"/>
+		</munit:execution>
+		<munit:validation>
+			<smb:write doc:name="Write" doc:id="75abd52d-0208-4e6c-8062-047cf153e529" config-ref="config" path="/newdir/somefile.txt" createParentDirectories="false">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<smb:read doc:name="Read" doc:id="33cc1175-6154-4713-bf71-895aa09bb491" config-ref="config" path="/newdir/somefile.txt"/>
+			<munit-tools:assert doc:name="Assert expression" doc:id="cc103ad0-d4fa-4b76-be07-c58e8cbc266e" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo("This is a test")]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="smb-create-existing-directory" doc:id="c973d46f-2c14-4ec6-b052-29f15e2181a7" expectedErrorType="SMB:FILE_ALREADY_EXISTS" description="Perform a create operation on an existing directory" expectedErrorDescription="Directory '/newdir' already exists">
+		<munit:behavior >
+			<smb:create-directory doc:name="Create directory" doc:id="b70e8613-5184-4136-b114-ab717190f12b" config-ref="config" directoryPath="/newdir"/>
+		</munit:behavior>
+		<munit:execution >
+			<smb:create-directory doc:name="Create directory" doc:id="1cd0e927-6376-4b70-a357-15c6a003044e" config-ref="config" directoryPath="/newdir"/>
+		</munit:execution>
+	</munit:test>
+
+</mule>

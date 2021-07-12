@@ -6,12 +6,9 @@
  */
 package com.mulesoft.connector.smb;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mule.tck.probe.PollingProber.check;
-
+import io.qameta.allure.Feature;
+import org.junit.Test;
 import org.mule.extension.file.common.api.FileAttributes;
-import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.util.Reference;
 import org.mule.runtime.core.api.event.CoreEvent;
@@ -22,8 +19,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import io.qameta.allure.Feature;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mule.tck.probe.PollingProber.check;
 
 @Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbDirectoryListenerReconnectionFunctionalTestCase extends CommonSmbConnectorTestCase {
@@ -39,7 +37,7 @@ public class SmbDirectoryListenerReconnectionFunctionalTestCase extends CommonSm
   public static class TestProcessor implements Processor {
 
     @Override
-    public CoreEvent process(CoreEvent event) throws MuleException {
+    public CoreEvent process(CoreEvent event) {
       RECEIVED_MESSAGES.add(event.getMessage());
       return event;
     }
@@ -63,7 +61,7 @@ public class SmbDirectoryListenerReconnectionFunctionalTestCase extends CommonSm
   }
 
   @Test
-  public void testListenerReadsFilesAfterReconnection() throws Exception {
+  public void testListenerReadsFilesAfterReconnection() {
     /*
     URI file = new URI(MATCHERLESS_LISTENER_FOLDER_NAME + "/" + WATCH_FILE);
     testHarness.write(file.getPath(), WATCH_CONTENT);

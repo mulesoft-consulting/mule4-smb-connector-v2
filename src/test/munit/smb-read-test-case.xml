@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
       xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
       xmlns="http://www.mulesoft.org/schema/mule/core"
       xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
-      xmlns:java="http://www.mulesoft.org/schema/mule/java"
-      xsi:schemaLocation="
+      xmlns:java="http://www.mulesoft.org/schema/mule/java" xsi:schemaLocation="
 		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
 		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
@@ -22,11 +22,24 @@
         </smb:connection>
     </smb:config>
 
-    <munit:before-suite name="startSmbTestServer">
-        <flow-ref name="delete-all-files" />
-    </munit:before-suite>
+    <munit:before-test name="smb-read-test-caseBefore_Test" doc:id="c9f8754d-2b17-44ba-890b-49091eef9b20" >
+		<flow-ref name="delete-all-files" />
+	</munit:before-test>
 
-    <munit:test name="smb-read-file-using-single-connection"
+    <munit:test name="smb-read-with-null-path" doc:id="bc317a3c-d934-42f5-97a7-356fa9a90d3b" description="Performs a read operation on a null path" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot read path '/' since it's a directory">
+		<munit:execution >
+			<smb:read doc:name="Read" doc:id="8af8d8b7-33b2-4cb0-a4f7-e33274173f70" config-ref="config" path="#[null]"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-read-directory" doc:id="a75e4915-b81c-4e6a-b95d-fb7a8f89f391" expectedErrorType="SMB:ILLEGAL_PATH" description="Performs a read operation on a directory" expectedErrorDescription="Cannot read path '/somedir' since it's a directory">
+		<munit:behavior >
+			<smb:create-directory doc:name="Create directory" doc:id="eaf1aa48-62b4-4cae-a39c-5a0107d78db9" config-ref="config" directoryPath="/somedir"/>
+		</munit:behavior>
+		<munit:execution >
+			<smb:read doc:name="Read" doc:id="5de30f98-4aed-45f8-ad16-825a5b353c1d" config-ref="config" path="somedir"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-read-file-using-single-connection"
                 description="Perform a read operation with a pooling profile which allows only 1 active connection">
         <munit:behavior>
             <set-variable variableName="fileName" value="filePath.txt"/>
@@ -48,4 +61,12 @@
             </munit-tools:assert>
         </munit:validation>
     </munit:test>
+	<munit:test name="smb-read-with-lock" doc:id="7d4c4f0b-9182-4fa3-95fc-7cd941febea1" description="Performs a read operation with lock">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="3ecdf0cf-623f-491b-8722-f28bf0977f63" path="somefile.txt" config-ref="config" lock="true">
+				<smb:content><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<smb:read doc:name="Read" doc:id="465d07ec-c9b8-4ebe-b0cb-731d84dd8891" config-ref="config" path="somefile.txt" lock="true" />
+		</munit:execution>
+	</munit:test>
 </mule>

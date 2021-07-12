@@ -9,6 +9,7 @@ package com.mulesoft.connector.smb.internal.connection.provider;
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.mssmb2.SMBApiException;
 import com.mulesoft.connector.smb.api.LogLevel;
+import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
@@ -30,16 +31,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.mule.extension.file.common.api.exceptions.FileError.*;
-import static org.mule.runtime.extension.api.annotation.param.ParameterGroup.CONNECTION;
 
 import static java.lang.String.format;
+import static org.mule.extension.file.common.api.exceptions.FileError.*;
+import static org.mule.runtime.extension.api.annotation.param.ParameterGroup.CONNECTION;
 
 /**
  * An {@link FileSystemProvider} which provides instances of
@@ -57,19 +57,14 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
   private static final String TIMEOUT_CONFIGURATION = "Timeout Configuration";
   private static final String SMB_ERROR_MESSAGE_MASK =
       "Could not establish SMB connection (host: '\\\\%s\\%s', user: '%s\\%s'): %s";
-  private static final String SSH_DISCONNECTION_MESSAGE = "SSH_MSG_DISCONNECT";
-  private static final String TIMEOUT = "timeout";
 
-  private static AtomicBoolean alreadyLoggedConnectionTimeoutWarning = new AtomicBoolean(false);
-  private static AtomicBoolean alreadyLoggedResponseTimeoutWarning = new AtomicBoolean(false);
+  private static EnumMap<NtStatus, FileError> errorMap = new EnumMap<>(NtStatus.class);
 
-  private HashMap<NtStatus, FileError> errorMap = new HashMap<>();
-
-  {
-    this.errorMap.put(NtStatus.STATUS_CONNECTION_DISCONNECTED, DISCONNECTED);
-    this.errorMap.put(NtStatus.STATUS_LOGON_FAILURE, INVALID_CREDENTIALS);
-    this.errorMap.put(NtStatus.STATUS_ACCESS_DENIED, ACCESS_DENIED);
-    this.errorMap.put(NtStatus.STATUS_OBJECT_NAME_NOT_FOUND, FILE_DOESNT_EXIST);
+  static {
+    errorMap.put(NtStatus.STATUS_CONNECTION_DISCONNECTED, DISCONNECTED);
+    errorMap.put(NtStatus.STATUS_LOGON_FAILURE, INVALID_CREDENTIALS);
+    errorMap.put(NtStatus.STATUS_ACCESS_DENIED, ACCESS_DENIED);
+    errorMap.put(NtStatus.STATUS_OBJECT_NAME_NOT_FOUND, FILE_DOESNT_EXIST);
   }
 
   @Inject
@@ -79,17 +74,18 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
    * The directory to be considered as the root of every relative path used with this connector. If not provided, it will default
    * to the remote server default.
    */
-  @Parameter
-  @Optional
-  @Summary("The directory to be considered as the root of every relative path used with this connector")
-  @DisplayName("Working Directory")
-  private String workingDir = null;
+  //  @Parameter
+  //  @Optional
+  //  @Summary("The directory to be considered as the root of every relative path used with this connector")
+  //  @DisplayName("Working Directory")
+  //  FIXME olamiral: implement workingDir correctly
+  //  private final String workingDir = null;
 
   @ParameterGroup(name = TIMEOUT_CONFIGURATION)
-  private TimeoutSettings timeoutSettings = new TimeoutSettings();
+  private final TimeoutSettings timeoutSettings = new TimeoutSettings();
 
   @ParameterGroup(name = CONNECTION)
-  private SmbConnectionSettings connectionSettings = new SmbConnectionSettings();
+  private final SmbConnectionSettings connectionSettings = new SmbConnectionSettings();
 
   /**
    * The log level
@@ -106,25 +102,22 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
 
   @Override
   public SmbFileSystemConnection connect() throws ConnectionException {
-    checkConnectionTimeoutPrecision();
-    checkSocketTimeoutPrecision();
-    checkReadTimeoutPrecision();
-    checkWriteTimeoutPrecision();
-    checkTransactionTimeoutPrecision();
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug(format("Connecting to host: '%s' at port: '%d'", connectionSettings.getHost(), connectionSettings.getPort()));
     }
     SmbClient client = clientFactory.createInstance(connectionSettings.getHost(), connectionSettings.getPort(),
-                                                    connectionSettings.getShareRoot(), connectionSettings.getDfsEnabled(),
+                                                    connectionSettings.getShareRoot(), connectionSettings.isDfsEnabled(),
                                                     this.logLevel);
     client.setPassword(connectionSettings.getPassword());
-
+    client.setSocketTimeout(this.getSocketTimeoutUnit(), this.getSocketTimeout());
+    client.setReadTimeout(this.getReadTimeoutUnit(), this.getReadTimeout());
+    client.setWriteTimeout(this.getWriteTimeoutUnit(), this.getWriteTimeout());
+    client.setTransactionTimeout(this.getTransactionTimeoutUnit(), this.getTransactionTimeout());
     try {
       client.login(connectionSettings.getDomain(), connectionSettings.getUsername());
     } catch (Exception e) {
       handleException(e);
     }
-
     return new SmbFileSystemConnection(client, lockFactory);
   }
 
@@ -138,46 +131,11 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
     return smbFileSystem.validateConnection();
   }
 
-  void setPort(int port) {
-    connectionSettings.setPort(port);
-  }
-
-  void setHost(String host) {
-    connectionSettings.setHost(host);
-  }
-
-  void setUsername(String username) {
-    connectionSettings.setUsername(username);
-  }
-
-  void setPassword(String password) {
-    connectionSettings.setPassword(password);
-  }
-
-  void setShareRoot(String shareRoot) {
-    this.connectionSettings.setShareRoot(shareRoot);
-  }
-
-  void setDomain(String domain) {
-    this.connectionSettings.setDomain(domain);
-  }
-
-  void setClientFactory(SmbClientFactory clientFactory) {
-    this.clientFactory = clientFactory;
-  }
-
   @Override
   public String getWorkingDir() {
     //Working Dir is not used for SMB connector
+    // FIXME olamiral: implement workingDir correctly
     throw new RuntimeException("workingDir property should not be used");
-  }
-
-  protected Integer getConnectionTimeout() {
-    return timeoutSettings.getConnectionTimeout();
-  }
-
-  protected TimeUnit getConnectionTimeoutUnit() {
-    return timeoutSettings.getConnectionTimeoutUnit();
   }
 
   protected Integer getSocketTimeout() {
@@ -212,48 +170,6 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
     return timeoutSettings.getTransactionTimeoutUnit();
   }
 
-
-  public void setConnectionTimeout(Integer connectionTimeout) {
-    timeoutSettings.setConnectionTimeout(connectionTimeout);
-  }
-
-  public void setConnectionTimeoutUnit(TimeUnit connectionTimeoutUnit) {
-    timeoutSettings.setConnectionTimeoutUnit(connectionTimeoutUnit);
-  }
-
-  public void setSocketTimeout(Integer socketTimeout) {
-    timeoutSettings.setSocketTimeout(socketTimeout);
-  }
-
-  public void setSocketTimeoutUnit(TimeUnit socketTimeoutUnit) {
-    timeoutSettings.setSocketTimeoutUnit(socketTimeoutUnit);
-  }
-
-  public void setReadTimeout(Integer readTimeout) {
-    timeoutSettings.setReadTimeout(readTimeout);
-  }
-
-  public void setReadTimeoutUnit(TimeUnit readTimeoutUnit) {
-    timeoutSettings.setReadTimeoutUnit(readTimeoutUnit);
-  }
-
-  public void setWriteTimeout(Integer writeTimeout) {
-    timeoutSettings.setWriteTimeout(writeTimeout);
-  }
-
-  public void setWriteTimeoutUnit(TimeUnit writeTimeoutUnit) {
-    timeoutSettings.setWriteTimeoutUnit(writeTimeoutUnit);
-  }
-
-  public void setTransactionTimeout(Integer transactionTimeout) {
-    timeoutSettings.setTransactionTimeout(transactionTimeout);
-  }
-
-  public void setTransactionTimeoutUnit(TimeUnit transactionTimeoutUnit) {
-    timeoutSettings.setTransactionTimeoutUnit(transactionTimeoutUnit);
-  }
-
-
   /**
    * Handles a {@link SMBApiException}, introspects their cause or message to return a {@link ConnectionException} indicating with a
    * {@link FileError} the kind of failure.
@@ -261,91 +177,99 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
    * @param e The exception to handle
    * @throws ConnectionException Indicating the kind of failure
    */
-  private void handleException(Exception e) throws ConnectionException {
-    FileError error = getFileErrorFor(e);
+  private void handleException(Throwable e) throws ConnectionException {
+    FileError error = null;
+
+    if (e instanceof SMBApiException) {
+      error = getFileErrorFor((SMBApiException) e);
+    } else {
+      if (e instanceof SocketTimeoutException
+      //        || e.getMessage().contains("connect timed out")
+      ) {
+        error = CONNECTION_TIMEOUT;
+      } else if (e instanceof UnknownHostException
+      //|| e.getCause() instanceof UnknownHostException
+      ) {
+        error = UNKNOWN_HOST;
+      } else if (e instanceof ConnectException
+      //|| e.getCause() instanceof ConnectException
+      ) {
+        error = CANNOT_REACH;
+      }
+    }
+
     if (error != null) {
       throw new SmbConnectionException(getErrorMessage(connectionSettings, e.getMessage()), e, error);
     }
     throw new ConnectionException(getErrorMessage(connectionSettings, e.getMessage()), e);
   }
 
-  private FileError getFileErrorFor(Exception e) {
-    FileError result = this.doGetFileErrorFor(e);
-    if (result == null) {
-      if (e instanceof SocketTimeoutException || e.getMessage().contains("connect timed out")) {
-        result = CONNECTION_TIMEOUT;
-      } else if (e instanceof UnknownHostException || e.getCause() instanceof UnknownHostException) {
-        result = UNKNOWN_HOST;
-      } else if (e instanceof org.mule.runtime.core.api.connector.ConnectException
-          || e.getCause() instanceof org.mule.runtime.core.api.connector.ConnectException) {
-        result = CANNOT_REACH;
-      }
-    }
-    return result;
+  private FileError getFileErrorFor(SMBApiException sae) {
+    return errorMap.get(sae.getStatus());
   }
-
-  public FileError doGetFileErrorFor(Exception e) {
-    FileError result = null;
-
-    SMBApiException sae = null;
-    if (e instanceof SMBApiException) {
-      sae = (SMBApiException) e;
-    } else if (e.getCause() instanceof SMBApiException) {
-      sae = (SMBApiException) e.getCause();
-    }
-
-    if (sae != null) {
-      result = this.errorMap.get(sae.getStatus());
-    }
-
-    return result;
-  }
-
 
   private String getErrorMessage(SmbConnectionSettings connectionSettings, String message) {
     return format(SMB_ERROR_MESSAGE_MASK, connectionSettings.getHost(), connectionSettings.getShareRoot(),
                   connectionSettings.getDomain(), connectionSettings.getUsername(), message);
   }
 
-  private void checkConnectionTimeoutPrecision() {
-    if (!supportedTimeoutPrecision(getConnectionTimeoutUnit(), getConnectionTimeout())
-        && alreadyLoggedConnectionTimeoutWarning.compareAndSet(false, true)) {
-      LOGGER.warn("Connection timeout configuration not supported. Minimum value allowed is 1 millisecond.");
-    }
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  protected void setClientFactory(SmbClientFactory clientFactory) {
+    this.clientFactory = clientFactory;
   }
 
-  private void checkSocketTimeoutPrecision() {
-    if (!supportedTimeoutPrecision(getSocketTimeoutUnit(), getSocketTimeout())
-        && alreadyLoggedResponseTimeoutWarning.compareAndSet(false, true)) {
-      LOGGER.warn("Read timeout configuration not supported. Minimum value allowed is 1 millisecond.");
-    }
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  void setPort(int port) {
+    connectionSettings.setPort(port);
   }
 
-  private void checkReadTimeoutPrecision() {
-    if (!supportedTimeoutPrecision(getReadTimeoutUnit(), getReadTimeout())
-        && alreadyLoggedResponseTimeoutWarning.compareAndSet(false, true)) {
-      LOGGER.warn("Write timeout configuration not supported. Minimum value allowed is 1 millisecond.");
-    }
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  void setHost(String host) {
+    connectionSettings.setHost(host);
   }
 
-  private void checkWriteTimeoutPrecision() {
-    if (!supportedTimeoutPrecision(getWriteTimeoutUnit(), getWriteTimeout())
-        && alreadyLoggedResponseTimeoutWarning.compareAndSet(false, true)) {
-      LOGGER.warn("Transaction timeout configuration not supported. Minimum value allowed is 1 millisecond.");
-    }
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  void setUsername(String username) {
+    connectionSettings.setUsername(username);
   }
 
-  private void checkTransactionTimeoutPrecision() {
-    if (!supportedTimeoutPrecision(getTransactionTimeoutUnit(), getTransactionTimeout())
-        && alreadyLoggedResponseTimeoutWarning.compareAndSet(false, true)) {
-      LOGGER.warn("Response timeout configuration not supported. Minimum value allowed is 1 millisecond.");
-    }
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  void setPassword(String password) {
+    connectionSettings.setPassword(password);
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  void setShareRoot(String shareRoot) {
+    this.connectionSettings.setShareRoot(shareRoot);
+  }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  void setDomain(String domain) {
+    this.connectionSettings.setDomain(domain);
+  }
 
-  private boolean supportedTimeoutPrecision(TimeUnit timeUnit, Integer timeout) {
-    return timeUnit != null && timeout != null && (timeUnit.toMillis(timeout) >= 1 || timeout == 0);
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  public void setSocketTimeout(TimeUnit socketTimeoutUnit, int socketTimeout) {
+    this.timeoutSettings.setSocketTimeoutUnit(socketTimeoutUnit);
+    this.timeoutSettings.setSocketTimeout(socketTimeout);
+  }
+
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  public void setReadTimeout(TimeUnit readTimeoutUnit, int readTimeout) {
+    this.timeoutSettings.setReadTimeoutUnit(readTimeoutUnit);
+    this.timeoutSettings.setReadTimeout(readTimeout);
+  }
+
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  public void setWriteTimeout(TimeUnit writeTimeoutUnit, int writeTimeout) {
+    this.timeoutSettings.setWriteTimeoutUnit(writeTimeoutUnit);
+    this.timeoutSettings.setWriteTimeout(writeTimeout);
+  }
+
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  public void setTransactionTimeout(TimeUnit transactionTimeoutUnit, int transactionTimeout) {
+    this.timeoutSettings.setTransactionTimeoutUnit(transactionTimeoutUnit);
+    this.timeoutSettings.setTransactionTimeout(transactionTimeout);
   }
 
 }

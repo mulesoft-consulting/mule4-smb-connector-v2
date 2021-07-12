@@ -6,7 +6,6 @@
  */
 package com.mulesoft.connector.smb.internal.connection;
 
-import com.hierynomus.smbj.SMBClient;
 import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 

@@ -6,17 +6,11 @@
  */
 package com.mulesoft.connector.smb.internal.source;
 
-import static java.lang.String.format;
-import static org.mule.extension.file.common.api.FileDisplayConstants.MATCHER;
-import static org.mule.runtime.core.api.util.IOUtils.closeQuietly;
-import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
-import static org.mule.runtime.extension.api.runtime.source.PollContext.PollItemStatus.SOURCE_STOPPING;
-
-import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
-import org.mule.extension.file.common.api.matcher.NullFilePayloadPredicate;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.api.SmbFileMatcher;
+import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.extension.SmbConnector;
+import org.mule.extension.file.common.api.matcher.NullFilePayloadPredicate;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.exception.MuleRuntimeException;
@@ -25,13 +19,7 @@ import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.execution.OnError;
 import org.mule.runtime.extension.api.annotation.execution.OnSuccess;
 import org.mule.runtime.extension.api.annotation.execution.OnTerminate;
-import org.mule.runtime.extension.api.annotation.param.Config;
-import org.mule.runtime.extension.api.annotation.param.ConfigOverride;
-import org.mule.runtime.extension.api.annotation.param.Connection;
-import org.mule.runtime.extension.api.annotation.param.MediaType;
-import org.mule.runtime.extension.api.annotation.param.Optional;
-import org.mule.runtime.extension.api.annotation.param.Parameter;
-import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.annotation.source.ClusterSupport;
@@ -41,6 +29,8 @@ import org.mule.runtime.extension.api.runtime.source.PollContext;
 import org.mule.runtime.extension.api.runtime.source.PollContext.PollItemStatus;
 import org.mule.runtime.extension.api.runtime.source.PollingSource;
 import org.mule.runtime.extension.api.runtime.source.SourceCallbackContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -48,9 +38,12 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.String.format;
+import static org.mule.extension.file.common.api.FileDisplayConstants.MATCHER;
 import static org.mule.runtime.core.api.util.ExceptionUtils.extractConnectionException;
+import static org.mule.runtime.core.api.util.IOUtils.closeQuietly;
+import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
+import static org.mule.runtime.extension.api.runtime.source.PollContext.PollItemStatus.SOURCE_STOPPING;
 
 
 /**
@@ -102,7 +95,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
   @Parameter
   @Optional(defaultValue = "true")
   @Summary("Whether or not to also catch files created on sub directories")
-  private boolean recursive = true;
+  private final boolean recursive = true;
 
   /**
    * A matcher used to filter events on files which do not meet the matcher's criteria
@@ -119,7 +112,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
    */
   @Parameter
   @Optional(defaultValue = "false")
-  private boolean watermarkEnabled = false;
+  private final boolean watermarkEnabled = false;
 
   /**
    * Wait time in milliseconds between size checks to determine if a file is ready to be read. This allows a file write to
@@ -163,7 +156,10 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
   }
 
   @OnTerminate
-  public void onTerminate(SourceCallbackContext ctx) {}
+  public void onTerminate(SourceCallbackContext ctx) {
+    //Does nothing
+  }
+
 
   @Override
   public void poll(PollContext<InputStream, SmbFileAttributes> pollContext) {
@@ -210,12 +206,12 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
 
         if (!processFile(file, pollContext)) {
           //FIXME olamiral: uncomment after tests
-          //closeQuietly(file.getOutput());
+          closeQuietly(file.getOutput());
           break;
         }
       }
     } catch (Exception e) {
-      LOGGER.error(format("Found exception trying to poll directory '%s'. Will try again on the next poll. ",
+      LOGGER.error(format("Found exception trying to poll directory '%s'. Will try again on the next poll. Error message: %s",
                           directoryUri.getPath(), e.getMessage()),
                    e);
       extractConnectionException(e).ifPresent((connectionException) -> pollContext.onConnectionException(connectionException));
@@ -228,7 +224,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
     matcher = predicateBuilder != null ? predicateBuilder.build() : new NullFilePayloadPredicate<>();
   }
 
-  private SmbFileSystemConnection openConnection(PollContext pollContext) throws Exception {
+  private SmbFileSystemConnection openConnection(PollContext<InputStream, SmbFileAttributes> pollContext) throws Exception {
 
     SmbFileSystemConnection fileSystem = fileSystemProvider.connect();
     try {
@@ -251,23 +247,20 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
     String fullPath = attributes.getPath();
     PollItemStatus status = pollContext.accept(item -> {
       final SourceCallbackContext ctx = item.getSourceCallbackContext();
-      Result result = null;
 
       try {
         ctx.addVariable(ATTRIBUTES_CONTEXT_VAR, attributes);
         item.setResult(file).setId(attributes.getPath());
 
         if (watermarkEnabled) {
-          item.setWatermark(attributes.getLastModified());
+          item.setWatermark(attributes.getTimestamp());
         }
-      } catch (Throwable t) {
+      } catch (Exception t) {
         LOGGER.error(format("Found file '%s' but found exception trying to dispatch it for processing. %s",
                             fullPath, t.getMessage()),
                      t);
 
-        if (result != null) {
-          onRejectedItem(result, ctx);
-        }
+        onRejectedItem(file, ctx);
 
         throw new MuleRuntimeException(t);
       }
@@ -290,7 +283,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
         postAction.apply(fileSystem, attrs, config);
       } catch (ConnectionException e) {
         LOGGER
-            .error("An error occurred while retrieving a connection to apply the post processing action to the file %s , it was neither moved nor deleted.",
+            .error("An error occurred while retrieving a connection to apply the post processing action to the file {}, it was neither moved nor deleted.",
                    attrs.getPath());
       } finally {
         if (fileSystem != null) {

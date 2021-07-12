@@ -10,6 +10,7 @@ import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.dsl.xml.TypeDsl;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
@@ -37,7 +38,7 @@ import org.slf4j.Logger;
 public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttributes> {
 
   private static final Logger LOGGER = getLogger(SmbFileMatcher.class);
-  private AtomicBoolean alreadyLoggedWarning = new AtomicBoolean();
+  private final AtomicBoolean alreadyLoggedWarning = new AtomicBoolean();
 
   /**
    * Files created before this date are rejected.
@@ -88,31 +89,26 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
   @Override
   protected Predicate<SmbFileAttributes> addConditions(Predicate<SmbFileAttributes> predicate) {
     if (timestampSince != null) {
-      predicate = predicate.and(attributes -> attributes.getTimestamp() == null
-          || FILE_TIME_SINCE.apply(timestampSince, attributes.getTimestamp()));
+      predicate = predicate.and(attributes -> FILE_TIME_SINCE.apply(timestampSince, attributes.getTimestamp()));
     }
 
     if (timestampUntil != null) {
-      predicate = predicate.and(attributes -> attributes.getTimestamp() == null
-          || FILE_TIME_UNTIL.apply(timestampUntil, attributes.getTimestamp()));
+      predicate = predicate.and(attributes -> FILE_TIME_UNTIL.apply(timestampUntil, attributes.getTimestamp()));
     }
 
-    // We want to make sure that the same time is used when comparing multiple files consecutively.
-    LocalDateTime now = now();
+    LocalDateTime referenceDateTime = now();
 
     if (notUpdatedInTheLast != null) {
       predicate = predicate.and(attributes -> {
         checkTimestampPrecision(attributes);
-        return attributes.getTimestamp() == null
-            || FILE_TIME_UNTIL.apply(minusTime(now, notUpdatedInTheLast, timeUnit), attributes.getTimestamp());
+        return FILE_TIME_UNTIL.apply(minusTime(referenceDateTime, notUpdatedInTheLast, timeUnit), attributes.getTimestamp());
       });
     }
 
     if (updatedInTheLast != null) {
       predicate = predicate.and(attributes -> {
         checkTimestampPrecision(attributes);
-        return attributes.getTimestamp() == null
-            || FILE_TIME_SINCE.apply(minusTime(now, updatedInTheLast, timeUnit), attributes.getTimestamp());
+        return FILE_TIME_SINCE.apply(minusTime(referenceDateTime, updatedInTheLast, timeUnit), attributes.getTimestamp());
       });
     }
 
@@ -123,8 +119,8 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
     if (alreadyLoggedWarning.compareAndSet(false, true) && isSecondsOrLower(timeUnit)
         && attributes.getTimestamp().getSecond() == 0 && attributes.getTimestamp().getNano() == 0) {
       LOGGER
-          .debug(format("The required timestamp precision %s cannot be met. The server may not support it.",
-                        timeUnit));
+          .warn(format("The required timestamp precision {} cannot be met. The server may not support it.",
+                       timeUnit));
     }
   }
 
@@ -141,45 +137,57 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
     return timeUnit.toMillis(time);
   }
 
-  public SmbFileMatcher setTimestampSince(LocalDateTime timestampSince) {
-    this.timestampSince = timestampSince;
-    return this;
-  }
 
-  public SmbFileMatcher setTimestampUntil(LocalDateTime timestampUntil) {
-    this.timestampUntil = timestampUntil;
-    return this;
-  }
-
-  public void setTimeUnit(TimeUnit timeUnit) {
-    this.timeUnit = timeUnit;
-  }
-
-  public void setUpdatedInTheLast(Long updatedInTheLast) {
-    this.updatedInTheLast = updatedInTheLast;
-  }
-
-  public void setNotUpdatedInTheLast(Long notUpdatedInTheLast) {
-    this.notUpdatedInTheLast = notUpdatedInTheLast;
-  }
-
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public LocalDateTime getTimestampSince() {
     return timestampSince;
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public LocalDateTime getTimestampUntil() {
     return timestampUntil;
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public TimeUnit getTimeUnit() {
     return timeUnit;
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public Long getUpdatedInTheLast() {
     return updatedInTheLast;
   }
 
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public Long getNotUpdatedInTheLast() {
     return notUpdatedInTheLast;
   }
+
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  protected SmbFileMatcher setTimestampSince(LocalDateTime timestampSince) {
+    this.timestampSince = timestampSince;
+    return this;
+  }
+
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  protected SmbFileMatcher setTimestampUntil(LocalDateTime timestampUntil) {
+    this.timestampUntil = timestampUntil;
+    return this;
+  }
+
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  protected void setTimeUnit(TimeUnit timeUnit) {
+    this.timeUnit = timeUnit;
+  }
+
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  protected void setUpdatedInTheLast(Long updatedInTheLast) {
+    this.updatedInTheLast = updatedInTheLast;
+  }
+
+  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
+  protected void setNotUpdatedInTheLast(Long notUpdatedInTheLast) {
+    this.notUpdatedInTheLast = notUpdatedInTheLast;
+  }
+
 }

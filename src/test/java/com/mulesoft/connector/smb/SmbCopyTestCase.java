@@ -40,7 +40,7 @@ public class SmbCopyTestCase extends CommonSmbConnectorTestCase {
     return "smb-copy-config.xml";
   }
 
-  private String getPath(String... path) throws Exception {
+  private String getPath(String... path) {
     return normalizePath(String.join("/", path));
   }
 

@@ -47,7 +47,7 @@ mvn clean install -DskipTests
 - Replace with overwrite does not work when renaming directories
 - Add MIME Type to SmbDirectorySource
 - SmbUtils: check if declared methods are defined somewhere else
-- Verify if the share root can be assumed as being the working directory (maybe this concept of working directory does not apply in SMB, as opposed to sFTP
+- Verify if the share root can be assumed as being the working directory (maybe this concept of working directory does not apply in SMB, as opposed to sFTP)
 - The logger operation should be implemented as a LogAppender
 - Revise some unit tests (confirm if behavior is as expected)
 - Review unit tests that are still failing (9 out of 170 - 1 ignored)

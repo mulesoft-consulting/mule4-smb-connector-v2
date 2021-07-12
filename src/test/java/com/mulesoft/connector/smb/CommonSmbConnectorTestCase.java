@@ -32,10 +32,9 @@ import io.qameta.allure.Feature;
 @Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public abstract class CommonSmbConnectorTestCase extends AbstractSmbConnectorTestCase {
 
+  private String name;
   public static final String SMB_CONNECTION_XML = "smb-connection-config.xml";
-
   protected static final String NAMESPACE = "SMB";
-  private final String name;
 
   @Rule
   public final SmbTestHarness testHarness;

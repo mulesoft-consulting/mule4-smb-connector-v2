@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd">
+	<munit:config name="new-test-suite.xml" />
+	<munit:before-test name="smb-rename-delete-all-files" doc:id="ba4b05fa-47a6-4c49-8ea7-5a8f1b7264b2" >
+		<smb:delete doc:name="Delete" doc:id="dd0e66bc-9979-4717-910f-c337943dff60" config-ref="config" path="/"/>
+	</munit:before-test>
+	<munit:test name="smb-rename-non-existent-file" doc:id="34badef4-d53b-4968-9287-23ff7a53e167" description="Performs a rename operation over an non existent file" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Path '/invalid/file.txt' doesn't exist">
+		<munit:execution >
+			<smb:rename doc:name="Rename" doc:id="85c43909-63a8-4e91-94e9-9a6735fe79f3" config-ref="config" path="/invalid/file.txt" to="renamedFile.txt"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-rename-file-with-invalid-name-syntax" doc:id="896aad11-565d-4bc0-b863-adb4f28e2843" expectedErrorType="SMB:CONNECTIVITY" description="Performs a rename operation on a file containing invalid characters in its name" expectedErrorDescription="The filename, directory name, or volume label syntax is incorrect.">
+		<munit:execution >
+			<smb:rename doc:name="Rename" doc:id="c6efe4e2-6638-4a93-abc6-8457e49d3c3b" config-ref="config" path="/invalid/file&gt;name.txt" to="invalid&lt;name.txt"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-rename-existing-file" doc:id="7cf63506-d7f0-411a-be5f-61ed760308aa" description="Performs a rename operation" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Path '/somedir/file.txt' doesn't exist">
+		<munit:behavior >
+			<set-variable value="/somedir/file.txt" doc:name="Set Variable" doc:id="69c828bc-ce85-4807-886f-586193eb20b3" variableName="sourceFile"/>
+			<smb:write doc:name="Write" doc:id="5f3f3636-37ca-4e02-a6eb-6d3e3dc0b2d0" config-ref="config" path="#[vars.sourceFile]">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:behavior>
+		<munit:execution >
+			<smb:rename doc:name="Rename" doc:id="000a9ad8-aeaf-4ad0-a5c8-eb23714b96fa" config-ref="config" path="#[vars.sourceFile]" to="renamedFile.txt"/>
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="2d84a31b-e8fc-4257-93d7-6c132bd0df44" config-ref="config" path="/somedir/renamedFile.txt"/>
+			<munit-tools:assert doc:name="Assert expression" doc:id="b9568e46-8f7a-42bd-8c17-84870a30c4f2" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo("This is a test")]]]></munit-tools:that>
+			</munit-tools:assert>
+			<smb:read doc:name="Read" doc:id="f9f84de1-e3b5-4ffc-b60f-deb963cc77b4" config-ref="config" path="#[vars.sourceFile]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="smb-rename-target-file-already-exists-no-overwrite" doc:id="a59395e9-2d3e-4054-a0c3-5ac8079d60ad" description="Perform a rename operation on a file with existing target file and overwrite = false" expectedErrorType="SMB:FILE_ALREADY_EXISTS" expectedErrorDescription="'/somedir/file.txt' cannot be renamed because '/somedir/renamedFile.txt' already exists">
+		<munit:behavior >
+			<set-variable value="/somedir/file.txt" doc:name="Set Variable" doc:id="cac57e20-cc94-446b-bff1-2be9d1555fa6" variableName="sourceFile"/>
+			<smb:write doc:name="Write" doc:id="a13da7c5-a26b-4ca0-b821-e9dba24e2b71" config-ref="config" path="#[vars.sourceFile]">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<smb:copy doc:name="Copy" doc:id="ffe81c1d-bb7a-42e6-ae1f-3526f4ae350e" sourcePath="#[vars.sourceFile]" targetPath="/somedir" renameTo="renamedFile.txt" config-ref="config"/>
+		</munit:behavior>
+		<munit:execution >
+			<smb:rename doc:name="Rename" doc:id="628b5177-5d2b-4d66-8e05-8fd566518c24" config-ref="config" path="#[vars.sourceFile]" to="renamedFile.txt"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-rename-target-file-already-exists-with-overwrite" doc:id="ff1bb5f1-a855-4bb7-bf9d-a080fd4378e4" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Path '/somedir/file.txt' doesn't exist" description="Perform a rename operation on a file with existing target file and overwrite = true">
+		<munit:behavior >
+			<set-variable value="/somedir/file.txt" doc:name="Set Variable" doc:id="5d733b47-7a07-45dc-b660-adebc4ace822" variableName="sourceFile"/>
+			<smb:write doc:name="Write" doc:id="3835bc90-49fd-48ab-a29e-6e490a59b243" config-ref="config" path="#[vars.sourceFile]">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<set-variable value="/somedir/renamedFile.txt" doc:name="Set Variable" doc:id="db6f5a5b-5f40-46c5-b2af-a457a82ccef5" variableName="targetFile"/>
+			<smb:write doc:name="Write" doc:id="54f0df84-5ee4-442a-a97d-b139ef3ed89b" config-ref="config" path="#[vars.targetFile]">
+				<smb:content ><![CDATA[This content should be replaced]]></smb:content>
+			</smb:write>
+			<smb:read doc:name="Read" doc:id="e6e14b45-dcb1-438f-b706-55b7a321bffa" config-ref="config" path="#[vars.targetFile]"/>
+			<munit-tools:assert doc:name="Assert expression" doc:id="9d57aa1c-5547-4e33-9de6-c8e483999f81" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo("This content should be replaced")]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:behavior>
+		<munit:execution >
+			<smb:rename doc:name="Rename" doc:id="b640b455-05ca-416d-83f9-2dc1a3ce57e4" config-ref="config" path="#[vars.sourceFile]" to="renamedFile.txt" overwrite="true"/>
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="7a9b3071-bf56-4bfd-a8f8-fb8a7d5b55fa" config-ref="config" path="#[vars.targetFile]"/>
+			<munit-tools:assert doc:name="Assert expression" doc:id="23596a2a-f9aa-48ee-af58-224d1f3bff80" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo("This is a test")]]]></munit-tools:that>
+			</munit-tools:assert>
+			<smb:read doc:name="Read" doc:id="c9fa1f60-9a0a-4aa1-bc35-1eee9d532133" config-ref="config" path="#[vars.sourceFile]"/>
+		</munit:validation>
+	</munit:test>
+
+</mule>

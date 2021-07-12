@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
       xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
       xmlns="http://www.mulesoft.org/schema/mule/core"
-      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
-      xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:test="http://www.mulesoft.org/schema/mule/test"
-      xsi:schemaLocation="
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb" xmlns:java="http://www.mulesoft.org/schema/mule/java"
+      xmlns:test="http://www.mulesoft.org/schema/mule/test" xsi:schemaLocation="
 		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
 		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
@@ -16,11 +16,51 @@
 
     <munit:dynamic-port propertyName="smb.server.port"/>
 
-    <munit:before-suite name="startCopyTestServer">
-        <flow-ref name="delete-all-files" />
-    </munit:before-suite>
-
-    <munit:test name="smb-copy-directories" description="Perform a copy operation that copies a whole directory">
+    <munit:before-test name="smb-copy-delete-all-files" doc:id="11676bd1-be2d-4433-881d-29a7752c1f6b" >
+		<flow-ref name="delete-all-files" />
+	</munit:before-test>
+	<munit:test name="smb-copy-to-blank-target-path" doc:id="1678680a-7550-4aa2-ba90-20f3fb7bf631" description="Performs a copy operation to a blank target path">
+		<munit:behavior >
+			<set-variable value="/sourceDir/sourceFile.txt" doc:name="Set Variable" doc:id="b39c801d-a268-4da8-b359-565f14d9ee78" variableName="sourceFile"/>
+			<smb:write doc:name="Write" doc:id="bdc387a3-0d85-411f-aa09-48edcf94d174" config-ref="config" path="#[vars.sourceFile]">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:behavior>
+		<munit:execution >
+			<smb:copy doc:name="Copy" doc:id="b4cfe08e-c069-4304-97c9-f18ed1cef31f" config-ref="config" sourcePath="#[vars.sourceFile]" targetPath='#[""]'/>
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="c4ca7e59-0800-4bb9-9f86-2b22382d0d67" config-ref="config" path="/sourceFile.txt" target="targetFileContent"/>
+			<smb:read doc:name="Read" doc:id="95a530b5-fcf6-4847-9aef-ed35f434b1e1" config-ref="config" path="#[vars.sourceFile]" target="sourceFileContent"/>
+			<munit-tools:assert doc:name="Assert expression" doc:id="cd4f2e60-d42a-451f-b35f-6c369ee4048c" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts
+---
+vars.targetFileContent must equalTo(vars.sourceFileContent)]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="smb-copy-dir-to-null-target-path" doc:id="9da0fca0-cd42-450d-ad05-373831e168fc" description="Performs a copy operation on a directory to a null target path" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot copy '/dirToCopy': source and target paths are the same">
+		<munit:behavior >
+			<smb:write doc:name="Write" doc:id="970f68b3-8d83-44e1-b951-aedc9bc98cc6" config-ref="config" path="dirToCopy/sourceFile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:behavior>
+		<munit:execution >
+			<smb:copy doc:name="Copy" doc:id="24eef334-e60d-496a-92e7-3da03e311179" config-ref="config" sourcePath="dirToCopy" targetPath="#[null]"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-copy-dir-to-shared-dir-tree" doc:id="de84f128-14be-41e2-bc39-380a5d4d1feb" description="Performs a copy operation of a directory in a shared directory tree" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot copy '/baseDir': source path is a directory and target path shares the same directory tree">
+		<munit:behavior >
+			<set-variable value="/baseDir/sourceDir/someFile.txt" doc:name="Set Variable" doc:id="5323c02b-1310-4316-9ed1-3a296b3db7ed" variableName="sourceFile"/>
+			<smb:write doc:name="Write" doc:id="87587018-a1ae-46d1-bf18-01fe88794df4" config-ref="config" path="#[vars.sourceFile]">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:behavior>
+		<munit:execution >
+			<smb:copy doc:name="Copy" doc:id="adfb8ef8-a701-4483-9b4f-1d217ff2b5aa" config-ref="config" sourcePath="/baseDir" targetPath="/baseDir/targetDir"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-copy-directories" description="Perform a copy operation that copies a whole directory">
         <munit:behavior>
             <set-variable variableName="fileContent" value="I just want to impress Mr. Stark"/>
 
@@ -62,9 +102,8 @@
             <smb:read config-ref="config" path="copy-dir-test/folder-copied/folder-to-copy/file3.txt"/>
             <munit-tools:assert>
                 <munit-tools:that><![CDATA[#[import * from dw::test::Asserts
-                                     ---
-                                    payload must equalTo(vars.fileContent)
-                                    ]]]>
+---
+payload must equalTo(vars.fileContent)]]]>
                 </munit-tools:that>
             </munit-tools:assert>
         </munit:validation>

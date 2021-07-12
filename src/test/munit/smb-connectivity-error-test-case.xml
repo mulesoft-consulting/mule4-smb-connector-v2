@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
       xmlns="http://www.mulesoft.org/schema/mule/core"
       xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
       xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
-      xmlns:java="http://www.mulesoft.org/schema/mule/java"
-      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+      xmlns:java="http://www.mulesoft.org/schema/mule/java" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
         http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
         http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
@@ -20,7 +20,28 @@
         <flow-ref name="delete-all-files" />
     </munit:before-suite>
 
-    <munit:test name="smb-connectivity-error-namespace-write" description="Connectivity error throws SMB:CONNECTIVITY for write operation">
+    <munit:test name="smb-connectivity-error-invalid-port" doc:id="505db827-2519-40e5-bb21-8713eea9f53f" expectedErrorType="SMB:CANNOT_REACH" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\share', user: 'WORKGROUP\mulesoft'): Connection refused (Connection refused)" description="Performs a write operation using a connection with an invalid port">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="5ad927a3-c4c9-4fc5-b038-dd2dd29a0e7f" config-ref="config-invalid-port" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-error-invalid-host" doc:id="9c7ddf26-470a-4cfb-b661-537848ceb674" expectedErrorType="SMB:UNKNOWN_HOST" description="Performs a write operation using a configuration with an invalid hostname" expectedErrorDescription="Could not establish SMB connection (host: '\\invalid-hostname\/share', user: 'WORKGROUP\mulesoft'): invalid-hostname">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="60e0b046-7b87-4ae8-a48a-fd8899e32658" config-ref="config-invalid-host" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-invalid-credentials" doc:id="6193ba7e-fef7-4461-ba1e-f9497c7dce3c" description="Performs a write operation using a configuration with invalid credentials" expectedErrorType="SMB:INVALID_CREDENTIALS">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="b6a4f8d3-62b9-4e93-b20e-f2907478b115" config-ref="config-invalid-credentials" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-error-namespace-write" description="Connectivity error throws SMB:CONNECTIVITY for write operation">
         <munit:behavior>
             <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
             <set-variable variableName="operationSucceeded" value="#[false]" />

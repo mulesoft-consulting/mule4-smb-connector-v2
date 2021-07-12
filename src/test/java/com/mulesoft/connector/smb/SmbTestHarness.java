@@ -11,12 +11,14 @@ import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
+import com.mulesoft.connector.smb.internal.utils.SmbUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileWriteMode;
+import org.mule.extension.file.common.api.util.UriUtils;
 import org.mule.tck.junit4.rule.DynamicPort;
 import org.mule.test.extension.file.common.api.FileTestHarness;
 
@@ -25,7 +27,6 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -43,8 +44,8 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
 
   private static final String SMB_PORT = "SMB_PORT";
 
-  private TemporaryFolder temporaryFolder = new TemporaryFolder();
-  private DynamicPort smbPort = new DynamicPort(SMB_PORT);
+  private final TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private final DynamicPort smbPort = new DynamicPort(SMB_PORT);
 
   private SmbClient smbClient;
 
@@ -62,7 +63,6 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
   @Override
   protected void doBefore() throws Exception {
     temporaryFolder.create();
-    //setUpServer();
     smbClient = createDefaultSmbClient();
     List<SmbFileAttributes> files = smbClient.list("/");
     if (files != null && !files.isEmpty()) {
@@ -73,12 +73,6 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
       }
     }
 
-    try {
-      //smbClient.delete(".deleted");
-    } catch (Exception e) {
-      //Do nothing
-    }
-
     assertTrue(smbClient.list("/").isEmpty());
   }
 
@@ -86,7 +80,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
    * Disconnects the client and shuts the server down
    */
   @Override
-  protected void doAfter() throws Exception {
+  protected void doAfter() {
     try {
       if (smbClient != null) {
         smbClient.disconnect();
@@ -128,7 +122,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
    * {@inheritDoc}
    */
   @Override
-  public void createBinaryFile() throws Exception {
+  public void createBinaryFile() {
     smbClient.write(BINARY_FILE_NAME, new ByteArrayInputStream(HELLO_WORLD.getBytes()), OVERWRITE);
   }
 
@@ -136,7 +130,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
    * {@inheritDoc}
    */
   @Override
-  public void makeDir(String directoryPath) throws Exception {
+  public void makeDir(String directoryPath) {
     smbClient.mkdir(directoryPath);
   }
 
@@ -144,7 +138,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
    * {@inheritDoc}
    */
   @Override
-  public String getWorkingDirectory() throws Exception {
+  public String getWorkingDirectory() {
     // Assume the share root as the working dir
     return "/";
   }
@@ -153,7 +147,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
    * {@inheritDoc}
    */
   @Override
-  public void write(String path, String content) throws Exception {
+  public void write(String path, String content) {
     smbClient.write(path, new ByteArrayInputStream(content.getBytes()), APPEND);
   }
 
@@ -178,7 +172,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
    * {@inheritDoc}
    */
   @Override
-  public boolean changeWorkingDirectory(String path) throws Exception {
+  public boolean changeWorkingDirectory(String path) {
     // Does not apply to SMB
     return true;
   }
@@ -187,16 +181,15 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
    * {@inheritDoc}
    */
   @Override
-  public String[] getFileList(String path) throws Exception {
-    List<String> files = smbClient.list(path).stream().map(FileAttributes::getName).collect(toList());
-    return files.toArray(new String[files.size()]);
+  public String[] getFileList(String path) {
+    return smbClient.list(path).stream().map(FileAttributes::getName).toArray(String[]::new);
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public int getServerPort() throws Exception {
+  public int getServerPort() {
     return SmbServer.PORT;
   }
 
@@ -209,7 +202,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
     SmbFileAttributes file = smbClient.getAttributes(createUri(path));
 
     assertThat(fileAttributes.getName(), equalTo(file.getName()));
-    assertThat(fileAttributes.getPath(), is(smbClient.resolvePath(HELLO_PATH).toString()));
+    assertThat(fileAttributes.getPath(), is(this.resolvePath(HELLO_PATH).getPath()));
     assertThat(fileAttributes.getSize(), is(file.getSize()));
     assertThat(fileAttributes.getTimestamp(), equalTo(file.getTimestamp()));
     assertThat(fileAttributes.isDirectory(), is(false));
@@ -234,21 +227,16 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
 
   // TODO: review possible authentication type to SMB Server (NTLM, Kerberos, and so on)
   // TODO: implement validation according to different SMB protocol versions
-  /*
-  public enum AuthType {
-    USER_PASSWORD, PUBLIC_KEY
-  }
-  */
 
-  protected void writeByteByByteAsync(String path, String content, long delayBetweenCharacters) throws Exception {
+  protected void writeByteByByteAsync(String path, String content, long delayBetweenCharacters) {
     OutputStream os = smbClient.getOutputStream(path, FileWriteMode.CREATE_NEW);
 
     new Thread(() -> {
 
       try {
         byte[] bytes = content.getBytes();
-        for (int i = 0; i < bytes.length; i++) {
-          IOUtils.copy(new ByteArrayInputStream(new byte[] {bytes[i]}), os);
+        for (byte aByte : bytes) {
+          IOUtils.copy(new ByteArrayInputStream(new byte[] {aByte}), os);
           os.flush();
           Thread.sleep(delayBetweenCharacters);
         }
@@ -258,5 +246,19 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
     }).start();
 
   }
+
+  private URI resolvePath(String filePath) {
+    URI result = null;
+
+    if (filePath != null) {
+      String actualFilePath = filePath;
+      if (!actualFilePath.startsWith("/") && !actualFilePath.startsWith("smb://")) {
+        actualFilePath = "/" + actualFilePath;
+      }
+      result = UriUtils.createUri(SmbUtils.normalizePath(actualFilePath));
+    }
+    return result;
+  }
+
 
 }

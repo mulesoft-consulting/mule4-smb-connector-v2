@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
       xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
       xmlns="http://www.mulesoft.org/schema/mule/core"
       xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
-      xmlns:java="http://www.mulesoft.org/schema/mule/java"
-      xsi:schemaLocation="
+      xmlns:java="http://www.mulesoft.org/schema/mule/java" xsi:schemaLocation="
 		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
 		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
@@ -16,15 +16,114 @@
 
     <munit:dynamic-port propertyName="smb.server.port"/>
 
-    <munit:before-suite name="startListMatcherTestServer">
-        <flow-ref name="delete-all-files" />
-    </munit:before-suite>
-
     <munit:before-test name="create-file-for-list">
-        <flow-ref name="write-file"/>
+        <smb:delete doc:name="Delete" doc:id="a2e36cd5-c617-4336-abd2-1b53332c02a6" config-ref="config" path="/"/>
+		<flow-ref name="write-file"/>
     </munit:before-test>
 
-    <munit:test name="listFilteringNewFiles" description="Newly added files are filtered by the matcher">
+    <munit:test name="listFileAsDirectory" doc:id="70dc54cf-07b5-4a68-b766-e2c83b105175" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot list path '/somefile' because it's a file. Only directories can be listed" description="Performs a list operation on a regular file">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="b7bd88ee-d1d9-4557-ae72-49e24b4bcb8a" config-ref="config" path="/somefile">
+				<smb:content ><![CDATA[This is a file]]></smb:content>
+			</smb:write>
+			<smb:list doc:name="List" doc:id="ea63f079-b28d-4712-bd0f-bf655893612e" config-ref="config" directoryPath="/somefile"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="listDirectoriesMatchingName" doc:id="9e78cadb-3bd0-47e2-8b9d-e1661abafc76" description="Performs a list operation matching directory name">
+		<munit:execution >
+			<smb:create-directory doc:name="Create directory" doc:id="32d14f9a-19ed-45ac-95e8-73d0eae9b6d5" config-ref="config" directoryPath="/baseDir/subdir1/subdir2"/>
+			<smb:list doc:name="List" doc:id="f706023c-73c8-4bed-9ce9-fed25b4ef3ad" config-ref="config" directoryPath="/baseDir" recursive="true">
+				<smb:matcher filenamePattern="subdir1"/>
+			</smb:list>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert expression" doc:id="aeedfec4-efba-4ee6-a5c2-bc05317a2204" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+(payload.attributes filter (item, index) -> (item.path == "/baseDir/subdir1")) must haveSize(1)]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="listFilesModifiedBeforeTimestampSince" doc:id="f10c9415-5a09-4e66-bc6f-54c7dc437d54" description="Verifies that files modified before timestampSince are not listed">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="9a566249-8417-498e-b579-45e8fa0c7871" config-ref="config" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="0b6920ce-b3ae-4408-bea7-d798422e8577" config-ref="config" path="somefile.txt" />
+			<smb:list doc:name="List" doc:id="f9d3f62f-4f53-4e56-af25-49cd23aed258" config-ref="config" directoryPath="/">
+				<smb:matcher timestampSince="#[attributes.timestamp + |PT1S|]"/>
+			</smb:list>
+			<munit-tools:assert doc:name="Assert expression" doc:id="3f65cd2f-8d54-4790-ae04-01e312e7eff0" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+(payload.attributes filter(item, index) -> (item.path == "/somefile.txt")) must beEmpty()]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="listFilesModifiedAfterTimestampSince" doc:id="756ded11-0620-4ab1-9e60-47e23d79aad3" description="Verifies that files modified after timestampSince are listed">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="578ca5d7-3f13-47d8-a4ce-58cc71e38bc4" config-ref="config" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="d3fee309-ebe1-417e-8ea5-ee4f4eccc8c8" config-ref="config" path="somefile.txt"/>
+			<smb:list doc:name="List" doc:id="924e285c-64b9-425f-b5f6-0115e1ae517f" config-ref="config" directoryPath="/">
+				<smb:matcher timestampSince="#[attributes.timestamp - |PT1S|]"/>
+			</smb:list>
+			<munit-tools:assert doc:name="Assert expression" doc:id="a94cb3bb-eada-4f77-a3cf-15efc90e20fd" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+(payload.attributes filter(item, index) -> (item.path == "/somefile.txt")) must haveSize(1)]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="listFilesModifiedAfterTimestampUntil" doc:id="e20e2f45-c666-4301-9baf-c0f4e035d118" description="Verifies that files modified after timestampSince are not listed">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="515e19af-1aed-493e-a380-4a6934f2083a" path="somefile.txt" config-ref="config">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="45490fea-5967-4663-9d69-ad4a621a9714" config-ref="config" path="somefile.txt"/>
+			<smb:list doc:name="List" doc:id="2001cf0c-a83a-4f7b-9ebe-cc921388a7a8" config-ref="config" directoryPath="/">
+				<smb:matcher timestampUntil="#[attributes.timestamp - |PT1S|]" />
+			</smb:list>
+			<munit-tools:assert doc:name="Assert expression" doc:id="347a0fe3-4541-41d6-873c-cfb86d4399aa" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+(payload.attributes filter(item, index) -> (item.path == "/somefile.txt")) must beEmpty()]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="listFilesModifiedBeforeTimestampUntil" doc:id="58a3fc0d-d4ef-47d2-8d80-32d537e3b0a0" description="Verifies that files modified before timestampUntil are listed">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="02d52793-2d2e-42d9-b589-32bf532ce1a5" config-ref="config" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="953ec0a8-cd4c-4caf-8b05-cd6dded8590b" config-ref="config" path="somefile.txt"/>
+			<smb:list doc:name="List" doc:id="caaecc19-53e1-4652-b452-55ee78fa5e50" config-ref="config" directoryPath="/">
+				<smb:matcher timestampUntil="#[attributes.timestamp + |PT1S|]" />
+			</smb:list>
+			<munit-tools:assert doc:name="Assert expression" doc:id="cd472677-1176-4304-a3c3-293ae19e0bbd" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+(payload.attributes filter(item, index) -> (item.path == "/somefile.txt")) must haveSize(1)]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="listWithHighPrecisionTimeUnit" doc:id="fa07e324-ec0d-49b3-87c4-875ef2af0419" description="Performs a list operation using a high precision time unit in matcher">
+		<munit:execution>
+			<smb:list doc:name="List" doc:id="877b053f-c3ae-48c6-9231-942fe5863d4d" config-ref="config" directoryPath="/">
+				<smb:matcher notUpdatedInTheLast="5" updatedInTheLast="10" timeUnit="NANOSECONDS" />
+			</smb:list>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="listFilteringNewFiles" description="Newly added files are filtered by the matcher">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="list-filtering-updated-recently"/>
         </munit:enable-flow-sources>

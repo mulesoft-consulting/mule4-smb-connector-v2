@@ -6,18 +6,12 @@
  */
 package com.mulesoft.connector.smb;
 
-import static java.lang.String.format;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
-import static org.mule.tck.probe.PollingProber.check;
-import static org.mule.tck.probe.PollingProber.checkNot;
-
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
+import io.qameta.allure.Description;
+import io.qameta.allure.Feature;
 import org.junit.Ignore;
+import org.junit.Test;
 import org.mule.extension.file.common.api.FileAttributes;
-import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.lifecycle.Startable;
 import org.mule.runtime.api.lifecycle.Stoppable;
 import org.mule.runtime.api.message.Message;
@@ -31,9 +25,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import io.qameta.allure.Description;
-import io.qameta.allure.Feature;
-import org.junit.Test;
+import static java.lang.String.format;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
+import static org.mule.tck.probe.PollingProber.check;
+import static org.mule.tck.probe.PollingProber.checkNot;
 
 @Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTestCase {
@@ -54,7 +52,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   public static class TestProcessor implements Processor {
 
     @Override
-    public CoreEvent process(CoreEvent event) throws MuleException {
+    public CoreEvent process(CoreEvent event) {
       RECEIVED_MESSAGES.add(event.getMessage());
       return event;
     }
@@ -80,7 +78,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Override
-  protected void doTearDown() throws Exception {
+  protected void doTearDown() {
     RECEIVED_MESSAGES = null;
   }
 
@@ -89,7 +87,6 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
   @Description("Verifies that a created file is picked")
   public void onFileCreated() throws Exception {
     URI file = buildPath(MATCHERLESS_LISTENER_FOLDER_NAME, WATCH_FILE);
@@ -117,7 +114,6 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
   @Description("Verifies that files created in subdirs are picked")
   public void recursive() throws Exception {
     URI subdir = buildPath(MATCHERLESS_LISTENER_FOLDER_NAME, "subdir");
@@ -129,8 +125,8 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Description("Verifies that files created in subdirs are not picked")
   @Ignore
+  @Description("Verifies that files created in subdirs are not picked")
   public void nonRecursive() throws Exception {
     stopFlow("listenWithoutMatcher");
 
@@ -149,7 +145,6 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
   @Description("Verifies that only files compliant with the matcher are picked")
   public void matcher() throws Exception {
     final URI file = buildPath(WITH_MATCHER_FOLDER_NAME, MATCH_FILE);
@@ -162,7 +157,6 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
   @Description("Verifies that files are moved after processing")
   public void moveTo() throws Exception {
     stopFlow("listenWithoutMatcher");
@@ -175,7 +169,6 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
   @Description("Verifies that files are moved after processing even if autoDelete is configured")
   public void moveToAndAutoDelete() throws Exception {
     stopFlow("listenWithoutMatcher");
@@ -192,7 +185,6 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
   @Description("Verifies that files that cannot be moved because a file already exists in the other directory with that name are deleted")
   public void moveToAndAutoDeleteWithSameFileName() throws Exception {
     stopFlow("listenWithoutMatcher");
@@ -213,7 +205,6 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
   @Description("Verifies that files that cannot be moved because a file already exists in the other directory with that name remain untouched")
   public void moveToWithSameFileName() throws Exception {
     stopFlow("listenWithoutMatcher");
@@ -235,7 +226,6 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
   @Description("Verifies that files are moved and renamed after processing")
   public void moveToWithRename() throws Exception {
     stopFlow("listenWithoutMatcher");

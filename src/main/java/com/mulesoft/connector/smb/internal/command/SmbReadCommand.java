@@ -6,18 +6,16 @@
  */
 package com.mulesoft.connector.smb.internal.command;
 
-import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-import static org.slf4j.LoggerFactory.getLogger;
-
+import com.mulesoft.connector.smb.api.SmbFileAttributes;
+import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
+import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
+import com.mulesoft.connector.smb.internal.extension.SmbConnector;
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.command.ReadCommand;
 import org.mule.extension.file.common.api.lock.NullUriLock;
 import org.mule.extension.file.common.api.lock.UriLock;
 import org.mule.extension.file.common.api.util.UriUtils;
-import com.mulesoft.connector.smb.api.SmbFileAttributes;
-import com.mulesoft.connector.smb.internal.extension.SmbConnector;
-import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.util.IOUtils;
@@ -26,7 +24,9 @@ import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
+
+import static org.mule.extension.file.common.api.util.UriUtils.createUri;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * A {@link SmbCommand} which implements the {@link ReadCommand} contract
@@ -44,8 +44,10 @@ public final class SmbReadCommand extends SmbCommand implements ReadCommand<SmbF
   /**
    * {@inheritDoc}
    */
+
   @Override
   @Deprecated
+  @ExcludeFromGeneratedCoverageReport("Cannot remove method as it must be implemented, even if deprecated")
   public Result<InputStream, SmbFileAttributes> read(FileConnectorConfig config, String filePath, boolean lock) {
     return read(config, filePath, lock, null);
   }
@@ -70,13 +72,6 @@ public final class SmbReadCommand extends SmbCommand implements ReadCommand<SmbF
     return read(config, attributes, lock, timeBetweenSizeCheck, false);
   }
 
-  @Deprecated
-  public Result<InputStream, SmbFileAttributes> read(FileConnectorConfig config, String filePath, boolean lock,
-                                                     Long timeBetweenSizeCheck, TimeUnit timeBetweenSizeCheckUnit) {
-    return read(config, filePath, lock,
-                config.getTimeBetweenSizeCheckInMillis(timeBetweenSizeCheck, timeBetweenSizeCheckUnit).orElse(null));
-  }
-
   public SmbFileAttributes readAttributes(String filePath) {
     return getFile(filePath);
   }
@@ -96,19 +91,16 @@ public final class SmbReadCommand extends SmbCommand implements ReadCommand<SmbF
       IOUtils.closeQuietly(payload);
       throw exception("Could not fetch file " + uri.getPath(), e);
     } finally {
-      if (pathLock != null) {
-        try {
-          pathLock.release();
-        } catch (Exception e) {
-          LOGGER.warn("Could not release lock for path " + uri.toString(), e);
-        }
+      try {
+        pathLock.release();
+      } catch (Exception e) {
+        LOGGER.warn("Could not release lock for path " + uri, e);
       }
     }
   }
 
   private InputStream getFileInputStream(SmbConnector config, SmbFileAttributes attributes, UriLock pathLock,
-                                         Long timeBetweenSizeCheck, boolean useCurrentConnection)
-      throws ConnectionException {
+                                         Long timeBetweenSizeCheck, boolean useCurrentConnection) {
     if (useCurrentConnection) {
       return SmbInputStream.newInstance(fileSystem, attributes, pathLock, timeBetweenSizeCheck);
     } else {

@@ -16,7 +16,6 @@ import java.net.URI;
  *
  * @since 1.0
  */
-@FunctionalInterface
 public interface SmbCopyDelegate {
 
   /**
@@ -27,4 +26,6 @@ public interface SmbCopyDelegate {
    * @param overwrite whether to overwrite the target file if it already exists
    */
   void doCopy(FileConnectorConfig config, FileAttributes source, URI targetUri, boolean overwrite);
+
+  String getOperation();
 }

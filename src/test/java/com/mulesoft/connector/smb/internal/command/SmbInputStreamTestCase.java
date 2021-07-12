@@ -7,26 +7,19 @@
 package com.mulesoft.connector.smb.internal.command;
 
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-
-import com.mulesoft.connector.smb.internal.command.SmbInputStream;
-import org.mule.extension.file.common.api.lock.UriLock;
-import org.mule.runtime.api.connection.ConnectionHandler;
-
-import java.io.ByteArrayInputStream;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mule.extension.file.common.api.lock.UriLock;
+
+import java.io.ByteArrayInputStream;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SmbInputStreamTestCase {
@@ -39,12 +32,8 @@ public class SmbInputStreamTestCase {
   @Mock
   private SmbInputStream.SmbFileInputStreamSupplier streamSupplier;
 
-  @Mock
-  private ConnectionHandler connectionHandler;
-
-
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     when(uriLock.isLocked()).thenReturn(true);
     doAnswer(invocation -> {
       when(uriLock.isLocked()).thenReturn(false);
@@ -62,7 +51,7 @@ public class SmbInputStreamTestCase {
     assertThat(inputStream.isLocked(), is(true));
     verify(uriLock).isLocked();
 
-    org.apache.commons.io.IOUtils.toString(inputStream, "UTF-8");
+    org.apache.commons.io.IOUtils.toString(inputStream, UTF_8);
 
     verify(uriLock, times(1)).release();
     assertThat(inputStream.isLocked(), is(false));
