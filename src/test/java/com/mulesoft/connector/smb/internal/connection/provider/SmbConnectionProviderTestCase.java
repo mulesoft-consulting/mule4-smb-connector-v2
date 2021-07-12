@@ -105,7 +105,11 @@ public class SmbConnectionProviderTestCase {
     try {
       provider.connect();
     } catch (SmbConnectionException sce) {
-      verifyConnectionException(sce, ConnectException.class, "Can't assign requested address (connect failed)", CANNOT_REACH);
+      try {
+        verifyConnectionException(sce, ConnectException.class, "Can't assign requested address (connect failed)", CANNOT_REACH);
+      } catch (AssertionError ae) {
+        verifyConnectionException(sce, ConnectException.class, "Connection refused (Connection refused)", CANNOT_REACH);
+      }
     }
   }
 
