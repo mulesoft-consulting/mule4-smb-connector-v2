@@ -23,7 +23,7 @@
         <AsyncLogger name="com.mulesoft.connector.smb" level="INFO"/>
 
         <!-- Change this to DEBUG to troubleshoot errors -->
-        <AsyncLogger name="com.hierynomus.smbj" level="WARN"/>
+        <AsyncLogger name="com.hierynomus.smbj" level="ERRROR"/>
         <AsyncLogger name="com.mulesoft.anypoint.tita" level="TRACE"/>
 
         <AsyncRoot level="INFO">
