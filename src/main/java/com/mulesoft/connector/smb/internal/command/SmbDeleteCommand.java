@@ -61,21 +61,12 @@ public final class SmbDeleteCommand extends SmbCommand implements DeleteCommand 
     String actualPath = path + (path.endsWith("/") ? "" : "/");
     for (FileAttributes file : client.list(path)) {
       final String filePath = file.getPath();
-      if (isVirtualDirectory(file.getName())) {
-        continue;
-      }
 
       if (file.isDirectory()) {
         deleteDirectory(filePath);
       } else {
         deleteFile(filePath);
       }
-    }
-
-    URI directoryUri = createUri(path);
-    String directoryFragment = FilenameUtils.getName(directoryUri.getPath());
-    if (isVirtualDirectory(directoryFragment)) {
-      path = directoryUri.getPath();
     }
 
     if (!client.pathIsShareRoot(actualPath)) {

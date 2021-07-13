@@ -183,17 +183,11 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
     if (e instanceof SMBApiException) {
       error = getFileErrorFor((SMBApiException) e);
     } else {
-      if (e instanceof SocketTimeoutException
-      //        || e.getMessage().contains("connect timed out")
-      ) {
+      if (e instanceof SocketTimeoutException) {
         error = CONNECTION_TIMEOUT;
-      } else if (e instanceof UnknownHostException
-      //|| e.getCause() instanceof UnknownHostException
-      ) {
+      } else if (e instanceof UnknownHostException) {
         error = UNKNOWN_HOST;
-      } else if (e instanceof ConnectException
-      //|| e.getCause() instanceof ConnectException
-      ) {
+      } else if (e instanceof ConnectException) {
         error = CANNOT_REACH;
       }
     }
@@ -271,5 +265,7 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
     this.timeoutSettings.setTransactionTimeoutUnit(transactionTimeoutUnit);
     this.timeoutSettings.setTransactionTimeout(transactionTimeout);
   }
+
+
 
 }

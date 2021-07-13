@@ -252,7 +252,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
 
     if (filePath != null) {
       String actualFilePath = filePath;
-      if (!actualFilePath.startsWith("/") && !actualFilePath.startsWith("smb://")) {
+      if (!actualFilePath.startsWith("/")) {
         actualFilePath = "/" + actualFilePath;
       }
       result = UriUtils.createUri(SmbUtils.normalizePath(actualFilePath));

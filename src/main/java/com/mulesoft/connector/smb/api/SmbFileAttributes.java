@@ -37,13 +37,7 @@ public class SmbFileAttributes extends AbstractFileAttributes {
   private long size;
 
   @Parameter
-  private boolean regularFile;
-
-  @Parameter
   private boolean directory;
-
-  @Parameter
-  private boolean exists;
 
   @Parameter
   private String absolutePath;
@@ -60,14 +54,10 @@ public class SmbFileAttributes extends AbstractFileAttributes {
   }
 
   protected void populate(FileAllInformation file) {
-    this.setExists(file != null);
-    if (file != null) {
-      this.absolutePath = file.getNameInformation().replaceAll("\\\\", "/");
-      this.size = file.getStandardInformation().getEndOfFile();
-      this.directory = file.getStandardInformation().isDirectory();
-      this.regularFile = !this.isDirectory();
-      this.timestamp = localDateTimeFromEpoch(file.getBasicInformation().getLastWriteTime().toEpochMillis());
-    }
+    this.absolutePath = file.getNameInformation().replaceAll("\\\\", "/");
+    this.size = file.getStandardInformation().getEndOfFile();
+    this.directory = file.getStandardInformation().isDirectory();
+    this.timestamp = localDateTimeFromEpoch(file.getBasicInformation().getLastWriteTime().toEpochMillis());
   }
 
   protected LocalDateTime localDateTimeFromEpoch(long epochMilli) {
@@ -86,7 +76,7 @@ public class SmbFileAttributes extends AbstractFileAttributes {
 
   @Override
   public boolean isRegularFile() {
-    return this.regularFile;
+    return !this.directory;
   }
 
   @Override
@@ -106,10 +96,6 @@ public class SmbFileAttributes extends AbstractFileAttributes {
     return this.absolutePath;
   }
 
-  protected void setExists(boolean exists) {
-    this.exists = exists;
-  }
-
   @Override
   @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public boolean equals(Object o) {
@@ -118,14 +104,14 @@ public class SmbFileAttributes extends AbstractFileAttributes {
     if (o == null || getClass() != o.getClass())
       return false;
     SmbFileAttributes that = (SmbFileAttributes) o;
-    return size == that.size && directory == that.directory && regularFile == that.regularFile && exists == that.exists
+    return size == that.size && directory == that.directory
         && Objects.equals(timestamp, that.timestamp) && Objects.equals(absolutePath, that.absolutePath);
   }
 
   @Override
   @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public int hashCode() {
-    return Objects.hash(size, directory, regularFile, exists, timestamp, absolutePath);
+    return Objects.hash(size, directory, timestamp, absolutePath);
   }
 
 

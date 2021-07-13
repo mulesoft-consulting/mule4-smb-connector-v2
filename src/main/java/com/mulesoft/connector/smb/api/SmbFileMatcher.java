@@ -119,7 +119,7 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
     if (alreadyLoggedWarning.compareAndSet(false, true) && isSecondsOrLower(timeUnit)
         && attributes.getTimestamp().getSecond() == 0 && attributes.getTimestamp().getNano() == 0) {
       LOGGER
-          .warn(format("The required timestamp precision {} cannot be met. The server may not support it.",
+          .warn(format("The required timestamp precision %s cannot be met. The server may not support it.",
                        timeUnit));
     }
   }

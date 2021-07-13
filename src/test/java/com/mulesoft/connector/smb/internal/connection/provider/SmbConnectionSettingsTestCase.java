@@ -35,19 +35,19 @@ public class SmbConnectionSettingsTestCase {
   @Test
   public void connSettingsEqualsNullObject() {
     SmbConnectionSettings connSettings = new SmbConnectionSettings();
-    assertFalse(connSettings.equals(null));
+    assertNotEquals(connSettings, null);
   }
 
   @Test
   public void connSettingsEqualsOtherClassObject() {
     SmbConnectionSettings connSettings = new SmbConnectionSettings();
-    assertFalse(connSettings.equals(""));
+    assertNotEquals(connSettings, "");
   }
 
   @Test
   public void connSettingsEqualsSameObject() {
     SmbConnectionSettings connSettings = new SmbConnectionSettings();
-    assertTrue(connSettings.equals(connSettings));
+    assertNotEquals(connSettings, connSettings);
   }
 
   @Test
@@ -70,7 +70,7 @@ public class SmbConnectionSettingsTestCase {
     otherConnSettings.setShareRoot("shareRoot");
     otherConnSettings.setDfsEnabled(true);
 
-    assertTrue(oneConnSettings.equals(otherConnSettings));
+    assertEquals(oneConnSettings, otherConnSettings);
   }
 
   @Test
@@ -93,7 +93,7 @@ public class SmbConnectionSettingsTestCase {
     otherConnSettings.setShareRoot("shareRoot");
     otherConnSettings.setDfsEnabled(true);
 
-    assertFalse(oneConnSettings.equals(otherConnSettings));
+    assertNotEquals(oneConnSettings, otherConnSettings);
   }
 
   @Test
@@ -116,7 +116,7 @@ public class SmbConnectionSettingsTestCase {
     otherConnSettings.setShareRoot("shareRoot");
     otherConnSettings.setDfsEnabled(true);
 
-    assertFalse(oneConnSettings.equals(otherConnSettings));
+    assertNotEquals(oneConnSettings, otherConnSettings);
   }
 
   @Test
@@ -139,7 +139,7 @@ public class SmbConnectionSettingsTestCase {
     otherConnSettings.setShareRoot("shareRoot");
     otherConnSettings.setDfsEnabled(true);
 
-    assertFalse(oneConnSettings.equals(otherConnSettings));
+    assertNotEquals(oneConnSettings, otherConnSettings);
   }
 
   @Test
@@ -162,7 +162,7 @@ public class SmbConnectionSettingsTestCase {
     otherConnSettings.setShareRoot("shareRoot");
     otherConnSettings.setDfsEnabled(true);
 
-    assertFalse(oneConnSettings.equals(otherConnSettings));
+    assertNotEquals(oneConnSettings, otherConnSettings);
   }
 
   @Test
@@ -185,7 +185,7 @@ public class SmbConnectionSettingsTestCase {
     otherConnSettings.setShareRoot("shareRoot");
     otherConnSettings.setDfsEnabled(true);
 
-    assertFalse(oneConnSettings.equals(otherConnSettings));
+    assertNotEquals(oneConnSettings, otherConnSettings);
   }
 
   @Test
@@ -208,7 +208,7 @@ public class SmbConnectionSettingsTestCase {
     otherConnSettings.setShareRoot("otherShareRoot");
     otherConnSettings.setDfsEnabled(true);
 
-    assertFalse(oneConnSettings.equals(otherConnSettings));
+    assertNotEquals(oneConnSettings, otherConnSettings);
   }
 
   @Test
@@ -231,7 +231,7 @@ public class SmbConnectionSettingsTestCase {
     otherConnSettings.setShareRoot("shareRoot");
     otherConnSettings.setDfsEnabled(false);
 
-    assertFalse(oneConnSettings.equals(otherConnSettings));
+    assertNotEquals(oneConnSettings, otherConnSettings);
   }
 
 

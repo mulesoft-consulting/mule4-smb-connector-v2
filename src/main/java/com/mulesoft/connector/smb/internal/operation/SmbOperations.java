@@ -374,10 +374,8 @@ public final class SmbOperations extends BaseFileSystemOperations {
                      @Optional(defaultValue = "true") boolean writeToLogger,
                      CompletionCallback<Void, Void> callback) {
 
-    if (writeToLogger) {
-      if (logLevel.isEnabled(LOGGER)) {
-        logLevel.log(LOGGER, message);
-      }
+    if (writeToLogger && logLevel.isEnabled(LOGGER)) {
+      logLevel.log(LOGGER, message);
     }
 
     if (isBlank(path)) {

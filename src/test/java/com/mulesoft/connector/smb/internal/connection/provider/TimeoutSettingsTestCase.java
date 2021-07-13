@@ -44,7 +44,7 @@ public class TimeoutSettingsTestCase {
   @Test
   public void testTimeoutSettingsEqualsSameObject() {
     TimeoutSettings timeoutSettings = new TimeoutSettings();
-    assertTrue(timeoutSettings.equals(timeoutSettings));
+    assertEquals(timeoutSettings, timeoutSettings);
   }
 
   @Test
@@ -53,7 +53,7 @@ public class TimeoutSettingsTestCase {
     timeoutSettings.setSocketTimeout(10);
     timeoutSettings.setSocketTimeoutUnit(TimeUnit.MILLISECONDS);
 
-    assertFalse(timeoutSettings.equals(null));
+    assertNotEquals(timeoutSettings, null);
   }
 
   @Test
@@ -62,7 +62,7 @@ public class TimeoutSettingsTestCase {
     timeoutSettings.setSocketTimeout(10);
     timeoutSettings.setSocketTimeoutUnit(TimeUnit.MILLISECONDS);
 
-    assertFalse(timeoutSettings.equals(""));
+    assertNotEquals(timeoutSettings, "");
   }
 
   @Test
@@ -87,7 +87,7 @@ public class TimeoutSettingsTestCase {
     otherTimeoutSettings.setTransactionTimeoutUnit(TimeUnit.HOURS);
     otherTimeoutSettings.setTransactionTimeout(40);
 
-    assertTrue(oneTimeoutSettings.equals(otherTimeoutSettings));
+    assertEquals(oneTimeoutSettings, otherTimeoutSettings);
   }
 
   @Test
@@ -112,7 +112,7 @@ public class TimeoutSettingsTestCase {
     otherTimeoutSettings.setTransactionTimeoutUnit(TimeUnit.HOURS);
     otherTimeoutSettings.setTransactionTimeout(40);
 
-    assertFalse(oneTimeoutSettings.equals(otherTimeoutSettings));
+    assertNotEquals(oneTimeoutSettings, otherTimeoutSettings);
   }
 
   @Test
@@ -137,10 +137,9 @@ public class TimeoutSettingsTestCase {
     otherTimeoutSettings.setTransactionTimeoutUnit(TimeUnit.HOURS);
     otherTimeoutSettings.setTransactionTimeout(40);
 
-    assertFalse(oneTimeoutSettings.equals(otherTimeoutSettings));
+    assertNotEquals(oneTimeoutSettings, otherTimeoutSettings);
   }
 
-  /////
   @Test
   public void testTimeoutSettingsEqualsOtherDiffReadTimeoutUnit() {
     TimeoutSettings oneTimeoutSettings = new TimeoutSettings();
@@ -163,7 +162,7 @@ public class TimeoutSettingsTestCase {
     otherTimeoutSettings.setTransactionTimeoutUnit(TimeUnit.HOURS);
     otherTimeoutSettings.setTransactionTimeout(40);
 
-    assertFalse(oneTimeoutSettings.equals(otherTimeoutSettings));
+    assertNotEquals(oneTimeoutSettings, otherTimeoutSettings);
   }
 
   @Test
@@ -188,7 +187,7 @@ public class TimeoutSettingsTestCase {
     otherTimeoutSettings.setTransactionTimeoutUnit(TimeUnit.HOURS);
     otherTimeoutSettings.setTransactionTimeout(40);
 
-    assertFalse(oneTimeoutSettings.equals(otherTimeoutSettings));
+    assertNotEquals(oneTimeoutSettings, otherTimeoutSettings);
   }
 
 
@@ -214,7 +213,7 @@ public class TimeoutSettingsTestCase {
     otherTimeoutSettings.setTransactionTimeoutUnit(TimeUnit.HOURS);
     otherTimeoutSettings.setTransactionTimeout(40);
 
-    assertFalse(oneTimeoutSettings.equals(otherTimeoutSettings));
+    assertNotEquals(oneTimeoutSettings, otherTimeoutSettings);
   }
 
   @Test
@@ -239,7 +238,7 @@ public class TimeoutSettingsTestCase {
     otherTimeoutSettings.setTransactionTimeoutUnit(TimeUnit.HOURS);
     otherTimeoutSettings.setTransactionTimeout(40);
 
-    assertFalse(oneTimeoutSettings.equals(otherTimeoutSettings));
+    assertNotEquals(oneTimeoutSettings, otherTimeoutSettings);
   }
 
   @Test
@@ -264,7 +263,7 @@ public class TimeoutSettingsTestCase {
     otherTimeoutSettings.setTransactionTimeoutUnit(TimeUnit.DAYS);
     otherTimeoutSettings.setTransactionTimeout(40);
 
-    assertFalse(oneTimeoutSettings.equals(otherTimeoutSettings));
+    assertNotEquals(oneTimeoutSettings, otherTimeoutSettings);
   }
 
   @Test
@@ -289,7 +288,7 @@ public class TimeoutSettingsTestCase {
     otherTimeoutSettings.setTransactionTimeoutUnit(TimeUnit.HOURS);
     otherTimeoutSettings.setTransactionTimeout(45);
 
-    assertFalse(oneTimeoutSettings.equals(otherTimeoutSettings));
+    assertNotEquals(oneTimeoutSettings, otherTimeoutSettings);
   }
 
 

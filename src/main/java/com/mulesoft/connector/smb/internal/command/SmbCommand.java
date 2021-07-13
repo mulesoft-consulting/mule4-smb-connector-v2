@@ -9,7 +9,6 @@ package com.mulesoft.connector.smb.internal.command;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
-import com.mulesoft.connector.smb.internal.utils.SmbUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileConnectorConfig;
@@ -39,7 +38,7 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
 
   protected final SmbClient client;
 
-  public SmbCommand(SmbFileSystemConnection fileSystem) {
+  protected SmbCommand(SmbFileSystemConnection fileSystem) {
     this(fileSystem, fileSystem.getClient());
   }
 
@@ -49,7 +48,7 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
    * @param fileSystem a {@link SmbFileSystemConnection} used as the connection object
    * @param client a {@link SmbClient}
    */
-  public SmbCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
+  protected SmbCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
     super(fileSystem);
     this.client = client;
   }
@@ -103,11 +102,6 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
       }
     }
 
-  }
-
-  @Override
-  protected URI resolvePath(String filePath) {
-    return super.resolvePath(filePath);
   }
 
   /**

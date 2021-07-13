@@ -69,6 +69,7 @@ public final class SmbListCommand extends SmbCommand implements ListCommand<SmbF
                 config.getTimeBetweenSizeCheckInMillis(timeBetweenSizeCheck, timeBetweenSizeCheckUnit).orElse(null));
   }
 
+  @Override
   public List<Result<InputStream, SmbFileAttributes>> list(FileConnectorConfig config,
                                                            String directoryPath,
                                                            boolean recursive,
@@ -98,9 +99,6 @@ public final class SmbListCommand extends SmbCommand implements ListCommand<SmbF
     LOGGER.debug("Listing directory {}", path);
     for (SmbFileAttributes file : client.list(path)) {
 
-      if (isVirtualDirectory(file.getName())) {
-        continue;
-      }
       if (file.isDirectory()) {
         if (matcher.test(file)) {
           accumulator.add(Result.<InputStream, SmbFileAttributes>builder().output(null).attributes(file).build());

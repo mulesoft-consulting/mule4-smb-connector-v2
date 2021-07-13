@@ -16,7 +16,6 @@ import org.mule.extension.file.common.api.command.ReadCommand;
 import org.mule.extension.file.common.api.lock.NullUriLock;
 import org.mule.extension.file.common.api.lock.UriLock;
 import org.mule.extension.file.common.api.util.UriUtils;
-import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.util.IOUtils;
 import org.mule.runtime.extension.api.runtime.operation.Result;

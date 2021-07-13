@@ -69,7 +69,7 @@ import static org.mule.runtime.extension.api.runtime.source.PollContext.PollItem
 @Summary("Triggers when a new file is created in a directory")
 @Alias("smb-directory-listener")
 @ClusterSupport(SourceClusterSupport.DEFAULT_PRIMARY_NODE_ONLY)
-// TODO: MULE-13940 - add mimeType here too
+// TODO: check if mime type should be declared
 public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttributes> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SmbDirectorySource.class);
@@ -232,7 +232,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
     } catch (Exception e) {
       LOGGER.debug("Exception while trying to open connection. Cause: {} . Message: {}", e.getCause(), e.getMessage());
       if (extractConnectionException(e).isPresent()) {
-        extractConnectionException(e).ifPresent((connectionException) -> pollContext.onConnectionException(connectionException));
+        extractConnectionException(e).ifPresent(connectionException -> pollContext.onConnectionException(connectionException));
       } else {
         fileSystemProvider.disconnect(fileSystem);
       }

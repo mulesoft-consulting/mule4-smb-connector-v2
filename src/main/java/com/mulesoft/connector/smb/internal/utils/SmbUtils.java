@@ -15,13 +15,11 @@ import org.apache.commons.io.FilenameUtils;
  */
 public class SmbUtils {
 
-  private static final String SEPARATOR = "/";
-
   private SmbUtils() {}
 
   public static String normalizePath(String path) {
     String result = path;
-    if (result != null && !result.startsWith("smb://")) {
+    if (result != null) {
       result = FilenameUtils.normalize(path, true);
     }
 

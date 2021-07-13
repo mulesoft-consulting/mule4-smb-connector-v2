@@ -13,6 +13,11 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<munit:before-test name="smb-logger-test-caseBefore_Test" doc:id="d9f10d0c-8a6b-4afe-b44b-d2e4860abfa2" >
 		<smb:delete doc:name="Delete" doc:id="ba656482-1e72-4055-90c9-40b86a5c669d" config-ref="config" path="/"/>
 	</munit:before-test>
+	<munit:test name="smb-logger-test-caseTest1" doc:id="cd2b8acc-ab3b-4f41-b12f-b24b5f6c9128" >
+		<munit:execution >
+			<smb:logger doc:name="Logger" doc:id="e4244447-0324-4d97-9de7-35d29ca70aa2" config-ref="config" path="../logs/out.log" message="This is a test" logLevel="ERROR"/>
+		</munit:execution>
+	</munit:test>
 	<munit:test name="smb-logger-null-path" doc:id="45f642fb-9ba8-4602-8741-c3e094603a5d" expectedErrorType="SMB:ILLEGAL_PATH" description="Performs a logger operation using a null path" expectedErrorDescription="path cannot be null nor blank">
 		<munit:execution >
 			<smb:logger doc:name="Logger" doc:id="a8b271e4-92f7-407d-b1e5-b87669cc6d1a" config-ref="config-loglevel-info" path="#[null]" message="#[null]"/>
@@ -100,7 +105,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<munit:execution>
 			<scatter-gather doc:name="Scatter-Gather" doc:id="5cc9e082-19a8-4ad6-a96d-eec51e02ad14" >
 				<route >
-					<smb:logger doc:name="Logger" doc:id="51cd293c-6d72-439c-948f-4f90c7f8fd4e" config-ref="config-loglevel-info" path="/logs/out.log" message="This is a test"/>
+					<smb:logger doc:name="Logger" doc:id="51cd293c-6d72-439c-948f-4f90c7f8fd4e" config-ref="config-loglevel-info" path="/logs/out.log" message="This is a test" writeToLogger="false"/>
 				</route>
 				<route >
 					<smb:logger doc:name="Logger" doc:id="0778b88d-00c7-4f13-9f7f-55d073584945" config-ref="config-loglevel-info" logLevel="WARN" path="/logs/out.log" message="This is a test"/>

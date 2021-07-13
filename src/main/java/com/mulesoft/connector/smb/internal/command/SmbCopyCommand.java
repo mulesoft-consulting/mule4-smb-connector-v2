@@ -47,10 +47,6 @@ public class SmbCopyCommand extends SmbCommand implements CopyCommand {
     @Override
     protected void copyDirectory(URI sourceUri, URI target, boolean overwrite) {
       for (FileAttributes fileAttributes : client.list(sourceUri.toString())) {
-        if (isVirtualDirectory(fileAttributes.getName())) {
-          continue;
-        }
-
         URI targetUri = createUri(target.getPath(), fileAttributes.getName());
         if (fileAttributes.isDirectory()) {
           copyDirectory(URI.create(fileAttributes.getPath()), targetUri, overwrite);
