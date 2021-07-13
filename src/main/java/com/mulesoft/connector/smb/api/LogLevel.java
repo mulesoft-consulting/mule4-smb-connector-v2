@@ -12,8 +12,8 @@ public enum LogLevel {
   ERROR {
 
     @Override
-    public void log(Logger logger, Object object) {
-      logger.error(object == null ? null : object.toString());
+    public void log(Logger logger, String message) {
+      logger.error(message);
     }
 
     @Override
@@ -24,8 +24,8 @@ public enum LogLevel {
   WARN {
 
     @Override
-    public void log(Logger logger, Object object) {
-      logger.warn(object == null ? null : object.toString());
+    public void log(Logger logger, String message) {
+      logger.warn(message);
     }
 
     @Override
@@ -36,8 +36,8 @@ public enum LogLevel {
   INFO {
 
     @Override
-    public void log(Logger logger, Object object) {
-      logger.info(object == null ? null : object.toString());
+    public void log(Logger logger, String message) {
+      logger.info(message);
     }
 
     @Override
@@ -48,8 +48,8 @@ public enum LogLevel {
   DEBUG {
 
     @Override
-    public void log(Logger logger, Object object) {
-      logger.debug(object == null ? null : object.toString());
+    public void log(Logger logger, String message) {
+      logger.debug(message);
     }
 
     @Override
@@ -60,8 +60,8 @@ public enum LogLevel {
   TRACE {
 
     @Override
-    public void log(Logger logger, Object object) {
-      logger.trace(object == null ? null : object.toString());
+    public void log(Logger logger, String message) {
+      logger.trace(message);
     }
 
     @Override
@@ -70,7 +70,7 @@ public enum LogLevel {
     }
   };
 
-  public abstract void log(Logger logger, Object object);
+  public abstract void log(Logger logger, String message);
 
   public abstract boolean isEnabled(Logger logger);
 }

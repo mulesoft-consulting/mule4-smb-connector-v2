@@ -47,7 +47,7 @@ public class SmbConnectionSettingsTestCase {
   @Test
   public void connSettingsEqualsSameObject() {
     SmbConnectionSettings connSettings = new SmbConnectionSettings();
-    assertNotEquals(connSettings, connSettings);
+    assertEquals(connSettings, connSettings);
   }
 
   @Test
