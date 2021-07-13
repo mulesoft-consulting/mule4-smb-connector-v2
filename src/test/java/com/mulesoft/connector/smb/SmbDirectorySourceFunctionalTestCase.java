@@ -226,6 +226,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
+  @Ignore
   @Description("Verifies that files are moved and renamed after processing")
   public void moveToWithRename() throws Exception {
     stopFlow("listenWithoutMatcher");
