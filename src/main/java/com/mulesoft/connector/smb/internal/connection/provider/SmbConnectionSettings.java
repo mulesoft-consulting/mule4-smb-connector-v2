@@ -6,7 +6,6 @@
  */
 package com.mulesoft.connector.smb.internal.connection.provider;
 
-import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.Password;
@@ -110,43 +109,35 @@ public final class SmbConnectionSettings {
     return dfsEnabled;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setHost(String host) {
     this.host = host;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setPort(int port) {
     this.port = port;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setShareRoot(String shareRoot) {
     this.shareRoot = shareRoot;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setDomain(String domain) {
     this.domain = domain;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setUsername(String username) {
     this.username = username;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setPassword(String password) {
     this.password = password;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setDfsEnabled(boolean dfsEnabled) {
     this.dfsEnabled = dfsEnabled;
   }
 
   @Override
-  @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public boolean equals(Object o) {
     if (this == o)
       return true;
@@ -159,7 +150,6 @@ public final class SmbConnectionSettings {
   }
 
   @Override
-  @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public int hashCode() {
     return Objects.hash(host, port, domain, username, password, shareRoot, dfsEnabled);
   }

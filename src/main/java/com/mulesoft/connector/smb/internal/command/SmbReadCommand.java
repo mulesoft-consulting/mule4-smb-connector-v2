@@ -7,7 +7,6 @@
 package com.mulesoft.connector.smb.internal.command;
 
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
-import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import com.mulesoft.connector.smb.internal.extension.SmbConnector;
@@ -46,7 +45,6 @@ public final class SmbReadCommand extends SmbCommand implements ReadCommand<SmbF
 
   @Override
   @Deprecated
-  @ExcludeFromGeneratedCoverageReport("Cannot remove method as it must be implemented, even if deprecated")
   public Result<InputStream, SmbFileAttributes> read(FileConnectorConfig config, String filePath, boolean lock) {
     return read(config, filePath, lock, null);
   }

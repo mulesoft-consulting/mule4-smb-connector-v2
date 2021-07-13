@@ -9,7 +9,6 @@ package com.mulesoft.connector.smb.internal.command;
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileConnectorConfig;
@@ -47,7 +46,6 @@ public final class SmbListCommand extends SmbCommand implements ListCommand<SmbF
    */
   @Override
   @Deprecated
-  @ExcludeFromGeneratedCoverageReport("Cannot remove method as it must be implemented, even if deprecated")
   public List<Result<InputStream, SmbFileAttributes>> list(FileConnectorConfig config,
                                                            String directoryPath,
                                                            boolean recursive,
@@ -57,7 +55,6 @@ public final class SmbListCommand extends SmbCommand implements ListCommand<SmbF
   }
 
   @Deprecated
-  @ExcludeFromGeneratedCoverageReport("Cannot remove method as it must be implemented, even if deprecated")
   public List<Result<InputStream, SmbFileAttributes>> list(FileConnectorConfig config,
                                                            String directoryPath,
                                                            boolean recursive,

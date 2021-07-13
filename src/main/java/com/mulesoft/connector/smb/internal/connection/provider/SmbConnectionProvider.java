@@ -9,7 +9,6 @@ package com.mulesoft.connector.smb.internal.connection.provider;
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.mssmb2.SMBApiException;
 import com.mulesoft.connector.smb.api.LogLevel;
-import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
@@ -207,60 +206,49 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
                   connectionSettings.getDomain(), connectionSettings.getUsername(), message);
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   protected void setClientFactory(SmbClientFactory clientFactory) {
     this.clientFactory = clientFactory;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setPort(int port) {
     connectionSettings.setPort(port);
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setHost(String host) {
     connectionSettings.setHost(host);
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setUsername(String username) {
     connectionSettings.setUsername(username);
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setPassword(String password) {
     connectionSettings.setPassword(password);
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setShareRoot(String shareRoot) {
     this.connectionSettings.setShareRoot(shareRoot);
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   void setDomain(String domain) {
     this.connectionSettings.setDomain(domain);
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setSocketTimeout(TimeUnit socketTimeoutUnit, int socketTimeout) {
     this.timeoutSettings.setSocketTimeoutUnit(socketTimeoutUnit);
     this.timeoutSettings.setSocketTimeout(socketTimeout);
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setReadTimeout(TimeUnit readTimeoutUnit, int readTimeout) {
     this.timeoutSettings.setReadTimeoutUnit(readTimeoutUnit);
     this.timeoutSettings.setReadTimeout(readTimeout);
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setWriteTimeout(TimeUnit writeTimeoutUnit, int writeTimeout) {
     this.timeoutSettings.setWriteTimeoutUnit(writeTimeoutUnit);
     this.timeoutSettings.setWriteTimeout(writeTimeout);
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setTransactionTimeout(TimeUnit transactionTimeoutUnit, int transactionTimeout) {
     this.timeoutSettings.setTransactionTimeoutUnit(transactionTimeoutUnit);
     this.timeoutSettings.setTransactionTimeout(transactionTimeout);

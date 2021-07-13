@@ -8,7 +8,6 @@ package com.mulesoft.connector.smb.internal.connection.provider;
 
 import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED_TAB;
 
-import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
@@ -148,48 +147,39 @@ public final class TimeoutSettings {
     return transactionTimeout;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setSocketTimeoutUnit(TimeUnit socketTimeoutUnit) {
     this.socketTimeoutUnit = socketTimeoutUnit;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setSocketTimeout(Integer socketTimeout) {
     this.socketTimeout = socketTimeout;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setReadTimeoutUnit(TimeUnit readTimeoutUnit) {
     this.readTimeoutUnit = readTimeoutUnit;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setReadTimeout(Integer readTimeout) {
     this.readTimeout = readTimeout;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setWriteTimeoutUnit(TimeUnit writeTimeoutUnit) {
     this.writeTimeoutUnit = writeTimeoutUnit;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setWriteTimeout(Integer writeTimeout) {
     this.writeTimeout = writeTimeout;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setTransactionTimeoutUnit(TimeUnit transactionTimeoutUnit) {
     this.transactionTimeoutUnit = transactionTimeoutUnit;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public void setTransactionTimeout(Integer transactionTimeout) {
     this.transactionTimeout = transactionTimeout;
   }
 
   @Override
-  @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public boolean equals(Object o) {
     if (this == o)
       return true;
@@ -203,7 +193,6 @@ public final class TimeoutSettings {
   }
 
   @Override
-  @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public int hashCode() {
     return Objects.hash(socketTimeoutUnit, socketTimeout, readTimeoutUnit, readTimeout,
                         writeTimeoutUnit, writeTimeout, transactionTimeoutUnit, transactionTimeout);

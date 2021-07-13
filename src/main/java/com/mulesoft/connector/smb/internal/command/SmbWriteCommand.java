@@ -6,7 +6,6 @@
  */
 package com.mulesoft.connector.smb.internal.command;
 
-import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.mule.extension.file.common.api.FileAttributes;
@@ -44,7 +43,6 @@ public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
    */
   @Deprecated
   @Override
-  @ExcludeFromGeneratedCoverageReport("Cannot remove method as it must be implemented, even if deprecated")
   public void write(String filePath, InputStream content, FileWriteMode mode,
                     boolean lock, boolean createParentDirectory, String encoding) {
     write(filePath, content, mode, lock, createParentDirectory);

@@ -13,7 +13,6 @@ import java.time.ZoneId;
 import java.util.Objects;
 
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
-import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import org.mule.extension.file.common.api.AbstractFileAttributes;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 
@@ -97,7 +96,6 @@ public class SmbFileAttributes extends AbstractFileAttributes {
   }
 
   @Override
-  @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public boolean equals(Object o) {
     if (this == o)
       return true;
@@ -109,7 +107,6 @@ public class SmbFileAttributes extends AbstractFileAttributes {
   }
 
   @Override
-  @ExcludeFromGeneratedCoverageReport("Not called in functional tests")
   public int hashCode() {
     return Objects.hash(size, directory, timestamp, absolutePath);
   }

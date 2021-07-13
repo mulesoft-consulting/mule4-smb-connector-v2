@@ -10,7 +10,6 @@ import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.mulesoft.connector.smb.internal.codecoverage.ExcludeFromGeneratedCoverageReport;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.dsl.xml.TypeDsl;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
@@ -138,54 +137,44 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
   }
 
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public LocalDateTime getTimestampSince() {
     return timestampSince;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public LocalDateTime getTimestampUntil() {
     return timestampUntil;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public TimeUnit getTimeUnit() {
     return timeUnit;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public Long getUpdatedInTheLast() {
     return updatedInTheLast;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   public Long getNotUpdatedInTheLast() {
     return notUpdatedInTheLast;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   protected SmbFileMatcher setTimestampSince(LocalDateTime timestampSince) {
     this.timestampSince = timestampSince;
     return this;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   protected SmbFileMatcher setTimestampUntil(LocalDateTime timestampUntil) {
     this.timestampUntil = timestampUntil;
     return this;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   protected void setTimeUnit(TimeUnit timeUnit) {
     this.timeUnit = timeUnit;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   protected void setUpdatedInTheLast(Long updatedInTheLast) {
     this.updatedInTheLast = updatedInTheLast;
   }
 
-  @ExcludeFromGeneratedCoverageReport("Used for unit tests only. Will be removed after unit tests refactoring")
   protected void setNotUpdatedInTheLast(Long notUpdatedInTheLast) {
     this.notUpdatedInTheLast = notUpdatedInTheLast;
   }
