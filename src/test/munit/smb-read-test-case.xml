@@ -76,7 +76,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 			<smb:read doc:name="Read" doc:id="23a2bd4c-6a56-4519-a81c-5e90d3ea557e" config-ref="config" path="somefile.txt" lock="true" />
 			<try doc:name="Try" doc:id="63f35314-d401-45f3-9965-145cb3043909" >
 				<smb:delete doc:name="Delete" doc:id="41e5c9b7-16bc-4e10-9588-32f5d0fb6a33" config-ref="config" path="somefile.txt" />
-				<smb:write doc:name="Write" doc:id="7c8b9ba4-fba6-4014-bee6-bc2e6b985c01" config-ref="config" path="somefile.txt"/>
+				<smb:write doc:name="Write" doc:id="7c8b9ba4-fba6-4014-bee6-bc2e6b985c01" config-ref="config" path="otherfile.txt"/>
 				<error-handler >
 					<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a15941a5-0a1b-44f1-b394-2a8c2003c395" >
 						<smb:write doc:name="Write" doc:id="f0332315-12ad-4184-8c44-af4d71ecdd57" config-ref="config" path="otherfile.txt" />
