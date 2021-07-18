@@ -22,9 +22,11 @@
         <AsyncLogger name="com.mulesoft" level="WARN"/>
         <AsyncLogger name="com.mulesoft.connector.smb" level="INFO"/>
 
+        <!-- Mule SMB Logger -->
+        <AsyncLogger name="com.mulesoft.connector.smb.internal.LoggerMessageProcessor" level="TRACE"/>
+
         <!-- Change this to DEBUG to troubleshoot errors -->
         <AsyncLogger name="com.hierynomus.smbj" level="ERROR"/>
-        <AsyncLogger name="com.mulesoft.anypoint.tita" level="TRACE"/>
 
         <AsyncRoot level="INFO">
             <AppenderRef ref="Console"/>

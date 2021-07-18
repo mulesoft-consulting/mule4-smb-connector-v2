@@ -20,8 +20,7 @@
         <smb:delete doc:name="Delete" doc:id="a2e36cd5-c617-4336-abd2-1b53332c02a6" config-ref="config" path="/"/>
 		<flow-ref name="write-file"/>
     </munit:before-test>
-
-    <munit:test name="listFileAsDirectory" doc:id="70dc54cf-07b5-4a68-b766-e2c83b105175" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot list path '/somefile' because it's a file. Only directories can be listed" description="Performs a list operation on a regular file">
+	<munit:test name="listFileAsDirectory" doc:id="70dc54cf-07b5-4a68-b766-e2c83b105175" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot list path '/somefile' because it's a file. Only directories can be listed" description="Performs a list operation on a regular file">
 		<munit:execution >
 			<smb:write doc:name="Write" doc:id="b7bd88ee-d1d9-4557-ae72-49e24b4bcb8a" config-ref="config" path="/somefile">
 				<smb:content ><![CDATA[This is a file]]></smb:content>
@@ -32,7 +31,7 @@
 	<munit:test name="listDirectoriesMatchingName" doc:id="9e78cadb-3bd0-47e2-8b9d-e1661abafc76" description="Performs a list operation matching directory name">
 		<munit:execution >
 			<smb:create-directory doc:name="Create directory" doc:id="32d14f9a-19ed-45ac-95e8-73d0eae9b6d5" config-ref="config" directoryPath="/baseDir/subdir1/subdir2"/>
-			<smb:list doc:name="List" doc:id="f706023c-73c8-4bed-9ce9-fed25b4ef3ad" config-ref="config" directoryPath="/baseDir" recursive="true">
+			<smb:list doc:name="List" doc:id="f706023c-73c8-4bed-9ce9-fed25b4ef3ad" config-ref="config" directoryPath="baseDir" recursive="true">
 				<smb:matcher filenamePattern="subdir1"/>
 			</smb:list>
 		</munit:execution>

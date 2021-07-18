@@ -6,7 +6,6 @@
  */
 package com.mulesoft.connector.smb.internal.connection;
 
-import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 
 /**
@@ -21,10 +20,9 @@ public class SmbClientFactory {
    *
    * @param host the host address
    * @param shareRoot the share root
-   * @param logLevel the log level
    * @return a {@link SmbClient}
    */
-  public SmbClient createInstance(String host, int port, String shareRoot, boolean dfsEnabled, LogLevel logLevel) {
-    return new SmbClient(host, port, shareRoot, dfsEnabled, logLevel);
+  public SmbClient createInstance(String host, int port, String shareRoot, boolean dfsEnabled) {
+    return new SmbClient(host, port, shareRoot, dfsEnabled);
   }
 }

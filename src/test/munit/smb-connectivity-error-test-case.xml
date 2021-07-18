@@ -19,10 +19,30 @@
     <munit:before-suite name="start-test-smb-server">
         <flow-ref name="delete-all-files" />
     </munit:before-suite>
-
-    <munit:test name="smb-connectivity-error-invalid-port" doc:id="505db827-2519-40e5-bb21-8713eea9f53f" expectedErrorType="SMB:CANNOT_REACH" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\share', user: 'WORKGROUP\mulesoft'): Connection refused (Connection refused)" description="Performs a write operation using a connection with an invalid port">
+	<munit:test name="smb-connectivity-config-with-null-host" doc:id="acc07031-5b5f-4c12-8bc8-2cdb24607302" description="Performs a write operation using a configuration with a null host" expectedErrorType="SMB:CONNECTIVITY" expectedErrorDescription="Could not establish SMB connection (host: '\\null\/invalid', user: 'WORKGROUP\mulesoft'): hostname can't be null">
 		<munit:execution >
-			<smb:write doc:name="Write" doc:id="5ad927a3-c4c9-4fc5-b038-dd2dd29a0e7f" config-ref="config-invalid-port" path="somefile.txt">
+			<smb:write doc:name="Write" doc:id="0b36b8cb-04f3-40b0-9e31-d8d864915622" config-ref="config-null-host" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-config-with-null-port" doc:id="779930f8-dffe-4c82-a6a5-21f06af60710" description="Performs a write operation using a configuration with a null port" expectedErrorType="MULE:UNKNOWN" expectedErrorDescription="Can not set int field com.mulesoft.connector.smb.internal.connection.provider.SmbConnectionSettings.port to null value">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="66438c6e-95b7-4e6e-95c7-15415501d22a" config-ref="config-null-port" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-invalid-port" doc:id="e527980e-e161-4285-a025-5fd6f0d90082" description="Performs a write operation using a configuration with an invalid port" expectedErrorType="SMB:CANNOT_REACH" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\invalid', user: 'WORKGROUP\mulesoft'): Can't assign requested address (connect failed)">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="dd14dd1a-b54e-4f59-bdc3-e25f49173d5b" config-ref="config-invalid-port" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-error-invalid-server" doc:id="505db827-2519-40e5-bb21-8713eea9f53f" expectedErrorType="SMB:CANNOT_REACH" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\share', user: 'WORKGROUP\mulesoft'): Connection refused (Connection refused)" description="Performs a write operation using a connection with an invalid server">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="5ad927a3-c4c9-4fc5-b038-dd2dd29a0e7f" config-ref="config-invalid-server" path="somefile.txt">
 				<smb:content ><![CDATA[This is a test]]></smb:content>
 			</smb:write>
 		</munit:execution>
@@ -34,11 +54,92 @@
 			</smb:write>
 		</munit:execution>
 	</munit:test>
+	<munit:test name="smb-connectivity-null-username" doc:id="0ce8981e-0d25-4776-af1c-12fff75c3f93" description="Performs a write operation using a configuration with null username (Anonymous)" expectedErrorType="SMB:CONNECTIVITY" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\share', user: 'WORKGROUP\null'): STATUS_ACCESS_DENIED (0xc0000022): Could not connect to \\localhost\share">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="a652299a-5b44-46df-8710-dc1001d0db27" config-ref="config-null-username" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-blank-password" doc:id="a74f55b4-0bed-4d50-916f-624b65d684e7" description="Performs a write operation using a configuration with blank password (Anonymous)" expectedErrorType="SMB:CONNECTIVITY" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\share', user: 'WORKGROUP\mulesoft'): STATUS_ACCESS_DENIED (0xc0000022): Could not connect to \\localhost\share">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="f6d43d09-b187-401a-992d-6da8e0c3904b" config-ref="config-blank-password" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
 	<munit:test name="smb-connectivity-invalid-credentials" doc:id="6193ba7e-fef7-4461-ba1e-f9497c7dce3c" description="Performs a write operation using a configuration with invalid credentials" expectedErrorType="SMB:INVALID_CREDENTIALS">
 		<munit:execution >
 			<smb:write doc:name="Write" doc:id="b6a4f8d3-62b9-4e93-b20e-f2907478b115" config-ref="config-invalid-credentials" path="somefile.txt">
 				<smb:content ><![CDATA[This is a test]]></smb:content>
 			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-null-domain" doc:id="0d3d8e8c-c9e5-4463-8051-b278d39e8399" description="Performs a write operation using a configuration with a null domain">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="6258b04d-0b7d-492a-9b01-7f90d768ab5b" config-ref="config-null-domain" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-null-share-root" doc:id="84393dff-0733-40a0-8739-04906f911170" description="Performs a write operation on a null share root" expectedErrorType="SMB:CONNECTIVITY" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\null', user: 'WORKGROUP\mulesoft'): shareRoot is null">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="e1554b51-9b71-459e-9252-50c3cfec7c41" config-ref="confi-null-shareroot" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-invalid-share-root" doc:id="5028fb54-6030-4784-b3b0-59cceafd3b8f" description="Performs a write operation using a config with an invalid share root" expectedErrorType="SMB:CONNECTIVITY" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\invalid', user: 'WORKGROUP\mulesoft'): STATUS_BAD_NETWORK_NAME (0xc00000cc): Could not connect to \\localhost\invalid">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="b8c2f43d-1e28-46d1-afc3-79ef157f8978" config-ref="config-invalid-share-root" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-negative-socket-timeout" doc:id="744b0339-47f2-4cf1-94e8-d489e4ba6761" description="Performs a write operation using a configuration with a negative socket timeout" expectedErrorType="SMB:CONNECTIVITY" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\share', user: 'WORKGROUP\mulesoft'): Socket timeout should be either 0 (no timeout) or a positive value">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="c22c4e45-25f2-4a40-83f4-8c90f4cf6b8b" config-ref="config-negative-socket-timeout" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-small-socket-timeout" doc:id="e285796a-f2e1-4e05-9b98-c40333be618b" description="Performs a write operation using a configuration with a small socket timeout" expectedErrorType="SMB:CONNECTIVITY" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\/share', user: 'WORKGROUP\mulesoft'): java.util.concurrent.ExecutionException: com.hierynomus.smbj.common.SMBRuntimeException: com.hierynomus.protocol.transport.TransportException: java.net.SocketTimeoutException: Read timed out">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="a7f272fd-6ac6-435b-b185-43192bb75919" config-ref="config-small-socket-timeout" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-small-transaction-timeout" doc:id="8cf857d8-194e-4c2c-bad3-7d07bc80b0b4" description="Performs a write operation using a configuration with a small transaction timeout" expectedErrorType="SMB:CONNECTIVITY">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="dda15274-d51a-4094-8e8a-f4edff3ac615" config-ref="config-small-transaction-timeout" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-connectivity-small-write-timeout" doc:id="fdcaba2e-37bb-4aca-8cf3-7c259854ea04" description="Performs a write operation using a configuration with a small write timeout">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="d76cb38a-b6c4-4cd3-a7f1-8a8170ac6384" config-ref="config-small-write-timeout" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="54d02585-eb5b-4efb-8d7f-7419a4cd0f9f" config-ref="config" path="somefile.txt"/>
+			<munit-tools:assert doc:name="Assert expression" doc:id="edfef210-eaad-4893-b649-9146f719446f" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo("This is a test")]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="smb-connectivity-small-read-timeout" doc:id="2f7d0006-8042-4373-98d2-0868496fbe08" description="Performs a write operation using a configuration with a small read timeout" expectedErrorType="MULE:UNKNOWN" expectedErrorDescription="Cannot read from file '/somefile.txt': java.util.concurrent.ExecutionException: com.hierynomus.smbj.common.SMBRuntimeException: java.util.concurrent.TimeoutException: Timeout expired" ignore="true">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="6ca9b528-2526-40a0-be36-91cb3d5910c2" config-ref="config" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<smb:read doc:name="Read" doc:id="ada4840a-0a82-42cd-9855-865f60407bec" config-ref="config-small-read-timeout" path="somefile.txt"/>
+			<munit-tools:sleep time="500" doc:name="Sleep" doc:id="793d6703-52e6-420f-a726-f937e25460d8" />
+			<logger level="INFO" doc:name="Logger" doc:id="79079891-a5aa-4bea-9fab-82650e2d4014" message="#[payload]" />
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-connectivity-error-namespace-write" description="Connectivity error throws SMB:CONNECTIVITY for write operation">
@@ -52,8 +153,8 @@
             </smb:write>
 
             <try>
-                <smb:write config-ref="config-invalid-port" path="/happiness-to-do-list.txt">
-                    <smb:content>Read it now</smb:content>
+                <smb:write config-ref="config-invalid-server" path="/happiness-to-do-list.txt">
+                    <smb:content><![CDATA[Read it now]]></smb:content>
                 </smb:write>
                 <set-variable variableName="operationSucceeded" value="#[true]" />
                 <error-handler>
@@ -82,7 +183,7 @@
         <munit:execution>
             <try>
 
-                <smb:read config-ref="config-invalid-port" path="/good-omens.txt" />
+                <smb:read config-ref="config-invalid-server" path="/good-omens.txt" />
                 <set-variable variableName="operationSucceeded" value="#[true]" />
                 <error-handler>
                     <on-error-continue type="SMB:CONNECTIVITY">
@@ -110,7 +211,7 @@
         <munit:execution>
             <try>
 
-                <smb:delete config-ref="config-invalid-port" path="/good-omens.txt" />
+                <smb:delete config-ref="config-invalid-server" path="/good-omens.txt" />
                 <set-variable variableName="operationSucceeded" value="#[true]" />
                 <error-handler>
                     <on-error-continue type="SMB:CONNECTIVITY">
@@ -140,7 +241,7 @@
                 <smb:content>In the beginning, it was a nice day.</smb:content>
             </smb:write>
             <try>
-                <smb:rename config-ref="config-invalid-port" path="/good-omens.txt" to="/good-omens-the-nice-and-accurate-prophecies-of-agnes-nutter-witch.txt" overwrite="#[true]"/>
+                <smb:rename config-ref="config-invalid-server" path="/good-omens.txt" to="/good-omens-the-nice-and-accurate-prophecies-of-agnes-nutter-witch.txt" overwrite="#[true]"/>
                 <set-variable variableName="operationSucceeded" value="#[true]" />
                 <error-handler>
                     <on-error-continue type="SMB:CONNECTIVITY">
@@ -171,7 +272,7 @@
             </smb:write>
 
             <try>
-                <smb:move config-ref="config-invalid-port" sourcePath="/good-omens.txt" targetPath="/apocalypse" />
+                <smb:move config-ref="config-invalid-server" sourcePath="/good-omens.txt" targetPath="/apocalypse" />
                 <set-variable variableName="operationSucceeded" value="#[true]" />
                 <error-handler>
                     <on-error-continue type="SMB:CONNECTIVITY">
@@ -202,7 +303,7 @@
             </smb:write>
 
             <try>
-                <smb:copy config-ref="config-invalid-port" sourcePath="/good-omens.txt" targetPath="/apocalypse" />
+                <smb:copy config-ref="config-invalid-server" sourcePath="/good-omens.txt" targetPath="/apocalypse" />
                 <set-variable variableName="operationSucceeded" value="#[true]" />
                 <error-handler>
                     <on-error-continue type="SMB:CONNECTIVITY">
@@ -232,7 +333,7 @@
             </smb:write>
 
             <try>
-                <smb:create-directory config-ref="config-invalid-port" directoryPath="apocalypse"/>
+                <smb:create-directory config-ref="config-invalid-server" directoryPath="apocalypse"/>
                 <set-variable variableName="operationSucceeded" value="#[true]" />
                 <error-handler>
                     <on-error-continue type="SMB:CONNECTIVITY">
@@ -269,7 +370,7 @@
             </smb:write>
 
             <try>
-                <smb:list config-ref="config-invalid-port" directoryPath="." />
+                <smb:list config-ref="config-invalid-server" directoryPath="." />
                 <set-variable variableName="operationSucceeded" value="#[true]" />
                 <error-handler>
                     <on-error-continue type="SMB:CONNECTIVITY">

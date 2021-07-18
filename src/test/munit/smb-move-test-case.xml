@@ -132,6 +132,22 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 			<smb:read doc:name="Read" doc:id="a19f6292-26ad-443e-a0a1-d952fd766972" config-ref="config" path="#[vars.sourceFile]" />
 		</munit:validation>
 	</munit:test>
+	<munit:test name="smb-move-directory-and-subdirectories" doc:id="78dfe49d-656b-469a-9e70-5fc99141e30a" >
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="f210a2a3-7159-4b78-ab52-da183463b23d" config-ref="config" path="/source/subdir1/subdir2/subdir3/test.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<smb:move doc:name="Move" doc:id="4f00d9c9-7b01-40a5-91b8-9956c8dc0ea2" config-ref="config" sourcePath="/source/subdir1" targetPath="/target"/>
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="bcec2639-7f8a-4431-924c-2009bd18566f" config-ref="config" path="/target/subdir1/subdir2/subdir3/test.txt"/>
+			<munit-tools:assert doc:name="Assert expression" doc:id="1097d09e-8558-464d-bd41-f63f2a403cc2" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo("This is a test")]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
 	
 
 </mule>

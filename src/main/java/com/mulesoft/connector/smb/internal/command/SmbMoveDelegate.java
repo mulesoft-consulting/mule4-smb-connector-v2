@@ -10,7 +10,6 @@ import com.mulesoft.connector.smb.internal.connection.FileCopyMode;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileConnectorConfig;
-import org.mule.runtime.extension.api.exception.ModuleException;
 
 import java.net.URI;
 
@@ -30,16 +29,10 @@ public class SmbMoveDelegate implements SmbCopyDelegate {
   public void doCopy(FileConnectorConfig config, FileAttributes source, URI targetUri, boolean overwrite) {
     try {
       if (command.exists(targetUri)) {
-        if (overwrite) {
-          fileSystem.delete(targetUri.getPath());
-        } else {
-          throw command.alreadyExistsException(targetUri);
-        }
+        fileSystem.delete(targetUri.getPath());
       }
 
       command.rename(source.getPath(), targetUri.getPath(), overwrite);
-    } catch (ModuleException e) {
-      throw e;
     } catch (Exception e) {
       throw command.exception(format("Found exception copying file '%s' to '%s'", source.getPath(), targetUri.getPath()), e);
     }

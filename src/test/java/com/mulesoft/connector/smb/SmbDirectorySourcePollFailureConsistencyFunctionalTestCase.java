@@ -85,7 +85,7 @@ public class SmbDirectorySourcePollFailureConsistencyFunctionalTestCase extends 
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Verifies that a the failure of a poll does not make the next poll iteration skip unprocessed files")
   public void filesAreNotSkippedWithPollFailures() throws Exception {
     createShuffledFilesWithDelay();

@@ -8,7 +8,6 @@ package com.mulesoft.connector.smb.internal.connection.provider;
 
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.mssmb2.SMBApiException;
-import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
@@ -20,12 +19,8 @@ import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.api.connection.PoolingConnectionProvider;
 import org.mule.runtime.api.lock.LockFactory;
-import org.mule.runtime.extension.api.annotation.param.Optional;
-import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
-import org.mule.runtime.extension.api.annotation.param.display.Placement;
-import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,17 +81,6 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
   @ParameterGroup(name = CONNECTION)
   private final SmbConnectionSettings connectionSettings = new SmbConnectionSettings();
 
-  /**
-   * The log level
-   */
-  @Parameter
-  @Optional(defaultValue = "WARN")
-  @Summary("Log level. Used by Logger operation to determine if messages " +
-      "whether log messages should be written or not")
-  @Placement(order = 3)
-  private LogLevel logLevel;
-
-
   private SmbClientFactory clientFactory = new SmbClientFactory();
 
   @Override
@@ -105,8 +89,7 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
       LOGGER.debug(format("Connecting to host: '%s' at port: '%d'", connectionSettings.getHost(), connectionSettings.getPort()));
     }
     SmbClient client = clientFactory.createInstance(connectionSettings.getHost(), connectionSettings.getPort(),
-                                                    connectionSettings.getShareRoot(), connectionSettings.isDfsEnabled(),
-                                                    this.logLevel);
+                                                    connectionSettings.getShareRoot(), connectionSettings.isDfsEnabled());
     client.setPassword(connectionSettings.getPassword());
     client.setSocketTimeout(this.getSocketTimeoutUnit(), this.getSocketTimeout());
     client.setReadTimeout(this.getReadTimeoutUnit(), this.getReadTimeout());
@@ -134,7 +117,7 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
   public String getWorkingDir() {
     //Working Dir is not used for SMB connector
     // FIXME olamiral: implement workingDir correctly
-    throw new RuntimeException("workingDir property should not be used");
+    throw new UnsupportedOperationException("workingDir property should not be used");
   }
 
   protected Integer getSocketTimeout() {
@@ -209,51 +192,5 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
   protected void setClientFactory(SmbClientFactory clientFactory) {
     this.clientFactory = clientFactory;
   }
-
-  void setPort(int port) {
-    connectionSettings.setPort(port);
-  }
-
-  void setHost(String host) {
-    connectionSettings.setHost(host);
-  }
-
-  void setUsername(String username) {
-    connectionSettings.setUsername(username);
-  }
-
-  void setPassword(String password) {
-    connectionSettings.setPassword(password);
-  }
-
-  void setShareRoot(String shareRoot) {
-    this.connectionSettings.setShareRoot(shareRoot);
-  }
-
-  void setDomain(String domain) {
-    this.connectionSettings.setDomain(domain);
-  }
-
-  public void setSocketTimeout(TimeUnit socketTimeoutUnit, int socketTimeout) {
-    this.timeoutSettings.setSocketTimeoutUnit(socketTimeoutUnit);
-    this.timeoutSettings.setSocketTimeout(socketTimeout);
-  }
-
-  public void setReadTimeout(TimeUnit readTimeoutUnit, int readTimeout) {
-    this.timeoutSettings.setReadTimeoutUnit(readTimeoutUnit);
-    this.timeoutSettings.setReadTimeout(readTimeout);
-  }
-
-  public void setWriteTimeout(TimeUnit writeTimeoutUnit, int writeTimeout) {
-    this.timeoutSettings.setWriteTimeoutUnit(writeTimeoutUnit);
-    this.timeoutSettings.setWriteTimeout(writeTimeout);
-  }
-
-  public void setTransactionTimeout(TimeUnit transactionTimeoutUnit, int transactionTimeout) {
-    this.timeoutSettings.setTransactionTimeoutUnit(transactionTimeoutUnit);
-    this.timeoutSettings.setTransactionTimeout(transactionTimeout);
-  }
-
-
 
 }

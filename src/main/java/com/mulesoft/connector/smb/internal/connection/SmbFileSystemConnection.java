@@ -6,39 +6,26 @@
  */
 package com.mulesoft.connector.smb.internal.connection;
 
-import static org.mule.extension.file.common.api.exceptions.FileError.DISCONNECTED;
-import static org.mule.runtime.api.connection.ConnectionValidationResult.failure;
-import static org.mule.runtime.api.connection.ConnectionValidationResult.success;
-
+import com.mulesoft.connector.smb.api.SmbFileAttributes;
+import com.mulesoft.connector.smb.internal.command.*;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
+import com.mulesoft.connector.smb.internal.error.exception.SmbConnectionException;
+import com.mulesoft.connector.smb.internal.lock.SmbUriLock;
+import com.mulesoft.connector.smb.internal.utils.SmbUtils;
 import org.mule.extension.file.common.api.AbstractExternalFileSystem;
 import org.mule.extension.file.common.api.AbstractFileSystem;
 import org.mule.extension.file.common.api.FileAttributes;
-import org.mule.extension.file.common.api.command.CopyCommand;
-import org.mule.extension.file.common.api.command.CreateDirectoryCommand;
-import org.mule.extension.file.common.api.command.DeleteCommand;
-import org.mule.extension.file.common.api.command.MoveCommand;
-import org.mule.extension.file.common.api.command.RenameCommand;
-import org.mule.extension.file.common.api.command.WriteCommand;
+import org.mule.extension.file.common.api.command.*;
 import org.mule.extension.file.common.api.lock.UriLock;
-import com.mulesoft.connector.smb.api.LogLevel;
-import com.mulesoft.connector.smb.internal.error.exception.SmbConnectionException;
-import com.mulesoft.connector.smb.api.SmbFileAttributes;
-import com.mulesoft.connector.smb.internal.utils.SmbUtils;
-import com.mulesoft.connector.smb.internal.command.SmbCopyCommand;
-import com.mulesoft.connector.smb.internal.command.SmbCreateDirectoryCommand;
-import com.mulesoft.connector.smb.internal.command.SmbDeleteCommand;
-import com.mulesoft.connector.smb.internal.command.SmbListCommand;
-import com.mulesoft.connector.smb.internal.command.SmbMoveCommand;
-import com.mulesoft.connector.smb.internal.command.SmbReadCommand;
-import com.mulesoft.connector.smb.internal.command.SmbRenameCommand;
-import com.mulesoft.connector.smb.internal.command.SmbWriteCommand;
-import com.mulesoft.connector.smb.internal.lock.SmbUriLock;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.api.lock.LockFactory;
 
 import java.io.InputStream;
 import java.net.URI;
+
+import static org.mule.extension.file.common.api.exceptions.FileError.DISCONNECTED;
+import static org.mule.runtime.api.connection.ConnectionValidationResult.failure;
+import static org.mule.runtime.api.connection.ConnectionValidationResult.success;
 
 /**
  * Implementation of {@link AbstractFileSystem} for files residing on a SMB server
@@ -111,7 +98,7 @@ public class SmbFileSystemConnection extends AbstractExternalFileSystem {
    * {@inheritDoc}
    */
   protected UriLock createLock(URI uri) {
-    return new SmbUriLock(client.resolve(uri), lockFactory);
+    return new SmbUriLock(uri, lockFactory);
   }
 
   /**
@@ -194,8 +181,5 @@ public class SmbFileSystemConnection extends AbstractExternalFileSystem {
     return client;
   }
 
-  public boolean isLogLevelEnabled(LogLevel logLevel) {
-    return this.getClient().isLogLevelEnabled(logLevel);
-  }
 
 }

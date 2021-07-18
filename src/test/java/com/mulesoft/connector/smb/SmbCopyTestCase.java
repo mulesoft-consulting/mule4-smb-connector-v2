@@ -6,19 +6,16 @@
  */
 package com.mulesoft.connector.smb;
 
+import io.qameta.allure.Feature;
+import org.junit.Test;
+import org.mule.extension.file.common.api.exceptions.IllegalPathException;
+
+import static com.mulesoft.connector.smb.internal.utils.SmbUtils.normalizePath;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mule.extension.file.common.api.exceptions.FileError.FILE_ALREADY_EXISTS;
 import static org.mule.extension.file.common.api.exceptions.FileError.ILLEGAL_PATH;
-import static com.mulesoft.connector.smb.internal.utils.SmbUtils.normalizePath;
 import static org.mule.test.extension.file.common.api.FileTestHarness.HELLO_WORLD;
-
-import org.mule.extension.file.common.api.exceptions.FileAlreadyExistsException;
-import org.mule.extension.file.common.api.exceptions.IllegalPathException;
-
-import io.qameta.allure.Feature;
-import org.junit.Test;
 
 @Feature(AllureConstants.SmbFeature.SMB_EXTENSION)
 public class SmbCopyTestCase extends CommonSmbConnectorTestCase {
@@ -71,13 +68,6 @@ public class SmbCopyTestCase extends CommonSmbConnectorTestCase {
   }
 
   @Test
-  public void copyToItselfWithoutOverwrite() throws Exception {
-    testHarness.expectedError().expectError(NAMESPACE, FILE_ALREADY_EXISTS.getType(), FileAlreadyExistsException.class,
-                                            "already exists");
-    doExecute(getFlowName(), sourcePath, sourcePath, false, false, null);
-  }
-
-  @Test
   public void toNonExistingFolder() throws Exception {
     testHarness.makeDir(TARGET_DIRECTORY);
     String target = format("%s/%s", TARGET_DIRECTORY, "a/b/c");
@@ -105,36 +95,16 @@ public class SmbCopyTestCase extends CommonSmbConnectorTestCase {
   }
 
   @Test
-  public void overwriteInSameDirectory() throws Exception {
-    final String existingFileName = "existing";
-    testHarness.write(existingFileName, EXISTING_CONTENT);
+  public void targetPathIsNotDirectory() throws Exception {
+    testHarness.expectedError().expectError(NAMESPACE, ILLEGAL_PATH.getType(), IllegalPathException.class,
+                                            "path exists but it's not a directory");
 
-    final String target = getPath(existingFileName);
+    final String someFile = "somefile.txt";
+    testHarness.write(someFile, EXISTING_CONTENT);
+
+    final String target = getPath(someFile);
 
     doExecute(target, true, false);
-    assertCopy(target);
-  }
-
-  @Test
-  public void overwriteInDifferentDirectory() throws Exception {
-    final String existingDir = "existingDir";
-    testHarness.makeDir(existingDir);
-
-    final String existingPath = existingDir + "/existing.txt";
-    testHarness.write(existingPath, EXISTING_CONTENT);
-
-    doExecute(existingPath, true, false);
-    assertCopy(existingPath);
-  }
-
-  @Test
-  public void withoutOverwrite() throws Exception {
-    testHarness.expectedError().expectError(NAMESPACE, FILE_ALREADY_EXISTS.getType(), FileAlreadyExistsException.class,
-                                            "already exists");
-    final String existingFileName = "existing";
-    testHarness.write(existingFileName, EXISTING_CONTENT);
-
-    doExecute(getPath(existingFileName), false, false);
   }
 
   @Test
@@ -169,19 +139,6 @@ public class SmbCopyTestCase extends CommonSmbConnectorTestCase {
   }
 
   @Test
-  public void directoryWithoutOverwrite() throws Exception {
-    testHarness.expectedError().expectError(NAMESPACE, FILE_ALREADY_EXISTS.getType(), FileAlreadyExistsException.class,
-                                            "already exists");
-    sourcePath = buildSourceDirectory();
-
-    final String target = "target";
-    testHarness.makeDir(format("%s/%s", target, SOURCE_DIRECTORY_NAME));
-    testHarness.write(format("%s/%s", target, SOURCE_DIRECTORY_NAME), SOURCE_FILE_NAME, EXISTING_CONTENT);
-    doExecute(target, false, false);
-
-  }
-
-  @Test
   public void copyAndRenameInSameDirectory() throws Exception {
     doExecute(testHarness.getWorkingDirectory(), true, false, RENAMED);
     assertCopy(RENAMED);
@@ -193,14 +150,6 @@ public class SmbCopyTestCase extends CommonSmbConnectorTestCase {
 
     doExecute(testHarness.getWorkingDirectory(), true, false, RENAMED);
     assertCopy(RENAMED);
-  }
-
-  @Test
-  public void copyAndRenameInSameDirectoryWithoutOverwrite() throws Exception {
-    testHarness.expectedError().expectError(NAMESPACE, FILE_ALREADY_EXISTS, FileAlreadyExistsException.class, "already exists");
-    testHarness.write("", RENAMED, EXISTING_CONTENT);
-
-    doExecute(testHarness.getWorkingDirectory(), false, false, RENAMED);
   }
 
   @Test

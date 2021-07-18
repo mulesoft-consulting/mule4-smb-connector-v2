@@ -40,6 +40,8 @@ public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
 
   /**
    * {@inheritDoc}
+   * @deprecated
+   * Inherided deprecated method from WriteCommand interface
    */
   @Deprecated
   @Override
@@ -78,11 +80,7 @@ public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
       }
       throw exception(format("Exception was found writing to file '%s'", uri.getPath()), e);
     } finally {
-      try {
-        pathLock.release();
-      } catch (Exception e) {
-        LOGGER.warn("Could not release lock for path " + uri.toString(), e);
-      }
+      pathLock.release();
     }
   }
 

@@ -10,7 +10,6 @@ import com.hierynomus.msdtyp.FileTime;
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 import com.hierynomus.msfscc.fileinformation.FileBasicInformation;
 import com.hierynomus.msfscc.fileinformation.FileStandardInformation;
-import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import com.mulesoft.connector.smb.internal.error.exception.SmbConnectionException;
@@ -165,7 +164,6 @@ public class SmbFileSystemConnectionTestCase {
   public void createLock() throws URISyntaxException {
     SmbClient client = mock(SmbClient.class);
     URI uri = new URI("/test.txt");
-    when(client.resolve(uri)).thenReturn(uri);
 
     SmbFileSystemConnection sfc = new SmbFileSystemConnection(client, new MuleLockFactory());
     UriLock lock = sfc.createLock(uri);
@@ -191,52 +189,6 @@ public class SmbFileSystemConnectionTestCase {
     assertFalse(sfc.isConnected());
   }
 
-  @Test
-  public void isLogLevelEnabledWithNullClient() {
-    expectedException.expect(NullPointerException.class);
 
-    SmbFileSystemConnection sfc = new SmbFileSystemConnection(null, null);
-    sfc.isLogLevelEnabled(null);
-  }
-
-  @Test
-  public void isLogLevelEnabledWithNullConfiguredAndComparedLogLevels() {
-    SmbClient client = new SmbClient(null, 0, null, false, null);
-
-    SmbFileSystemConnection sfc = new SmbFileSystemConnection(client, null);
-    assertFalse(sfc.isLogLevelEnabled(null));
-  }
-
-  @Test
-  public void isLogLevelEnabledWithNullConfiguredLogLevel() {
-    SmbClient client = new SmbClient(null, 0, null, false, null);
-
-    SmbFileSystemConnection sfc = new SmbFileSystemConnection(client, null);
-    assertFalse(sfc.isLogLevelEnabled(LogLevel.INFO));
-  }
-
-  @Test
-  public void isLogLevelEnabledWithNullComparedLogLevel() {
-    SmbClient client = new SmbClient(null, 0, null, false, LogLevel.INFO);
-
-    SmbFileSystemConnection sfc = new SmbFileSystemConnection(client, null);
-    assertFalse(sfc.isLogLevelEnabled(null));
-  }
-
-  @Test
-  public void testLogLevelEnabled() {
-    SmbClient client = new SmbClient(null, 0, null, false, LogLevel.INFO);
-
-    SmbFileSystemConnection sfc = new SmbFileSystemConnection(client, null);
-    assertTrue(sfc.isLogLevelEnabled(LogLevel.WARN));
-  }
-
-  @Test
-  public void testLogLevelDisabled() {
-    SmbClient client = new SmbClient(null, 0, null, false, LogLevel.WARN);
-
-    SmbFileSystemConnection sfc = new SmbFileSystemConnection(client, null);
-    assertFalse(sfc.isLogLevelEnabled(LogLevel.INFO));
-  }
 
 }

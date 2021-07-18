@@ -6,18 +6,14 @@
  */
 package com.mulesoft.connector.smb.internal.command;
 
-import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-import static org.slf4j.LoggerFactory.getLogger;
-
+import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.command.DeleteCommand;
-import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
-
-import java.net.URI;
-
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
+
+import static org.mule.extension.file.common.api.util.UriUtils.createUri;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * A {@link SmbCommand} which implements the {@link DeleteCommand} contract

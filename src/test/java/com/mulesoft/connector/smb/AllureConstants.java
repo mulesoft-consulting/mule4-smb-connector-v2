@@ -12,8 +12,5 @@ public class AllureConstants {
 
     String SMB_EXTENSION = "SMB Extension";
 
-    interface SmbStory {
-
-    }
   }
 }

@@ -7,7 +7,6 @@
 package com.mulesoft.connector.smb;
 
 import com.mulesoft.connector.AbstractSmbTestHarness;
-import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
@@ -67,8 +66,10 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
     List<SmbFileAttributes> files = smbClient.list("/");
     if (files != null && !files.isEmpty()) {
       for (SmbFileAttributes file : files) {
-        if (smbClient.exists(file.getPath())) {
+        try {
           smbClient.delete(file.getPath());
+        } catch (Exception e) {
+          //Does nothing
         }
       }
     }
@@ -94,7 +95,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
 
   public static SmbClient createDefaultSmbClient() throws Exception {
     SmbClient smbClient =
-        new SmbClientFactory().createInstance(SmbServer.HOSTNAME, SmbServer.PORT, SmbServer.SHARE_ROOT, true, LogLevel.WARN);
+        new SmbClientFactory().createInstance(SmbServer.HOSTNAME, SmbServer.PORT, SmbServer.SHARE_ROOT, true);
     smbClient.setPassword(SmbServer.PASSWORD);
     smbClient.login(SmbServer.DOMAIN, SmbServer.USERNAME);
     return smbClient;
@@ -227,6 +228,7 @@ public class SmbTestHarness extends AbstractSmbTestHarness {
 
   // TODO: review possible authentication type to SMB Server (NTLM, Kerberos, and so on)
   // TODO: implement validation according to different SMB protocol versions
+
 
   protected void writeByteByByteAsync(String path, String content, long delayBetweenCharacters) {
     OutputStream os = smbClient.getOutputStream(path, FileWriteMode.CREATE_NEW);

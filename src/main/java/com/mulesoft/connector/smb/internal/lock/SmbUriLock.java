@@ -6,13 +6,13 @@
  */
 package com.mulesoft.connector.smb.internal.lock;
 
+import org.mule.extension.file.common.api.lock.UriLock;
+import org.mule.runtime.api.lock.LockFactory;
+
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
-
-import org.mule.extension.file.common.api.lock.UriLock;
-import org.mule.runtime.api.lock.LockFactory;
 
 /**
  * A {@link UriLock} which is based on {@link Lock locks} obtained through a
@@ -48,7 +48,6 @@ public class SmbUriLock implements UriLock {
       ownedLock.set(lock);
       return true;
     }
-
     return false;
   }
 
@@ -57,16 +56,7 @@ public class SmbUriLock implements UriLock {
    */
   @Override
   public boolean isLocked() {
-    if (ownedLock.get() != null) {
-      return true;
-    }
-
-    Lock lock = getLock();
-    try {
-      return !lock.tryLock();
-    } finally {
-      lock.unlock();
-    }
+    throw new UnsupportedOperationException("This method is not used by External File Systems.");
   }
 
   /**

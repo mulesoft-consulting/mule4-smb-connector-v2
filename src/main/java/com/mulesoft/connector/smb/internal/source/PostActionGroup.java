@@ -26,7 +26,7 @@ public class PostActionGroup extends AbstractPostActionGroup {
    */
   @Parameter
   @Optional(defaultValue = "false")
-  private boolean autoDelete = false;
+  private boolean autoDelete;
 
   /**
    * If provided, each processed file will be moved to a directory pointed by this path.
@@ -50,17 +50,7 @@ public class PostActionGroup extends AbstractPostActionGroup {
    */
   @Parameter
   @Optional(defaultValue = "true")
-  private boolean applyPostActionWhenFailed = true;
-
-
-  public PostActionGroup() {}
-
-  public PostActionGroup(boolean autoDelete, String moveToDirectory, String renameTo, boolean applyPostActionWhenFailed) {
-    this.autoDelete = autoDelete;
-    this.moveToDirectory = moveToDirectory;
-    this.renameTo = renameTo;
-    this.applyPostActionWhenFailed = applyPostActionWhenFailed;
-  }
+  private boolean applyPostActionWhenFailed;
 
   public boolean isAutoDelete() {
     return autoDelete;
@@ -74,6 +64,7 @@ public class PostActionGroup extends AbstractPostActionGroup {
     return renameTo;
   }
 
+  @Override
   public boolean isApplyPostActionWhenFailed() {
     return applyPostActionWhenFailed;
   }

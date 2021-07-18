@@ -20,12 +20,12 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	</munit:test>
 	<munit:test name="smb-logger-null-path" doc:id="45f642fb-9ba8-4602-8741-c3e094603a5d" expectedErrorType="SMB:ILLEGAL_PATH" description="Performs a logger operation using a null path" expectedErrorDescription="path cannot be null nor blank">
 		<munit:execution >
-			<smb:logger doc:name="Logger" doc:id="a8b271e4-92f7-407d-b1e5-b87669cc6d1a" config-ref="config-loglevel-info" path="#[null]" message="#[null]"/>
+			<smb:logger doc:name="Logger" doc:id="a8b271e4-92f7-407d-b1e5-b87669cc6d1a" config-ref="config" path="#[null]" message="#[null]"/>
 		</munit:execution>
 	</munit:test>
-	<munit:test name="smb-logger-trace-with-trace-enabled" doc:id="039de85e-112a-400b-a29e-15fbd7cd5a8d" description="Performs a trace logger operation with trace level enabled">
+	<munit:test name="smb-logger-trace" doc:id="039de85e-112a-400b-a29e-15fbd7cd5a8d" description="Performs a trace logger operation">
 		<munit:execution >
-			<smb:logger doc:name="Logger" doc:id="6e64dff4-1c67-472b-a499-fcc6ba1fe3c6" config-ref="config-loglevel-trace" path="logs/trace.log" message="This is a test" logLevel="TRACE"/>
+			<smb:logger doc:name="Logger" doc:id="6e64dff4-1c67-472b-a499-fcc6ba1fe3c6" config-ref="config" path="logs/trace.log" message="This is a test" logLevel="TRACE"/>
 		</munit:execution>
 		<munit:validation >
 			<smb:read doc:name="Read" doc:id="6913cc5f-e92e-46a2-b1e0-407c61209781" config-ref="config" path="logs/trace.log" outputMimeType="text/plain"/>
@@ -33,9 +33,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			<munit-tools:assert-that doc:name="Assert that" doc:id="9773db64-658b-4a52-a8f2-6a13503f9979" is="#[MunitTools::containsString('This is a test')]" expression="#[payload]"/>
 		</munit:validation>
 	</munit:test>
-	<munit:test name="smb-logger-debug-with-trace-enabled" doc:id="c1aad279-318a-418a-b451-c38d85e183d5" description="Performs a debug logger operation with trace level enabled">
+	<munit:test name="smb-logger-debug" doc:id="c1aad279-318a-418a-b451-c38d85e183d5" description="Performs a debug logger operation">
 		<munit:execution >
-			<smb:logger doc:name="Logger" doc:id="449fd5e1-e771-40cc-bb37-ac887ba55c10" config-ref="config-loglevel-trace" path="logs/debug.log" message="This is a test" logLevel="DEBUG"/>
+			<smb:logger doc:name="Logger" doc:id="449fd5e1-e771-40cc-bb37-ac887ba55c10" config-ref="config" path="logs/debug.log" message="This is a test" logLevel="DEBUG"/>
 		</munit:execution>
 		<munit:validation >
 			<smb:read doc:name="Read" doc:id="312dac65-0470-4c6a-b376-f28e3f7c7ccc" config-ref="config" path="logs/debug.log" outputMimeType="text/plain"/>
@@ -43,9 +43,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			<munit-tools:assert-that doc:name="Assert that" doc:id="ba60a555-3bc6-49ef-b279-03e963066b83" is="#[MunitTools::containsString('This is a test')]" expression="#[payload]"/>
 		</munit:validation>
 	</munit:test>
-	<munit:test name="smb-logger-info-with-trace-enabled" doc:id="c9536855-7812-4c6a-97ac-4ea7349e62b6" description="Performs an info logger operation with trace level enabled">
+	<munit:test name="smb-logger-info" doc:id="c9536855-7812-4c6a-97ac-4ea7349e62b6" description="Performs an info logger operation">
 		<munit:execution >
-			<smb:logger doc:name="Logger" doc:id="a2b9c051-ec55-4ccb-83d7-f49a6518392c" config-ref="config-loglevel-trace" path="logs/info.log" message="This is a test"/>
+			<smb:logger doc:name="Logger" doc:id="a2b9c051-ec55-4ccb-83d7-f49a6518392c" config-ref="config" path="logs/info.log" message="This is a test"/>
 		</munit:execution>
 		<munit:validation >
 			<smb:read doc:name="Read" doc:id="4e8a8ecf-40b3-4f48-b2d1-850e125f092e" config-ref="config" path="logs/info.log" outputMimeType="text/plain"/>
@@ -53,9 +53,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			<munit-tools:assert-that doc:name="Assert that" doc:id="1b2701c0-6673-4d2c-86ff-f05ce302fec5" is="#[MunitTools::containsString('This is a test')]" expression="#[payload]"/>
 		</munit:validation>
 	</munit:test>
-	<munit:test name="smb-logger-warn-with-trace-enabled" doc:id="72b2886c-45a2-47d9-a5ca-d9ecbe1542c5" description="Performs a warn logger operation with trace level enabled">
+	<munit:test name="smb-logger-warn" doc:id="72b2886c-45a2-47d9-a5ca-d9ecbe1542c5" description="Performs a warn logger operation">
 		<munit:execution >
-			<smb:logger doc:name="Logger" doc:id="1188f96d-3a0d-4bb1-b8a8-8140360fda3a" config-ref="config-loglevel-trace" path="logs/warn.log" message="This is a test" logLevel="WARN"/>
+			<smb:logger doc:name="Logger" doc:id="1188f96d-3a0d-4bb1-b8a8-8140360fda3a" config-ref="config" path="logs/warn.log" message="This is a test" logLevel="WARN"/>
 		</munit:execution>
 		<munit:validation >
 			<smb:read doc:name="Read" doc:id="e0a5f494-9cec-4e20-b53f-f69d0d4e30e0" config-ref="config" path="logs/warn.log" outputMimeType="text/plain"/>
@@ -63,9 +63,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			<munit-tools:assert-that doc:name="Assert that" doc:id="534730c6-d2c6-45a8-9883-2a4c8c98f23f" is="#[MunitTools::containsString('This is a test')]" expression="#[payload]"/>
 		</munit:validation>
 	</munit:test>
-	<munit:test name="smb-logger-error-with-trace-enabled" doc:id="5c9f76e2-0634-490b-bb2a-bab18943039b" description="Performs an error logger operation with trace level enabled">
+	<munit:test name="smb-logger-error" doc:id="5c9f76e2-0634-490b-bb2a-bab18943039b" description="Performs an error logger operation">
 		<munit:execution >
-			<smb:logger doc:name="Logger" doc:id="9afc33ae-1cbf-4be0-b633-9f4b291ab651" config-ref="config-loglevel-trace" path="logs/error.log" message="This is a test" logLevel="ERROR"/>
+			<smb:logger doc:name="Logger" doc:id="9afc33ae-1cbf-4be0-b633-9f4b291ab651" config-ref="config" path="logs/error.log" message="This is a test" logLevel="ERROR"/>
 		</munit:execution>
 		<munit:validation >
 			<smb:read doc:name="Read" doc:id="bad946cd-3fe6-44f8-91df-1c9953c7886c" config-ref="config" path="logs/error.log" outputMimeType="text/plain"/>
@@ -73,45 +73,17 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			<munit-tools:assert-that doc:name="Assert that" doc:id="1ba3d956-8617-43dd-8982-edd1bb08832a" is="#[MunitTools::containsString('This is a test')]" expression="#[payload]"/>
 		</munit:validation>
 	</munit:test>
-	<munit:test name="smb-logger-info-with-info-enabled" doc:id="d700aac1-17c3-4acf-8622-176a719e32b7" description="Performs a info logger operation with info level enabled">
-		<munit:execution >
-			<smb:logger doc:name="Logger" doc:id="a3a228e1-319b-4a48-bc7f-3fda836e3c98" config-ref="config-loglevel-info" path="/logs/info.log" message="This is a test"/>			
-		</munit:execution>
-		<munit:validation >
-			<smb:read doc:name="Read" doc:id="1b35a0a2-e696-468c-8588-7f34df115701" config-ref="config" path="logs/info.log" outputMimeType="text/plain" />
-			<munit-tools:assert-that doc:name="Assert that" doc:id="800618ff-db2e-4e85-a04c-cb0c0fca6881" expression="#[payload]" is="#[MunitTools::startsWith('INFO ')]" />
-			<munit-tools:assert-that doc:name="Assert that" doc:id="c720ecf9-0bb2-480b-b1b0-d83c62b40b62" is="#[MunitTools::containsString('This is a test')]" expression="#[payload]" />
-		</munit:validation>
-	</munit:test>
-	<munit:test name="smb-logger-debug-with-info-enabled" doc:id="d86bd1dd-42c8-427e-9714-b0585208a6d9" description="Performs a debug logger operation with info level enabled" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Path '/logs/debug.log' doesn't exist">
-		<munit:execution >
-			<smb:logger doc:name="Logger" doc:id="f0d7f9de-ac9e-4130-8b7b-50cf37356960" config-ref="config-loglevel-info" path="/logs/debug.log" message="This is a test" logLevel="DEBUG" />			
-		</munit:execution>
-		<munit:validation >
-			<smb:read doc:name="Read" doc:id="b9ae104e-4b42-4ccd-9ec3-c3ba0a017646" config-ref="config" path="logs/debug.log" outputMimeType="text/plain" />
-		</munit:validation>
-	</munit:test>
-	<munit:test name="smb-logger-warn-with-info-enabled" doc:id="12242c58-783d-4944-8d60-32ae1f98f08c" description="Performs a warn logger operation with info level enabled">
-		<munit:execution >
-			<smb:logger doc:name="Logger" doc:id="37665cea-ba73-4bd3-a14d-04e04d8b23bb" config-ref="config-loglevel-info" path="/logs/warn.log" message="This is a test" logLevel="WARN" />			
-		</munit:execution>
-		<munit:validation >
-			<smb:read doc:name="Read" doc:id="b2a6fc3f-93c4-48db-8729-6fe613014bf8" config-ref="config" path="logs/warn.log" outputMimeType="text/plain" />
-			<munit-tools:assert-that doc:name="Assert that" doc:id="8f46c288-32d5-4413-a55c-bc732fe437ec" expression="#[payload]" is="#[MunitTools::startsWith('WARN ')]" />
-			<munit-tools:assert-that doc:name="Assert that" doc:id="f340eddf-1b04-4270-8650-fa8eca625add" is="#[MunitTools::containsString('This is a test')]" expression="#[payload]" />
-		</munit:validation>
-	</munit:test>
 	<munit:test name="smb-logger-test-caseTest" doc:id="e6024d29-a30c-43a0-95c4-65e247269635">
 		<munit:execution>
 			<scatter-gather doc:name="Scatter-Gather" doc:id="5cc9e082-19a8-4ad6-a96d-eec51e02ad14" >
 				<route >
-					<smb:logger doc:name="Logger" doc:id="51cd293c-6d72-439c-948f-4f90c7f8fd4e" config-ref="config-loglevel-info" path="/logs/out.log" message="This is a test" writeToLogger="false"/>
+					<smb:logger doc:name="Logger" doc:id="51cd293c-6d72-439c-948f-4f90c7f8fd4e" config-ref="config" path="/logs/out.log" message="This is a test" writeToLogger="false"/>
 				</route>
 				<route >
-					<smb:logger doc:name="Logger" doc:id="0778b88d-00c7-4f13-9f7f-55d073584945" config-ref="config-loglevel-info" logLevel="WARN" path="/logs/out.log" message="This is a test"/>
+					<smb:logger doc:name="Logger" doc:id="0778b88d-00c7-4f13-9f7f-55d073584945" config-ref="config" logLevel="WARN" path="/logs/out.log" message="This is a test"/>
 				</route>
 				<route >
-					<smb:logger doc:name="Logger" doc:id="3f70abf8-92b1-4449-9b16-69d45fba47ea" config-ref="config-loglevel-info" logLevel="ERROR" path="/logs/out.log" message="This is a test"/>
+					<smb:logger doc:name="Logger" doc:id="3f70abf8-92b1-4449-9b16-69d45fba47ea" config-ref="config" logLevel="ERROR" path="/logs/out.log" message="This is a test"/>
 				</route>
 			</scatter-gather>
 		</munit:execution>

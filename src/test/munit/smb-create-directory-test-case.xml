@@ -17,6 +17,11 @@ http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/
 			<smb:create-directory doc:name="Create directory" doc:id="958f47e4-01aa-4e4c-9284-6a31444c9f42" config-ref="config" directoryPath="#[null]"/>
 		</munit:execution>
 	</munit:test>
+	<munit:test name="smb-create-directory-with-name-containing-whitespace-only" doc:id="be1f81ed-2311-4bba-b35d-8970f7ea7030" description="Performs a create directory operation with name containing only whitespaces" expectedErrorType="SMB:CONNECTIVITY" expectedErrorDescription="Invalid path: directory path cannot be null nor blank">
+		<munit:execution >
+			<smb:create-directory doc:name="Create directory" doc:id="a0e27824-1d39-4569-9745-f3df5d57d57b" config-ref="config" directoryPath='#["/ "]'/>
+		</munit:execution>
+	</munit:test>
 	<munit:test name="smb-create-directory" doc:id="30aab7e5-52e0-4a8a-8094-c99b50bb8c1c" description="Performs a create directory operation">
 		<munit:execution >
 			<smb:create-directory doc:name="Create directory" doc:id="bd045590-9ada-47ab-a99a-335568ce39e3" config-ref="config" directoryPath="/newdir"/>

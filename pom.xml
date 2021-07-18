@@ -384,8 +384,6 @@
         </profile>
     </profiles>
 
-    <!-- TODO olamiral: uncomment when certification passed -->
-    <!--
     <distributionManagement>
         <repository>
             <id>mule-releases</id>
@@ -399,7 +397,6 @@
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
-    -->
 
     <repositories>
         <repository>

@@ -40,6 +40,7 @@ import java.util.function.Predicate;
 
 import static java.lang.String.format;
 import static org.mule.extension.file.common.api.FileDisplayConstants.MATCHER;
+import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.core.api.util.ExceptionUtils.extractConnectionException;
 import static org.mule.runtime.core.api.util.IOUtils.closeQuietly;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
@@ -95,7 +96,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
   @Parameter
   @Optional(defaultValue = "true")
   @Summary("Whether or not to also catch files created on sub directories")
-  private final boolean recursive = true;
+  private boolean recursive;
 
   /**
    * A matcher used to filter events on files which do not meet the matcher's criteria
@@ -112,7 +113,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
    */
   @Parameter
   @Optional(defaultValue = "false")
-  private final boolean watermarkEnabled = false;
+  private boolean watermarkEnabled;
 
   /**
    * Wait time in milliseconds between size checks to determine if a file is ready to be read. This allows a file write to
@@ -160,63 +161,29 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
     //Does nothing
   }
 
-
   @Override
   public void poll(PollContext<InputStream, SmbFileAttributes> pollContext) {
     refreshMatcher();
-    if (pollContext.isSourceStopping()) {
-      return;
-    }
 
-    SmbFileSystemConnection fileSystem;
-    try {
-      fileSystem = openConnection(pollContext);
-    } catch (Exception e) {
-      LOGGER.error(format("Could not obtain connection while trying to poll directory '%s'. %s", directoryUri.getPath(),
-                          e.getMessage()));
-      return;
-    }
+    if (!pollContext.isSourceStopping()) {
 
-    try {
-      Long timeBetweenSizeCheckInMillis =
-          config.getTimeBetweenSizeCheckInMillis(timeBetweenSizeCheck, timeBetweenSizeCheckUnit).orElse(null);
-      List<Result<InputStream, SmbFileAttributes>> files =
-          fileSystem.list(config, directoryUri.getPath(), recursive, matcher, timeBetweenSizeCheckInMillis);
-      if (files.isEmpty()) {
-        return;
-      }
+      getFileSystemConnection().ifPresent(fileSystem -> {
+        try {
+          for (Result<InputStream, SmbFileAttributes> file : listFiles(fileSystem)) {
 
-      for (Result<InputStream, SmbFileAttributes> file : files) {
-        if (pollContext.isSourceStopping()) {
-          return;
-        }
-
-        SmbFileAttributes attributes = file.getAttributes().get();
-
-        if (attributes.isDirectory()) {
-          continue;
-        }
-
-        if (!matcher.test(attributes)) {
-          if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Skipping file '{}' because the matcher rejected it", attributes.getPath());
+            if (pollContext.isSourceStopping() || !process(pollContext, file)) {
+              break;
+            }
           }
-          continue;
+        } catch (Exception e) {
+          LOGGER.error("Found exception trying to poll directory '{}'. Will try again on the next poll. Error message: {}",
+                       directoryUri.getPath(), e.getMessage(), e);
+          extractConnectionException(e)
+              .ifPresent(pollContext::onConnectionException);
+        } finally {
+          fileSystemProvider.disconnect(fileSystem);
         }
-
-        if (!processFile(file, pollContext)) {
-          //FIXME olamiral: uncomment after tests
-          closeQuietly(file.getOutput());
-          break;
-        }
-      }
-    } catch (Exception e) {
-      LOGGER.error(format("Found exception trying to poll directory '%s'. Will try again on the next poll. Error message: %s",
-                          directoryUri.getPath(), e.getMessage()),
-                   e);
-      extractConnectionException(e).ifPresent((connectionException) -> pollContext.onConnectionException(connectionException));
-    } finally {
-      fileSystemProvider.disconnect(fileSystem);
+      });
     }
   }
 
@@ -224,27 +191,43 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
     matcher = predicateBuilder != null ? predicateBuilder.build() : new NullFilePayloadPredicate<>();
   }
 
-  private SmbFileSystemConnection openConnection(PollContext<InputStream, SmbFileAttributes> pollContext) throws Exception {
+  private java.util.Optional<SmbFileSystemConnection> getFileSystemConnection() {
+    SmbFileSystemConnection result = null;
 
-    SmbFileSystemConnection fileSystem = fileSystemProvider.connect();
     try {
-      fileSystem.changeToBaseDir();
+      result = fileSystemProvider.connect();
     } catch (Exception e) {
-      LOGGER.debug("Exception while trying to open connection. Cause: {} . Message: {}", e.getCause(), e.getMessage());
-      if (extractConnectionException(e).isPresent()) {
-        extractConnectionException(e).ifPresent(connectionException -> pollContext.onConnectionException(connectionException));
-      } else {
-        fileSystemProvider.disconnect(fileSystem);
-      }
-      throw e;
+      LOGGER.error(format("Could not obtain connection while trying to poll directory '%s'. %s", directoryUri.getPath(),
+                          e.getMessage()));
     }
-    return fileSystem;
+
+    return java.util.Optional.ofNullable(result);
   }
 
-  private boolean processFile(Result<InputStream, SmbFileAttributes> file,
+
+  private List<Result<InputStream, SmbFileAttributes>> listFiles(SmbFileSystemConnection fileSystem) {
+    Long timeBetweenSizeCheckInMillis =
+        config.getTimeBetweenSizeCheckInMillis(timeBetweenSizeCheck, timeBetweenSizeCheckUnit).orElse(null);
+    return fileSystem.list(config, directoryUri.getPath(), recursive, matcher, timeBetweenSizeCheckInMillis);
+  }
+
+  private boolean process(PollContext<InputStream, SmbFileAttributes> pollContext, Result<InputStream, SmbFileAttributes> file) {
+    boolean result = true;
+
+    SmbFileAttributes attributes = file.getAttributes()
+        .orElseThrow(() -> new MuleRuntimeException(createStaticMessage("Could not process file: attributes not available")));
+
+    if (attributes.isRegularFile()) {
+      result = processFile(file, attributes, pollContext);
+    }
+
+    return result;
+  }
+
+
+
+  private boolean processFile(Result<InputStream, SmbFileAttributes> file, SmbFileAttributes attributes,
                               PollContext<InputStream, SmbFileAttributes> pollContext) {
-    SmbFileAttributes attributes = file.getAttributes().get();
-    String fullPath = attributes.getPath();
     PollItemStatus status = pollContext.accept(item -> {
       final SourceCallbackContext ctx = item.getSourceCallbackContext();
 
@@ -256,17 +239,20 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
           item.setWatermark(attributes.getTimestamp());
         }
       } catch (Exception t) {
-        LOGGER.error(format("Found file '%s' but found exception trying to dispatch it for processing. %s",
-                            fullPath, t.getMessage()),
-                     t);
-
+        LOGGER.error("Found file '{}' but found exception trying to dispatch it for processing. {}",
+                     attributes.getPath(), t.getMessage(), t);
         onRejectedItem(file, ctx);
-
         throw new MuleRuntimeException(t);
       }
     });
 
-    return status != SOURCE_STOPPING;
+    boolean result = status != SOURCE_STOPPING;
+
+    if (!result) {
+      closeQuietly(file.getOutput());
+    }
+
+    return result;
   }
 
   @Override
@@ -304,7 +290,6 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
     SmbFileSystemConnection fileSystem = null;
     try {
       fileSystem = fileSystemProvider.connect();
-      fileSystem.changeToBaseDir();
       return new OnNewFileCommand(fileSystem).resolveRootPath(directory);
     } catch (Exception e) {
       throw new MuleRuntimeException(I18nMessageFactory.createStaticMessage(

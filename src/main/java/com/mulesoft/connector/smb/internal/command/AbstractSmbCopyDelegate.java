@@ -7,13 +7,9 @@
 package com.mulesoft.connector.smb.internal.command;
 
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
-import com.mulesoft.connector.smb.internal.extension.SmbConnector;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.FileWriteMode;
-import org.mule.runtime.api.connection.ConnectionException;
-import org.mule.runtime.api.connection.ConnectionHandler;
-import org.mule.runtime.extension.api.exception.ModuleException;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -37,7 +33,7 @@ public abstract class AbstractSmbCopyDelegate implements SmbCopyDelegate {
    * @param command the {@link SmbCommand} which requested this operation
    * @param fileSystem the {@link SmbFileSystemConnection} which connects to the remote server
    */
-  public AbstractSmbCopyDelegate(SmbCommand command, SmbFileSystemConnection fileSystem) {
+  protected AbstractSmbCopyDelegate(SmbCommand command, SmbFileSystemConnection fileSystem) {
     this.command = command;
     this.fileSystem = fileSystem;
   }
@@ -51,16 +47,10 @@ public abstract class AbstractSmbCopyDelegate implements SmbCopyDelegate {
    */
   @Override
   public void doCopy(FileConnectorConfig config, FileAttributes source, URI targetUri, boolean overwrite) {
-    try {
-      if (source.isDirectory()) {
-        copyDirectory(URI.create(source.getPath()), targetUri, overwrite);
-      } else {
-        copyFile(source, targetUri, overwrite);
-      }
-    } catch (ModuleException e) {
-      throw e;
-    } catch (Exception e) {
-      throw command.exception(format("Found exception copying file '%s' to '%s'", source, targetUri.getPath()), e);
+    if (source.isDirectory()) {
+      copyDirectory(URI.create(source.getPath()), targetUri, overwrite);
+    } else {
+      copyFile(source, targetUri, overwrite);
     }
   }
 
@@ -79,14 +69,8 @@ public abstract class AbstractSmbCopyDelegate implements SmbCopyDelegate {
    * @param overwrite whether to overwrite the target files if they already exists
    */
   protected void copyFile(FileAttributes source, URI target, boolean overwrite) {
-    // FIXME olamiral: assume target is not resolved
-    FileAttributes targetFile = command.getFile(target.toString());
-    if (targetFile != null) {
-      if (overwrite) {
-        fileSystem.delete(targetFile.getPath());
-      } else {
-        throw command.alreadyExistsException(target);
-      }
+    if (command.exists(target)) {
+      fileSystem.delete(target.getPath());
     }
 
     try (InputStream inputStream = fileSystem.retrieveFileContent(source)) {

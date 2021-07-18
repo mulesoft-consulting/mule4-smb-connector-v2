@@ -110,10 +110,8 @@ public class SmbInputStream extends AbstractNonFinalizableFileInputStream {
 
     @Override
     protected boolean fileWasDeleted(MuleRuntimeException e) {
-      return e.getCause() != null
-          && (e.getCause().getMessage().contains("The system cannot find the file specified.")
-              || (e.getCause() instanceof SMBApiException
-                  && NtStatus.STATUS_OBJECT_NAME_NOT_FOUND.equals(((SMBApiException) e.getCause()).getStatus())));
+      return e.getCause() instanceof SMBApiException
+          && NtStatus.STATUS_OBJECT_NAME_NOT_FOUND.equals(((SMBApiException) e.getCause()).getStatus());
     }
   }
 }

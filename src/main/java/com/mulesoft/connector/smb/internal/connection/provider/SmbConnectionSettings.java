@@ -12,8 +12,6 @@ import org.mule.runtime.extension.api.annotation.param.display.Password;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 
-import java.util.Objects;
-
 /**
  * Groups SMB connection settings
  *
@@ -109,48 +107,4 @@ public final class SmbConnectionSettings {
     return dfsEnabled;
   }
 
-  void setHost(String host) {
-    this.host = host;
-  }
-
-  void setPort(int port) {
-    this.port = port;
-  }
-
-  void setShareRoot(String shareRoot) {
-    this.shareRoot = shareRoot;
-  }
-
-  void setDomain(String domain) {
-    this.domain = domain;
-  }
-
-  void setUsername(String username) {
-    this.username = username;
-  }
-
-  void setPassword(String password) {
-    this.password = password;
-  }
-
-  void setDfsEnabled(boolean dfsEnabled) {
-    this.dfsEnabled = dfsEnabled;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
-    SmbConnectionSettings that = (SmbConnectionSettings) o;
-    return port == that.port && dfsEnabled == that.dfsEnabled && Objects.equals(host, that.host)
-        && Objects.equals(domain, that.domain) && Objects.equals(username, that.username)
-        && Objects.equals(password, that.password) && Objects.equals(shareRoot, that.shareRoot);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(host, port, domain, username, password, shareRoot, dfsEnabled);
-  }
 }

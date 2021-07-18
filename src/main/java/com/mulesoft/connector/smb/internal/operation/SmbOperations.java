@@ -12,10 +12,7 @@ import com.mulesoft.connector.smb.api.SmbFileMatcher;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.utils.SmbUtils;
 import org.apache.commons.io.IOUtils;
-import org.mule.extension.file.common.api.BaseFileSystemOperations;
-import org.mule.extension.file.common.api.FileConnectorConfig;
-import org.mule.extension.file.common.api.FileSystem;
-import org.mule.extension.file.common.api.FileWriteMode;
+import org.mule.extension.file.common.api.*;
 import org.mule.extension.file.common.api.exceptions.*;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.core.api.util.StringUtils;
@@ -54,6 +51,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public final class SmbOperations extends BaseFileSystemOperations {
 
+  private static final Logger SMB_LOGGER = getLogger("com.mulesoft.connector.smb.internal.LoggerMessageProcessor");
   private static final Logger LOGGER = getLogger(SmbOperations.class);
 
   /**
@@ -131,10 +129,10 @@ public final class SmbOperations extends BaseFileSystemOperations {
                        tab = ADVANCED_TAB) TimeUnit timeBetweenSizeCheckUnit,
                    CompletionCallback<InputStream, SmbFileAttributes> callback) {
     try {
-      Result result =
+      Result<? extends InputStream, ? extends FileAttributes> result =
           doRead(config, fileSystem, path, lock,
                  config.getTimeBetweenSizeCheckInMillis(timeBetweenSizeCheck, timeBetweenSizeCheckUnit).orElse(null));
-      callback.success(result);
+      callback.success((Result<InputStream, SmbFileAttributes>) result);
     } catch (Exception e) {
       callback.error(e);
     }
@@ -163,7 +161,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    */
   @Summary("Writes the given \"Content\" in the file pointed by \"Path\"")
   @Throws(FileWriteErrorTypeProvider.class)
-  public void write(@Config FileConnectorConfig config, @Connection FileSystem fileSystem,
+  public void write(@Config FileConnectorConfig config, @Connection SmbFileSystemConnection fileSystem,
                     @Path(type = DIRECTORY, location = EXTERNAL) String path,
                     @Content @Summary("Content to be written into the file") InputStream content,
                     @Optional @Summary("Deprecated: This parameter will not be taken into account for the operation execution") @Placement(
@@ -217,7 +215,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    */
   @Summary("Copies a file")
   @Throws(FileCopyErrorTypeProvider.class)
-  public void copy(@Config FileConnectorConfig config, @Connection FileSystem fileSystem,
+  public void copy(@Config FileConnectorConfig config, @Connection SmbFileSystemConnection fileSystem,
                    @Path(location = EXTERNAL) String sourcePath,
                    @Path(type = DIRECTORY, location = EXTERNAL) String targetPath,
                    @Optional(defaultValue = "true") boolean createParentDirectories,
@@ -260,7 +258,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    */
   @Summary("Moves a file")
   @Throws(FileCopyErrorTypeProvider.class)
-  public void move(@Config FileConnectorConfig config, @Connection FileSystem fileSystem,
+  public void move(@Config FileConnectorConfig config, @Connection SmbFileSystemConnection fileSystem,
                    @Path(location = EXTERNAL) String sourcePath,
                    @Path(type = DIRECTORY, location = EXTERNAL) String targetPath,
                    @Optional(defaultValue = "true") boolean createParentDirectories,
@@ -284,8 +282,8 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * @throws IllegalArgumentException if {@code filePath} doesn't exist or is locked
    */
   @Summary("Deletes a file")
-  @Throws(FileDeleteErrorTypeProvider.class)
-  public void delete(@Connection FileSystem fileSystem,
+  @Throws(FileReadErrorTypeProvider.class)
+  public void delete(@Connection SmbFileSystemConnection fileSystem,
                      @Path(location = EXTERNAL) String path,
                      @Optional(defaultValue = "true") boolean failIfNotExists,
                      CompletionCallback<Void, Void> callback) {
@@ -316,7 +314,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    */
   @Summary("Renames a file")
   @Throws(FileRenameErrorTypeProvider.class)
-  public void rename(@Connection FileSystem fileSystem, @Path(location = EXTERNAL) String path,
+  public void rename(@Connection SmbFileSystemConnection fileSystem, @Path(location = EXTERNAL) String path,
                      @DisplayName("New Name") String to, @Optional(defaultValue = "false") boolean overwrite,
                      CompletionCallback<Void, Void> callback) {
     try {
@@ -335,7 +333,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    */
   @Summary("Creates a new directory")
   @Throws(FileRenameErrorTypeProvider.class)
-  public void createDirectory(@Connection FileSystem fileSystem, @Path(location = EXTERNAL) String directoryPath,
+  public void createDirectory(@Connection SmbFileSystemConnection fileSystem, @Path(location = EXTERNAL) String directoryPath,
                               CompletionCallback<Void, Void> callback) {
     try {
       super.doCreateDirectory(fileSystem, directoryPath);
@@ -367,46 +365,53 @@ public final class SmbOperations extends BaseFileSystemOperations {
   @Summary("Logs the message in the file pointed by \"Path\"")
   @Throws(FileWriteErrorTypeProvider.class)
   public void logger(@Config FileConnectorConfig config,
-                     @Connection FileSystem fileSystem,
+                     @Connection SmbFileSystemConnection fileSystem,
                      @Path(type = DIRECTORY, location = EXTERNAL) String path,
                      @DisplayName("Message") String message,
                      @Optional(defaultValue = "INFO") @DisplayName("Log Level") LogLevel logLevel,
                      @Optional(defaultValue = "true") boolean writeToLogger,
                      CompletionCallback<Void, Void> callback) {
 
-    if (writeToLogger && logLevel.isEnabled(LOGGER)) {
-      logLevel.log(LOGGER, message);
-    }
-
     if (isBlank(path)) {
       throw new IllegalPathException("path cannot be null nor blank");
     }
 
-    CompletableFuture.runAsync(() -> {
-      try {
-        boolean done = !((SmbFileSystemConnection) fileSystem).isLogLevelEnabled(logLevel);
-        while (!done) {
-          try {
-            fileSystem.write(path, IOUtils.toInputStream(
-                                                         SmbUtils.padRight(logLevel.name(), 6, " ")
-                                                             + ZonedDateTime.now()
-                                                                 .format(DateTimeFormatter
-                                                                     .ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
-                                                             + message
-                                                             + "\n",
-                                                         Charset.defaultCharset()),
-                             FileWriteMode.APPEND, true, true);
-            done = true;
-          } catch (FileLockedException fle) {
-            if (LOGGER.isDebugEnabled()) {
-              LOGGER.warn("Log file is locked ({}). Retrying...", fle.getMessage());
-            }
+    if (logLevel.isEnabled(SMB_LOGGER)) {
+      CompletableFuture.runAsync(() -> {
+        if (writeToLogger) {
+          logLevel.log(SMB_LOGGER, message);
+        }
+        doWriteLog(fileSystem, path, logLevel, message);
+        callback.success(Result.<Void, Void>builder().build());
+      });
+    } else {
+      callback.success(Result.<Void, Void>builder().build());
+    }
+  }
+
+  private void doWriteLog(SmbFileSystemConnection fileSystem, String path, LogLevel logLevel, String message) {
+    try {
+      boolean done = false;
+      while (!done) {
+        try {
+          fileSystem.write(path, IOUtils.toInputStream(
+                                                       SmbUtils.padRight(logLevel.name(), 6, " ")
+                                                           + ZonedDateTime.now()
+                                                               .format(DateTimeFormatter
+                                                                   .ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
+                                                           + message
+                                                           + "\n",
+                                                       Charset.defaultCharset()),
+                           FileWriteMode.APPEND, true, true);
+          done = true;
+        } catch (FileLockedException fle) {
+          if (LOGGER.isDebugEnabled()) {
+            LOGGER.warn("Log file is locked ({}). Retrying...", fle.getMessage());
           }
         }
-      } catch (Exception e) {
-        LOGGER.error("Could not log message to remote file in async mode. File path: " + path + ", message: " + message, e);
       }
-      callback.success(Result.<Void, Void>builder().build());
-    });
+    } catch (Exception e) {
+      LOGGER.error("Could not log message to remote file in async mode. File path: " + path + ", message: " + message, e);
+    }
   }
 }

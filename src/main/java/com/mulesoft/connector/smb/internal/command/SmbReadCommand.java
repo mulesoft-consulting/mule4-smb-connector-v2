@@ -18,13 +18,11 @@ import org.mule.extension.file.common.api.util.UriUtils;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.util.IOUtils;
 import org.mule.runtime.extension.api.runtime.operation.Result;
-import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.net.URI;
 
 import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * A {@link SmbCommand} which implements the {@link ReadCommand} contract
@@ -33,14 +31,14 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public final class SmbReadCommand extends SmbCommand implements ReadCommand<SmbFileAttributes> {
 
-  private static final Logger LOGGER = getLogger(SmbReadCommand.class);
-
   public SmbReadCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
     super(fileSystem, client);
   }
 
   /**
    * {@inheritDoc}
+   * @deprecated
+   * Inherided deprecated method from ReadCommand interface
    */
 
   @Override
@@ -87,12 +85,6 @@ public final class SmbReadCommand extends SmbCommand implements ReadCommand<SmbF
     } catch (Exception e) {
       IOUtils.closeQuietly(payload);
       throw exception("Could not fetch file " + uri.getPath(), e);
-    } finally {
-      try {
-        pathLock.release();
-      } catch (Exception e) {
-        LOGGER.warn("Could not release lock for path " + uri, e);
-      }
     }
   }
 

@@ -87,7 +87,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Verifies that a created file is picked")
   public void onFileCreated() throws Exception {
     URI file = buildPath(MATCHERLESS_LISTENER_FOLDER_NAME, WATCH_FILE);
@@ -96,7 +96,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Verifies that 10 files created are picked with a limited connection pool size with a post action active")
   public void onFilesCreatedWithLimitedPoolAndAutoDelete() throws Exception {
     stopFlow("listenWithoutMatcher");
@@ -115,7 +115,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Verifies that files created in subdirs are picked")
   public void recursive() throws Exception {
     URI subdir = buildPath(MATCHERLESS_LISTENER_FOLDER_NAME, "subdir");
@@ -127,7 +127,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Verifies that files created in subdirs are not picked")
   public void nonRecursive() throws Exception {
     stopFlow("listenWithoutMatcher");
@@ -147,7 +147,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Verifies that only files compliant with the matcher are picked")
   public void matcher() throws Exception {
     final URI file = buildPath(WITH_MATCHER_FOLDER_NAME, MATCH_FILE);
@@ -160,7 +160,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Verifies that files are moved after processing")
   public void moveTo() throws Exception {
     stopFlow("listenWithoutMatcher");
@@ -173,7 +173,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Verifies that files are moved after processing even if autoDelete is configured")
   public void moveToAndAutoDelete() throws Exception {
     stopFlow("listenWithoutMatcher");
@@ -190,7 +190,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Verifies that files that cannot be moved because a file already exists in the other directory with that name are deleted")
   public void moveToAndAutoDeleteWithSameFileName() throws Exception {
     stopFlow("listenWithoutMatcher");
@@ -211,7 +211,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Verifies that files that cannot be moved because a file already exists in the other directory with that name remain untouched")
   public void moveToWithSameFileName() throws Exception {
     stopFlow("listenWithoutMatcher");
@@ -233,7 +233,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Verifies that files are moved and renamed after processing")
   public void moveToWithRename() throws Exception {
     stopFlow("listenWithoutMatcher");
@@ -246,7 +246,7 @@ public class SmbDirectorySourceFunctionalTestCase extends CommonSmbConnectorTest
   }
 
   @Test
-  @Ignore
+  @Ignore("This test needs to be implemented as a MUnit test")
   @Description("Tests the case of watermark on update timestamp, processing only files that have been modified after the prior poll")
   public void watermarkForModifiedFiles() throws Exception {
     stopFlow("listenWithoutMatcher");

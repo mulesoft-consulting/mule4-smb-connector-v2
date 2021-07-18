@@ -22,24 +22,26 @@ import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.Directory;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
-import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.error.exception.SmbConnectionException;
 import com.mulesoft.connector.smb.internal.utils.SmbUtils;
 import org.mule.extension.file.common.api.FileWriteMode;
 import org.mule.extension.file.common.api.exceptions.FileError;
-import org.mule.extension.file.common.api.exceptions.IllegalPathException;
+import org.mule.extension.file.common.api.util.UriUtils;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.core.api.util.IOUtils;
+import org.mule.runtime.core.api.util.StringUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import static java.lang.String.format;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.api.util.collection.Collectors.toImmutableList;
 
@@ -49,7 +51,6 @@ public class SmbClient {
   private final int port;
   private final String shareRoot;
   private String password;
-  private final LogLevel logLevel;
   private final boolean dfsEnabled;
 
   private TimeUnit socketTimeoutUnit = TimeUnit.SECONDS;
@@ -61,23 +62,21 @@ public class SmbClient {
   private TimeUnit transactionTimeoutUnit = TimeUnit.SECONDS;
   private Integer transactionTimeout = 60;
 
+  private SMBClient client;
   private DiskShare share;
 
-  public SmbClient(String host, int port, String shareRoot, boolean dfsEnabled, LogLevel logLevel) {
+  public SmbClient(String host, int port, String shareRoot, boolean dfsEnabled) {
     this.host = host;
     this.port = port;
     this.shareRoot = shareRoot;
     this.dfsEnabled = dfsEnabled;
-    this.logLevel = logLevel;
   }
 
-  public SmbFileAttributes getAttributes(URI uri) throws Exception {
-    if (uri == null) {
-      throw new ConnectionException("Invalid path: uri is null");
-    }
+  public SmbFileAttributes getAttributes(URI uri) throws ConnectionException {
     String pathStr = uri.getPath();
-    if (pathStr != null
-        && pathStr.replace("smb://" + this.getHost() + ":" + this.getPort(), "").matches(".*(:|\\||>|<|\"|\\?|\\*)+.*")) {
+    Pattern p = Pattern.compile("[:\\|><\"\\?\\*]", Pattern.CASE_INSENSITIVE);
+    Matcher m = p.matcher(pathStr);
+    if (m.find()) {
       throw new ConnectionException("The filename, directory name, or volume label syntax is incorrect.");
     }
 
@@ -103,42 +102,46 @@ public class SmbClient {
   }
 
   public void login(String domain, String username) throws IOException {
-    if (share == null || !share.isConnected()) {
-      if (this.shareRoot == null) {
-        throw new IllegalArgumentException("shareRoot is null");
-      }
-      SmbConfig.Builder configBuilder = SmbConfig.builder()
-          .withSecurityProvider(new BCSecurityProvider())
-          .withDfsEnabled(this.dfsEnabled);
-
-      if (this.socketTimeoutUnit != null && this.socketTimeout != null) {
-        configBuilder.withSoTimeout(this.socketTimeout, this.socketTimeoutUnit);
-      }
-
-      if (this.readTimeoutUnit != null && this.readTimeout != null) {
-        configBuilder.withReadTimeout(this.readTimeout, this.readTimeoutUnit);
-      }
-
-      if (this.writeTimeoutUnit != null && this.writeTimeout != null) {
-        configBuilder.withWriteTimeout(this.writeTimeout, this.writeTimeoutUnit);
-      }
-
-      if (this.transactionTimeoutUnit != null && this.transactionTimeout != null) {
-        configBuilder.withTransactTimeout(this.transactionTimeout,
-                                          this.transactionTimeoutUnit);
-      }
-
-      SMBClient client = new SMBClient(configBuilder.build());
-      Connection connection = client.connect(this.getHost(), this.port);
-      AuthenticationContext ac;
-      if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
-        ac = AuthenticationContext.anonymous();
-      } else {
-        ac = new AuthenticationContext(username, password.toCharArray(), domain);
-      }
-      Session session = connection.authenticate(ac);
-      share = (DiskShare) session.connectShare(this.getShareRoot());
+    if (this.shareRoot == null) {
+      throw new IllegalArgumentException("shareRoot is null");
     }
+    client = new SMBClient(getConfig());
+    Connection connection = client.connect(this.getHost(), this.port);
+    Session session = connection.authenticate(getAuthenticationContext(domain, username));
+    share = (DiskShare) session.connectShare(this.getShareRoot());
+  }
+
+  private AuthenticationContext getAuthenticationContext(String domain, String username) {
+    AuthenticationContext result = AuthenticationContext.anonymous();
+    if (!StringUtils.isBlank(username) && !StringUtils.isBlank(password)) {
+      result = new AuthenticationContext(username, password.toCharArray(), domain);
+    }
+    return result;
+  }
+
+  private SmbConfig getConfig() {
+    SmbConfig.Builder configBuilder = SmbConfig.builder()
+        .withSecurityProvider(new BCSecurityProvider())
+        .withDfsEnabled(this.dfsEnabled);
+
+    if (this.socketTimeoutUnit != null && this.socketTimeout != null) {
+      configBuilder.withSoTimeout(this.socketTimeout, this.socketTimeoutUnit);
+    }
+
+    if (this.readTimeoutUnit != null && this.readTimeout != null) {
+      configBuilder.withReadTimeout(this.readTimeout, this.readTimeoutUnit);
+    }
+
+    if (this.writeTimeoutUnit != null && this.writeTimeout != null) {
+      configBuilder.withWriteTimeout(this.writeTimeout, this.writeTimeoutUnit);
+    }
+
+    if (this.transactionTimeoutUnit != null && this.transactionTimeout != null) {
+      configBuilder.withTransactTimeout(this.transactionTimeout,
+                                        this.transactionTimeoutUnit);
+    }
+
+    return configBuilder.build();
   }
 
   public boolean isConnected() {
@@ -147,6 +150,7 @@ public class SmbClient {
 
   public void disconnect() {
     this.close(this.share);
+    this.close(this.client);
   }
 
   public void mkdir(URI uri) {
@@ -155,9 +159,9 @@ public class SmbClient {
 
   public void mkdir(String dirPath) {
     String[] dirs = dirPath.split("/");
-    String partialDirPath = null;
+    String partialDirPath = "";
     for (String dir : dirs) {
-      partialDirPath = (partialDirPath == null ? "" : partialDirPath + "/") + dir;
+      partialDirPath = UriUtils.createUri(partialDirPath, dir).getPath();
       if (!this.share.folderExists(partialDirPath)) {
         this.share.mkdir(partialDirPath);
       }
@@ -181,24 +185,17 @@ public class SmbClient {
 
   private SmbFileAttributes createSmbFileAttribute(String directory, FileIdBothDirectoryInformation entry) {
     try {
-      return new SmbFileAttributes(
-                                   new URI(
-                                           (directory.startsWith("/") ? "" : "/") + entry.getFileName()),
-                                   share.getFileInformation(directory + "/" + entry.getFileName()));
-    } catch (URISyntaxException e) {
-      throw new IllegalPathException("Cannot convert given path into a valid Uri", e);
+      URI path = UriUtils.createUri(directory, entry.getFileName());
+      return new SmbFileAttributes(path,
+                                   share.getFileInformation(path.getPath()));
     } catch (Exception e) {
       throw exception("Found exception trying to list path " + directory, e);
     }
   }
 
   public void write(String target, InputStream inputStream, FileWriteMode mode) {
-    if (inputStream == null) {
-      throw exception("Cannot write to file: inputStream is null");
-    }
-
     try (
-        File f = this.openFile(target, mode);
+        File f = this.openFile(target);
         OutputStream os = f.getOutputStream(FileWriteMode.APPEND.equals(mode))) {
       IOUtils.copyLarge(inputStream, os);
       os.flush();
@@ -208,15 +205,10 @@ public class SmbClient {
   }
 
   public OutputStream getOutputStream(String target, FileWriteMode mode) {
-    if (target == null) {
-      throw exception("Cannot write to file: target is null or empty");
-    }
-
-    File f = this.openFile(target, mode);
-    return f.getOutputStream(FileWriteMode.APPEND.equals(mode));
+    return this.openFile(target).getOutputStream(FileWriteMode.APPEND.equals(mode));
   }
 
-  private File openFile(String filePath, FileWriteMode mode) {
+  private File openFile(String filePath) {
     File result;
     try {
       if (!this.share.fileExists(filePath)) {
@@ -234,10 +226,6 @@ public class SmbClient {
   }
 
   public InputStream read(String filePath) {
-    if (filePath == null) {
-      throw exception("Cannot read from file: filePath is null");
-    }
-
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         File f = share.openFile(filePath, EnumSet.of(AccessMask.GENERIC_READ), null, SMB2ShareAccess.ALL,
                                 SMB2CreateDisposition.FILE_OPEN, null);
@@ -248,31 +236,11 @@ public class SmbClient {
         outputStream.write(buffer, 0, length);
       return new ByteArrayInputStream(outputStream.toByteArray());
     } catch (Exception e) {
-      throw exception("Cannot read from file: " + filePath, e, false);
+      throw exception(format("Cannot read from file '%s': %s", filePath, e.getMessage()), e, false);
     }
   }
 
-  public void rename(String sourcePath, String newName, boolean overwrite) {
-
-    if (sourcePath == null) {
-      throw exception("Cannot rename sourcePath: sourcePath is null.");
-    }
-
-    if (newName == null) {
-      throw exception("Cannot rename sourcePath: newName is null.");
-    }
-
-    try {
-      if (exists(newName) && (overwrite && exists(sourcePath))) {
-        delete(newName);
-      }
-      doRename(sourcePath, newName);
-    } catch (Exception e) {
-      throw exception("Cannot rename sourcePath: " + e.getMessage(), e);
-    }
-  }
-
-  public void doRename(String sourcePath, String newName) {
+  public void rename(String sourcePath, String newName) {
     if (this.share.folderExists(sourcePath)) {
       try (Directory dir = share.openDirectory(sourcePath, EnumSet.of(AccessMask.DELETE, AccessMask.GENERIC_WRITE), null,
                                                SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OPEN, null)) {
@@ -304,20 +272,8 @@ public class SmbClient {
     return path.equals("/");
   }
 
-  public boolean isLogLevelEnabled(LogLevel logLevel) {
-    return logLevel != null && this.logLevel != null && logLevel.ordinal() <= this.logLevel.ordinal();
-  }
-
   protected boolean isApiException(Exception cause) {
     return cause instanceof SMBApiException;
-  }
-
-  public boolean exists(String targetPath) {
-    return this.share.fileExists(targetPath) || this.share.folderExists(targetPath);
-  }
-
-  public URI resolve(URI uri) {
-    return uri;
   }
 
   public void setPassword(String password) {
@@ -327,11 +283,7 @@ public class SmbClient {
   public String getHost() {
     return host;
   }
-
-  public int getPort() {
-    return port;
-  }
-
+  
   public String getShareRoot() {
     return shareRoot;
   }
@@ -344,19 +296,11 @@ public class SmbClient {
     }
   }
 
-  protected RuntimeException exception(String message) {
-    return this.exception(message, null);
-  }
-
   protected RuntimeException exception(String message, Exception cause) {
     return this.exception(message, cause, true);
   }
 
   protected RuntimeException exception(String message, Exception cause, boolean convertApiExceptionToConnectionException) {
-
-    if (cause == null) {
-      return new MuleRuntimeException(createStaticMessage(message));
-    }
 
     if (convertApiExceptionToConnectionException && isApiException(cause)) {
       return new MuleRuntimeException(createStaticMessage(message),

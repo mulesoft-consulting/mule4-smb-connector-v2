@@ -118,8 +118,8 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
     if (alreadyLoggedWarning.compareAndSet(false, true) && isSecondsOrLower(timeUnit)
         && attributes.getTimestamp().getSecond() == 0 && attributes.getTimestamp().getNano() == 0) {
       LOGGER
-          .warn(format("The required timestamp precision %s cannot be met. The server may not support it.",
-                       timeUnit));
+          .warn("The required timestamp precision {}} cannot be met. The server may not support it.",
+                timeUnit);
     }
   }
 
@@ -135,7 +135,6 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
   private long getTimeInMillis(Long time, TimeUnit timeUnit) {
     return timeUnit.toMillis(time);
   }
-
 
   public LocalDateTime getTimestampSince() {
     return timestampSince;
@@ -157,26 +156,5 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
     return notUpdatedInTheLast;
   }
 
-  protected SmbFileMatcher setTimestampSince(LocalDateTime timestampSince) {
-    this.timestampSince = timestampSince;
-    return this;
-  }
-
-  protected SmbFileMatcher setTimestampUntil(LocalDateTime timestampUntil) {
-    this.timestampUntil = timestampUntil;
-    return this;
-  }
-
-  protected void setTimeUnit(TimeUnit timeUnit) {
-    this.timeUnit = timeUnit;
-  }
-
-  protected void setUpdatedInTheLast(Long updatedInTheLast) {
-    this.updatedInTheLast = updatedInTheLast;
-  }
-
-  protected void setNotUpdatedInTheLast(Long notUpdatedInTheLast) {
-    this.notUpdatedInTheLast = notUpdatedInTheLast;
-  }
 
 }

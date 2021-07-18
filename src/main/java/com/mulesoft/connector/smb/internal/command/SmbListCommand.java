@@ -6,25 +6,23 @@
  */
 package com.mulesoft.connector.smb.internal.command;
 
-import static org.mule.extension.file.common.api.util.UriUtils.createUri;
-import static org.slf4j.LoggerFactory.getLogger;
-
+import com.mulesoft.connector.smb.api.SmbFileAttributes;
+import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.command.ListCommand;
-import com.mulesoft.connector.smb.api.SmbFileAttributes;
-import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import org.mule.runtime.extension.api.runtime.operation.Result;
+import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
-import org.slf4j.Logger;
+import static org.mule.extension.file.common.api.util.UriUtils.createUri;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * A {@link SmbCommand} which implements the {@link ListCommand} contract
@@ -43,6 +41,8 @@ public final class SmbListCommand extends SmbCommand implements ListCommand<SmbF
 
   /**
    * {@inheritDoc}
+   * @deprecated
+   * Inherided deprecated method from ListCommand interface
    */
   @Override
   @Deprecated
@@ -52,18 +52,6 @@ public final class SmbListCommand extends SmbCommand implements ListCommand<SmbF
                                                            Predicate<SmbFileAttributes> matcher) {
 
     return list(config, directoryPath, recursive, matcher, null);
-  }
-
-  @Deprecated
-  public List<Result<InputStream, SmbFileAttributes>> list(FileConnectorConfig config,
-                                                           String directoryPath,
-                                                           boolean recursive,
-                                                           Predicate<SmbFileAttributes> matcher,
-                                                           Long timeBetweenSizeCheck,
-                                                           TimeUnit timeBetweenSizeCheckUnit) {
-
-    return list(config, directoryPath, recursive, matcher,
-                config.getTimeBetweenSizeCheckInMillis(timeBetweenSizeCheck, timeBetweenSizeCheckUnit).orElse(null));
   }
 
   @Override

@@ -6,15 +6,14 @@
  */
 package com.mulesoft.connector.smb.internal.connection.provider;
 
-import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED_TAB;
-
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED_TAB;
 
 /**
  * Groups timeout related parameters
@@ -147,54 +146,4 @@ public final class TimeoutSettings {
     return transactionTimeout;
   }
 
-  public void setSocketTimeoutUnit(TimeUnit socketTimeoutUnit) {
-    this.socketTimeoutUnit = socketTimeoutUnit;
-  }
-
-  public void setSocketTimeout(Integer socketTimeout) {
-    this.socketTimeout = socketTimeout;
-  }
-
-  public void setReadTimeoutUnit(TimeUnit readTimeoutUnit) {
-    this.readTimeoutUnit = readTimeoutUnit;
-  }
-
-  public void setReadTimeout(Integer readTimeout) {
-    this.readTimeout = readTimeout;
-  }
-
-  public void setWriteTimeoutUnit(TimeUnit writeTimeoutUnit) {
-    this.writeTimeoutUnit = writeTimeoutUnit;
-  }
-
-  public void setWriteTimeout(Integer writeTimeout) {
-    this.writeTimeout = writeTimeout;
-  }
-
-  public void setTransactionTimeoutUnit(TimeUnit transactionTimeoutUnit) {
-    this.transactionTimeoutUnit = transactionTimeoutUnit;
-  }
-
-  public void setTransactionTimeout(Integer transactionTimeout) {
-    this.transactionTimeout = transactionTimeout;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
-    TimeoutSettings that = (TimeoutSettings) o;
-    return socketTimeoutUnit == that.socketTimeoutUnit && Objects.equals(socketTimeout, that.socketTimeout)
-        && readTimeoutUnit == that.readTimeoutUnit && Objects.equals(readTimeout, that.readTimeout)
-        && writeTimeoutUnit == that.writeTimeoutUnit && Objects.equals(writeTimeout, that.writeTimeout)
-        && transactionTimeoutUnit == that.transactionTimeoutUnit && Objects.equals(transactionTimeout, that.transactionTimeout);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(socketTimeoutUnit, socketTimeout, readTimeoutUnit, readTimeout,
-                        writeTimeoutUnit, writeTimeout, transactionTimeoutUnit, transactionTimeout);
-  }
 }

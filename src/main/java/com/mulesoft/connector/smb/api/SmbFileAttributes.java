@@ -45,15 +45,14 @@ public class SmbFileAttributes extends AbstractFileAttributes {
    * Creates a new instance
    *
    * @param file the file from which the attributes will be read
-   * @throws Exception if any exception occurs
    */
-  public SmbFileAttributes(URI uri, FileAllInformation file) throws Exception {
+  public SmbFileAttributes(URI uri, FileAllInformation file) {
     super(uri);
     this.populate(file);
   }
 
   protected void populate(FileAllInformation file) {
-    this.absolutePath = file.getNameInformation().replaceAll("\\\\", "/");
+    this.absolutePath = file.getNameInformation().replace("\\", "/");
     this.size = file.getStandardInformation().getEndOfFile();
     this.directory = file.getStandardInformation().isDirectory();
     this.timestamp = localDateTimeFromEpoch(file.getBasicInformation().getLastWriteTime().toEpochMillis());
