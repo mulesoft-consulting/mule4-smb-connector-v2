@@ -283,7 +283,7 @@ public class SmbClient {
   public String getHost() {
     return host;
   }
-  
+
   public String getShareRoot() {
     return shareRoot;
   }
