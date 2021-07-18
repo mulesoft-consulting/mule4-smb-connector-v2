@@ -33,11 +33,24 @@
 			</smb:write>
 		</munit:execution>
 	</munit:test>
-	<munit:test name="smb-connectivity-invalid-port" doc:id="e527980e-e161-4285-a025-5fd6f0d90082" description="Performs a write operation using a configuration with an invalid port" expectedErrorType="SMB:CANNOT_REACH" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\invalid', user: 'WORKGROUP\mulesoft'): Can't assign requested address (connect failed)">
+	<munit:test name="smb-connectivity-invalid-port" doc:id="e527980e-e161-4285-a025-5fd6f0d90082" description="Performs a write operation using a configuration with an invalid port" expectedErrorType="SMB:CANNOT_REACH">
 		<munit:execution >
-			<smb:write doc:name="Write" doc:id="dd14dd1a-b54e-4f59-bdc3-e25f49173d5b" config-ref="config-invalid-port" path="somefile.txt">
-				<smb:content ><![CDATA[This is a test]]></smb:content>
+			<try doc:name="Try" doc:id="b550a4cb-ed8e-484f-8aec-22b707f4d3b8" >
+				<smb:write doc:name="Write" doc:id="dd14dd1a-b54e-4f59-bdc3-e25f49173d5b" config-ref="config-invalid-port" path="somefile.txt">
+				<smb:content><![CDATA[This is a test]]></smb:content>
 			</smb:write>
+				<error-handler >
+					<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9a37712a-2c4a-4a1b-8c71-f8dc1111c8c8" >
+						<munit-tools:assert doc:name="Assert expression" doc:id="c7e3494b-ae22-47fb-9865-7ae6463f4a3d">
+							<munit-tools:that><![CDATA[#[import * from dw::test::Asserts 
+ ---
+error.description must beOneOf([
+	"Could not establish SMB connection (host: '\\\\localhost\\invalid', user: 'WORKGROUP\\mulesoft'): Can't assign requested address (connect failed)", 
+	"Could not establish SMB connection (host: '\\\\localhost\\invalid', user: 'WORKGROUP\\mulesoft'): Connection refused (Connection refused)"])]]]></munit-tools:that>
+						</munit-tools:assert>
+					</on-error-propagate>
+				</error-handler>
+			</try>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-connectivity-error-invalid-server" doc:id="505db827-2519-40e5-bb21-8713eea9f53f" expectedErrorType="SMB:CANNOT_REACH" expectedErrorDescription="Could not establish SMB connection (host: '\\localhost\share', user: 'WORKGROUP\mulesoft'): Connection refused (Connection refused)" description="Performs a write operation using a connection with an invalid server">
@@ -132,7 +145,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 			</munit-tools:assert>
 		</munit:validation>
 	</munit:test>
-	<munit:test name="smb-connectivity-small-read-timeout" doc:id="2f7d0006-8042-4373-98d2-0868496fbe08" description="Performs a write operation using a configuration with a small read timeout" expectedErrorType="MULE:UNKNOWN" expectedErrorDescription="Cannot read from file '/somefile.txt': java.util.concurrent.ExecutionException: com.hierynomus.smbj.common.SMBRuntimeException: java.util.concurrent.TimeoutException: Timeout expired" ignore="true">
+	<munit:test name="smb-connectivity-small-read-timeout" doc:id="2f7d0006-8042-4373-98d2-0868496fbe08" description="Performs a write operation using a configuration with a small read timeout" expectedErrorType="MULE:UNKNOWN" expectedErrorDescription="Cannot read from file '/somefile.txt': java.util.concurrent.ExecutionException: com.hierynomus.smbj.common.SMBRuntimeException: java.util.concurrent.TimeoutException: Timeout expired">
 		<munit:execution >
 			<smb:write doc:name="Write" doc:id="6ca9b528-2526-40a0-be36-91cb3d5910c2" config-ref="config" path="somefile.txt">
 				<smb:content ><![CDATA[This is a test]]></smb:content>
@@ -358,8 +371,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
     Couldn't find a way to handle the exception to convert it to SMB:CONNECTIVITY
     -->
     <munit:test name="smb-connectivity-error-namespace-list"
-                description="Connectivity error throws SMB:CONNECTIVITY for list operation"
-                ignore="#[Munit::muleVersionPriorTo('4.3.0')]">
+                description="Connectivity error throws SMB:CONNECTIVITY for list operation">
         <munit:behavior>
             <set-variable variableName="smbConnectivityExceptionThrown" value="#[false]" />
             <set-variable variableName="operationSucceeded" value="#[false]" />
