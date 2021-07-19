@@ -375,40 +375,40 @@ public final class SmbOperations extends BaseFileSystemOperations {
       throw new IllegalPathException("path cannot be null nor blank");
     }
 
-    if (logLevel.isEnabled(smbLogger)) {
-      CompletableFuture.runAsync(() -> {
-        if (writeToLogger) {
-          logLevel.log(smbLogger, message);
-        }
-        try {
-          boolean done = false;
-          while (!done) {
-            try {
-              doWriteLog(fileSystem, path, logLevel, message);
-              done = true;
-            } catch (FileLockedException fle) {
-              muleLogger.debug("Log file is locked ({}). Retrying...", fle.getMessage(), fle);
-            }
-          }
-        } catch (Exception e) {
-          muleLogger.error("Could not log message to remote file in async mode. File path: {}, message: {}", path, message, e);
-        }
-        callback.success(Result.<Void, Void>builder().build());
-      });
-    } else {
+    if (!logLevel.isEnabled(smbLogger)) {
       callback.success(Result.<Void, Void>builder().build());
+      return;
     }
+
+    CompletableFuture.runAsync(() -> {
+      if (writeToLogger) {
+        logLevel.log(smbLogger, message);
+      }
+      try {
+        while (!doWriteLog(fileSystem, path, logLevel, message));
+      } catch (Exception e) {
+        muleLogger.error("Could not log message to remote file in async mode. File path: {}, message: {}", path, message, e);
+      }
+      callback.success(Result.<Void, Void>builder().build());
+    });
   }
 
-  private void doWriteLog(SmbFileSystemConnection fileSystem, String path, LogLevel logLevel, String message) {
-    fileSystem.write(path, IOUtils.toInputStream(
-                                                 SmbUtils.padRight(logLevel.name(), 6, " ")
-                                                     + ZonedDateTime.now()
-                                                         .format(DateTimeFormatter
-                                                             .ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
-                                                     + message
-                                                     + "\n",
-                                                 Charset.defaultCharset()),
-                     FileWriteMode.APPEND, true, true);
+  private boolean doWriteLog(SmbFileSystemConnection fileSystem, String path, LogLevel logLevel, String message) {
+    boolean result = false;
+    try {
+      fileSystem.write(path, IOUtils.toInputStream(
+                                                   SmbUtils.padRight(logLevel.name(), 6, " ")
+                                                       + ZonedDateTime.now()
+                                                           .format(DateTimeFormatter
+                                                               .ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
+                                                       + message
+                                                       + "\n",
+                                                   Charset.defaultCharset()),
+                       FileWriteMode.APPEND, true, true);
+      result = true;
+    } catch (FileLockedException fle) {
+      muleLogger.debug("Log file is locked ({}): ", fle.getMessage(), fle);
+    }
+    return result;
   }
 }

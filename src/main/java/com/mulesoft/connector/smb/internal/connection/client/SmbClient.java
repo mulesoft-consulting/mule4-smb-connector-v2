@@ -296,7 +296,7 @@ public class SmbClient {
     try {
       closeable.close();
     } catch (Exception e) {
-      logger.warn("An exception occurred while closing ", closeable.toString(), e);
+      logger.warn("An exception occurred while closing {}", closeable, e);
     }
   }
 

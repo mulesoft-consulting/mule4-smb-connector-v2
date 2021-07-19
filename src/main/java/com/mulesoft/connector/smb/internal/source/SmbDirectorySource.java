@@ -239,10 +239,11 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
           item.setWatermark(attributes.getTimestamp());
         }
       } catch (Exception t) {
-        logger.error("Found file '{}' but found exception trying to dispatch it for processing. {}",
-                     attributes.getPath(), t.getMessage(), t);
         onRejectedItem(file, ctx);
-        throw new MuleRuntimeException(t);
+        throw new MuleRuntimeException(I18nMessageFactory
+            .createStaticMessage(format("Found file '%s' but found exception trying to dispatch it for processing.",
+                                        attributes.getPath())),
+                                       t);
       }
     });
 
