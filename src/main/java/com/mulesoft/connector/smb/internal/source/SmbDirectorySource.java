@@ -73,7 +73,7 @@ import static org.mule.runtime.extension.api.runtime.source.PollContext.PollItem
 // TODO: check if mime type should be declared
 public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttributes> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SmbDirectorySource.class);
+  private static final Logger logger = LoggerFactory.getLogger(SmbDirectorySource.class);
   private static final String ATTRIBUTES_CONTEXT_VAR = "attributes";
   private static final String POST_PROCESSING_GROUP_NAME = "Post processing action";
 
@@ -176,7 +176,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
             }
           }
         } catch (Exception e) {
-          LOGGER.error("Found exception trying to poll directory '{}'. Will try again on the next poll. Error message: {}",
+          logger.error("Found exception trying to poll directory '{}'. Will try again on the next poll. Error message: {}",
                        directoryUri.getPath(), e.getMessage(), e);
           extractConnectionException(e)
               .ifPresent(pollContext::onConnectionException);
@@ -197,8 +197,8 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
     try {
       result = fileSystemProvider.connect();
     } catch (Exception e) {
-      LOGGER.error(format("Could not obtain connection while trying to poll directory '%s'. %s", directoryUri.getPath(),
-                          e.getMessage()));
+      logger.error("Could not obtain connection while trying to poll directory '{}': {}", directoryUri.getPath(),
+                   e.getMessage(), e);
     }
 
     return java.util.Optional.ofNullable(result);
@@ -239,7 +239,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
           item.setWatermark(attributes.getTimestamp());
         }
       } catch (Exception t) {
-        LOGGER.error("Found file '{}' but found exception trying to dispatch it for processing. {}",
+        logger.error("Found file '{}' but found exception trying to dispatch it for processing. {}",
                      attributes.getPath(), t.getMessage(), t);
         onRejectedItem(file, ctx);
         throw new MuleRuntimeException(t);
@@ -268,9 +268,9 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
         fileSystem.changeToBaseDir();
         postAction.apply(fileSystem, attrs, config);
       } catch (ConnectionException e) {
-        LOGGER
+        logger
             .error("An error occurred while retrieving a connection to apply the post processing action to the file {}, it was neither moved nor deleted.",
-                   attrs.getPath());
+                   attrs.getPath(), e);
       } finally {
         if (fileSystem != null) {
           fileSystemProvider.disconnect(fileSystem);

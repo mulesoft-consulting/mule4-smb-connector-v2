@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SmbMoveCommand extends SmbCommand implements MoveCommand {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SmbMoveCommand.class);
+  private static final Logger logger = LoggerFactory.getLogger(SmbMoveCommand.class);
 
   public SmbMoveCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
     super(fileSystem, client);
@@ -34,6 +34,6 @@ public class SmbMoveCommand extends SmbCommand implements MoveCommand {
   public void move(FileConnectorConfig config, String sourcePath, String targetPath, boolean overwrite,
                    boolean createParentDirectories, String renameTo) {
     copy(config, sourcePath, targetPath, overwrite, createParentDirectories, renameTo, new SmbMoveDelegate(this, fileSystem));
-    LOGGER.debug("Moved '{}' to '{}'", sourcePath, targetPath);
+    logger.debug("Moved '{}' to '{}'", sourcePath, targetPath);
   }
 }

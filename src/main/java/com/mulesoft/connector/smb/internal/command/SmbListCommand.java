@@ -31,7 +31,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public final class SmbListCommand extends SmbCommand implements ListCommand<SmbFileAttributes> {
 
-  private static final Logger LOGGER = getLogger(SmbListCommand.class);
+  private static final Logger logger = getLogger(SmbListCommand.class);
   private final SmbReadCommand smbReadCommand;
 
   public SmbListCommand(SmbFileSystemConnection fileSystem, SmbClient client, SmbReadCommand smbReadCommand) {
@@ -81,7 +81,7 @@ public final class SmbListCommand extends SmbCommand implements ListCommand<SmbF
                       Predicate<SmbFileAttributes> matcher,
                       Long timeBetweenSizeCheck) {
 
-    LOGGER.debug("Listing directory {}", path);
+    logger.debug("Listing directory {}", path);
     for (SmbFileAttributes file : client.list(path)) {
 
       if (file.isDirectory()) {

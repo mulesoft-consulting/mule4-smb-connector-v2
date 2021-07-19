@@ -22,7 +22,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public final class SmbDeleteCommand extends SmbCommand implements DeleteCommand {
 
-  private static final Logger LOGGER = getLogger(SmbDeleteCommand.class);
+  private static final Logger logger = getLogger(SmbDeleteCommand.class);
 
   public SmbDeleteCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
     super(fileSystem, client);
@@ -46,14 +46,14 @@ public final class SmbDeleteCommand extends SmbCommand implements DeleteCommand 
 
   private void deleteFile(String path) {
     fileSystem.verifyNotLocked(createUri(path));
-    LOGGER.debug("Preparing to delete file '{}'", path);
+    logger.debug("Preparing to delete file '{}'", path);
     client.delete(path);
 
     logDelete(path);
   }
 
   private void deleteDirectory(String path) {
-    LOGGER.debug("Preparing to delete directory '{}'", path);
+    logger.debug("Preparing to delete directory '{}'", path);
     String actualPath = path + (path.endsWith("/") ? "" : "/");
     for (FileAttributes file : client.list(path)) {
       final String filePath = file.getPath();
@@ -72,6 +72,6 @@ public final class SmbDeleteCommand extends SmbCommand implements DeleteCommand 
   }
 
   private void logDelete(String path) {
-    LOGGER.debug("Successfully deleted '{}'", path);
+    logger.debug("Successfully deleted '{}'", path);
   }
 }

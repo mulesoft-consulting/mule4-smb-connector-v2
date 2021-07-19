@@ -32,7 +32,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
 
-  private static final Logger LOGGER = getLogger(SmbWriteCommand.class);
+  private static final Logger logger = getLogger(SmbWriteCommand.class);
 
   public SmbWriteCommand(SmbFileSystemConnection fileSystem, SmbClient client) {
     super(fileSystem, client);
@@ -73,7 +73,7 @@ public final class SmbWriteCommand extends SmbCommand implements WriteCommand {
 
     try {
       client.write(uri.getPath(), content, mode);
-      LOGGER.debug("Successfully wrote to path {}", uri.getPath());
+      logger.debug("Successfully wrote to path {}", uri.getPath());
     } catch (Exception e) {
       if (e.getCause() instanceof DeletedFileWhileReadException) {
         throw new ModuleException(e.getCause().getMessage(), FileError.FILE_DOESNT_EXIST, e.getCause());

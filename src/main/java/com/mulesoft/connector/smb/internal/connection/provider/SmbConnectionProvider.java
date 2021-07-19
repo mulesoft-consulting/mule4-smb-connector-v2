@@ -46,7 +46,7 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
     implements PoolingConnectionProvider<SmbFileSystemConnection> {
 
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SmbConnectionProvider.class);
+  private static final Logger logger = LoggerFactory.getLogger(SmbConnectionProvider.class);
 
   private static final String TIMEOUT_CONFIGURATION = "Timeout Configuration";
   private static final String SMB_ERROR_MESSAGE_MASK =
@@ -64,17 +64,6 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
   @Inject
   private LockFactory lockFactory;
 
-  /**
-   * The directory to be considered as the root of every relative path used with this connector. If not provided, it will default
-   * to the remote server default.
-   */
-  //  @Parameter
-  //  @Optional
-  //  @Summary("The directory to be considered as the root of every relative path used with this connector")
-  //  @DisplayName("Working Directory")
-  //  FIXME olamiral: implement workingDir correctly
-  //  private final String workingDir = null;
-
   @ParameterGroup(name = TIMEOUT_CONFIGURATION)
   private final TimeoutSettings timeoutSettings = new TimeoutSettings();
 
@@ -85,8 +74,8 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
 
   @Override
   public SmbFileSystemConnection connect() throws ConnectionException {
-    if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug(format("Connecting to host: '%s' at port: '%d'", connectionSettings.getHost(), connectionSettings.getPort()));
+    if (logger.isDebugEnabled()) {
+      logger.debug(format("Connecting to host: '%s' at port: '%d'", connectionSettings.getHost(), connectionSettings.getPort()));
     }
     SmbClient client = clientFactory.createInstance(connectionSettings.getHost(), connectionSettings.getPort(),
                                                     connectionSettings.getShareRoot(), connectionSettings.isDfsEnabled());
@@ -115,9 +104,7 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
 
   @Override
   public String getWorkingDir() {
-    //Working Dir is not used for SMB connector
-    // FIXME olamiral: implement workingDir correctly
-    throw new UnsupportedOperationException("workingDir property should not be used");
+    throw new UnsupportedOperationException("workingDir property not implemented");
   }
 
   protected Integer getSocketTimeout() {

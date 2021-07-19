@@ -32,6 +32,8 @@ import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.core.api.util.IOUtils;
 import org.mule.runtime.core.api.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
@@ -46,6 +48,8 @@ import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.api.util.collection.Collectors.toImmutableList;
 
 public class SmbClient {
+
+  private static final Logger logger = LoggerFactory.getLogger(SmbClient.class);
 
   private final String host;
   private final int port;
@@ -292,7 +296,7 @@ public class SmbClient {
     try {
       closeable.close();
     } catch (Exception e) {
-      //Does nothing
+      logger.warn("An exception occurred while closing ", closeable.toString(), e);
     }
   }
 

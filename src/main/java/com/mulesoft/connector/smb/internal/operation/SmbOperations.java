@@ -51,8 +51,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public final class SmbOperations extends BaseFileSystemOperations {
 
-  private static final Logger SMB_LOGGER = getLogger("com.mulesoft.connector.smb.internal.LoggerMessageProcessor");
-  private static final Logger LOGGER = getLogger(SmbOperations.class);
+  private static final Logger smbLogger = getLogger("com.mulesoft.connector.smb.internal.LoggerMessageProcessor");
+  private static final Logger muleLogger = getLogger(SmbOperations.class);
 
   /**
    * Lists all the files in the {@code directoryPath} which match the given {@code matcher}.
@@ -171,7 +171,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
                         defaultValue = "OVERWRITE") @Summary("How the file is going to be written") @DisplayName("Write Mode") FileWriteMode mode,
                     CompletionCallback<Void, Void> callback) {
     if (encoding != null) {
-      LOGGER
+      muleLogger
           .warn("Deprecated parameter 'encoding' was configured for operation 'smb:write'. This parameter will be ignored, not altering the operation behavior");
     }
 
@@ -221,13 +221,12 @@ public final class SmbOperations extends BaseFileSystemOperations {
                    @Optional(defaultValue = "true") boolean createParentDirectories,
                    @Optional(defaultValue = "false") boolean overwrite, @Optional String renameTo,
                    CompletionCallback<Void, Void> callback) {
-    // Assumes that if target is null or empty, the path will be copied to the shareRoot
-    // This check is required because the super implementation of doCopy fails if target path is empty
-    if (StringUtils.isEmpty(targetPath)) {
-      targetPath = "/";
+    String effectiveTargetPath = targetPath;
+    if (StringUtils.isEmpty(effectiveTargetPath)) {
+      effectiveTargetPath = "/";
     }
     try {
-      super.doCopy(config, fileSystem, sourcePath, targetPath, createParentDirectories, overwrite, renameTo);
+      super.doCopy(config, fileSystem, sourcePath, effectiveTargetPath, createParentDirectories, overwrite, renameTo);
       callback.success(Result.<Void, Void>builder().build());
     } catch (Exception e) {
       callback.error(e);
@@ -376,12 +375,24 @@ public final class SmbOperations extends BaseFileSystemOperations {
       throw new IllegalPathException("path cannot be null nor blank");
     }
 
-    if (logLevel.isEnabled(SMB_LOGGER)) {
+    if (logLevel.isEnabled(smbLogger)) {
       CompletableFuture.runAsync(() -> {
         if (writeToLogger) {
-          logLevel.log(SMB_LOGGER, message);
+          logLevel.log(smbLogger, message);
         }
-        doWriteLog(fileSystem, path, logLevel, message);
+        try {
+          boolean done = false;
+          while (!done) {
+            try {
+              doWriteLog(fileSystem, path, logLevel, message);
+              done = true;
+            } catch (FileLockedException fle) {
+              muleLogger.debug("Log file is locked ({}). Retrying...", fle.getMessage(), fle);
+            }
+          }
+        } catch (Exception e) {
+          muleLogger.error("Could not log message to remote file in async mode. File path: {}, message: {}", path, message, e);
+        }
         callback.success(Result.<Void, Void>builder().build());
       });
     } else {
@@ -390,28 +401,14 @@ public final class SmbOperations extends BaseFileSystemOperations {
   }
 
   private void doWriteLog(SmbFileSystemConnection fileSystem, String path, LogLevel logLevel, String message) {
-    try {
-      boolean done = false;
-      while (!done) {
-        try {
-          fileSystem.write(path, IOUtils.toInputStream(
-                                                       SmbUtils.padRight(logLevel.name(), 6, " ")
-                                                           + ZonedDateTime.now()
-                                                               .format(DateTimeFormatter
-                                                                   .ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
-                                                           + message
-                                                           + "\n",
-                                                       Charset.defaultCharset()),
-                           FileWriteMode.APPEND, true, true);
-          done = true;
-        } catch (FileLockedException fle) {
-          if (LOGGER.isDebugEnabled()) {
-            LOGGER.warn("Log file is locked ({}). Retrying...", fle.getMessage());
-          }
-        }
-      }
-    } catch (Exception e) {
-      LOGGER.error("Could not log message to remote file in async mode. File path: " + path + ", message: " + message, e);
-    }
+    fileSystem.write(path, IOUtils.toInputStream(
+                                                 SmbUtils.padRight(logLevel.name(), 6, " ")
+                                                     + ZonedDateTime.now()
+                                                         .format(DateTimeFormatter
+                                                             .ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
+                                                     + message
+                                                     + "\n",
+                                                 Charset.defaultCharset()),
+                     FileWriteMode.APPEND, true, true);
   }
 }

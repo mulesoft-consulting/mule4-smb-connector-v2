@@ -8,6 +8,8 @@ package com.mulesoft.connector.smb.internal.lock;
 
 import org.mule.extension.file.common.api.lock.UriLock;
 import org.mule.runtime.api.lock.LockFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URL;
@@ -22,6 +24,8 @@ import java.util.concurrent.locks.Lock;
  * @since 1.0
  */
 public class SmbUriLock implements UriLock {
+
+  private static final Logger logger = LoggerFactory.getLogger(SmbUriLock.class);
 
   private final URI uri;
   private final LockFactory lockFactory;
@@ -69,7 +73,7 @@ public class SmbUriLock implements UriLock {
       try {
         lock.unlock();
       } catch (IllegalMonitorStateException e) {
-        // ignore
+        logger.debug("Failed releasing lock for '{}': {}", uri.getPath(), e.getMessage(), e);
       }
     }
   }

@@ -66,7 +66,7 @@ public class SmbConnectionProviderTestCase {
   @Test
   public void verifyGetWorkingDir() {
     expectedException.expect(RuntimeException.class);
-    expectedException.expectMessage("workingDir property should not be used");
+    expectedException.expectMessage("workingDir property not implemented");
 
     SmbConnectionProvider provider = new SmbConnectionProvider();
     provider.getWorkingDir();

@@ -6,17 +6,14 @@
  */
 package com.mulesoft.connector.smb.api;
 
-import static java.lang.String.format;
-import static java.time.LocalDateTime.now;
-import static org.slf4j.LoggerFactory.getLogger;
-
+import org.mule.extension.file.common.api.matcher.FileMatcher;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.dsl.xml.TypeDsl;
-import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.Optional;
-import org.mule.extension.file.common.api.matcher.FileMatcher;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.Example;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
+import org.slf4j.Logger;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -24,7 +21,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
-import org.slf4j.Logger;
+import static java.time.LocalDateTime.now;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * A set of criterias used to filter files stored in a SMB server. The file's properties are to be represented on
@@ -36,7 +34,7 @@ import org.slf4j.Logger;
 @TypeDsl(allowTopLevelDefinition = true)
 public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttributes> {
 
-  private static final Logger LOGGER = getLogger(SmbFileMatcher.class);
+  private static final Logger logger = getLogger(SmbFileMatcher.class);
   private final AtomicBoolean alreadyLoggedWarning = new AtomicBoolean();
 
   /**
@@ -87,37 +85,39 @@ public class SmbFileMatcher extends FileMatcher<SmbFileMatcher, SmbFileAttribute
 
   @Override
   protected Predicate<SmbFileAttributes> addConditions(Predicate<SmbFileAttributes> predicate) {
+    Predicate<SmbFileAttributes> result = predicate;
+
     if (timestampSince != null) {
-      predicate = predicate.and(attributes -> FILE_TIME_SINCE.apply(timestampSince, attributes.getTimestamp()));
+      result = result.and(attributes -> FILE_TIME_SINCE.apply(timestampSince, attributes.getTimestamp()));
     }
 
     if (timestampUntil != null) {
-      predicate = predicate.and(attributes -> FILE_TIME_UNTIL.apply(timestampUntil, attributes.getTimestamp()));
+      result = result.and(attributes -> FILE_TIME_UNTIL.apply(timestampUntil, attributes.getTimestamp()));
     }
 
     LocalDateTime referenceDateTime = now();
 
     if (notUpdatedInTheLast != null) {
-      predicate = predicate.and(attributes -> {
+      result = result.and(attributes -> {
         checkTimestampPrecision(attributes);
         return FILE_TIME_UNTIL.apply(minusTime(referenceDateTime, notUpdatedInTheLast, timeUnit), attributes.getTimestamp());
       });
     }
 
     if (updatedInTheLast != null) {
-      predicate = predicate.and(attributes -> {
+      result = result.and(attributes -> {
         checkTimestampPrecision(attributes);
         return FILE_TIME_SINCE.apply(minusTime(referenceDateTime, updatedInTheLast, timeUnit), attributes.getTimestamp());
       });
     }
 
-    return predicate;
+    return result;
   }
 
   private void checkTimestampPrecision(SmbFileAttributes attributes) {
     if (alreadyLoggedWarning.compareAndSet(false, true) && isSecondsOrLower(timeUnit)
         && attributes.getTimestamp().getSecond() == 0 && attributes.getTimestamp().getNano() == 0) {
-      LOGGER
+      logger
           .warn("The required timestamp precision {}} cannot be met. The server may not support it.",
                 timeUnit);
     }

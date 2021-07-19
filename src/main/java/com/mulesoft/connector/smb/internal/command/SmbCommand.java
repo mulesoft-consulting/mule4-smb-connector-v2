@@ -34,7 +34,7 @@ import static org.mule.extension.file.common.api.util.UriUtils.*;
  */
 public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnection> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SmbCommand.class);
+  private static final Logger logger = LoggerFactory.getLogger(SmbCommand.class);
 
   protected final SmbClient client;
 
@@ -109,7 +109,7 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
    */
   @Override
   protected boolean exists(URI uri) {
-    return (ROOT.equals(uri.toString()) || getFile(uri) != null);
+    return ROOT.equals(uri.toString()) || getFile(uri) != null;
   }
 
   /**
@@ -143,7 +143,7 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
 
     try {
       doRename(sourceUri.getPath(), targetUri.getPath());
-      LOGGER.debug("{} renamed to {}", filePath, newName);
+      logger.debug("{} renamed to {}", filePath, newName);
     } catch (Exception e) {
       throw exception(format("Exception was found renaming '%s' to '%s'", sourceUri.getPath(), newName), e);
     }
@@ -186,45 +186,63 @@ public abstract class SmbCommand extends ExternalFileCommand<SmbFileSystemConnec
   protected final void copy(FileConnectorConfig config, String source, String target, boolean overwrite,
                             boolean createParentDirectory, String renameTo, SmbCopyDelegate delegate) {
     FileAttributes sourceFile = getExistingFile(source);
-    URI targetUri = resolvePath(target);
 
+    validateTargetPath(source, target, delegate.getOperation(), createParentDirectory);
+
+    URI targetUri = validateDirectoryTree(sourceFile, target, renameTo, overwrite, delegate.getOperation());
+
+    delegate.doCopy(config, sourceFile, targetUri, overwrite);
+    logger.debug("Successfully executed '{}' operation ('{}' to '{}')", delegate.getOperation(), sourceFile, targetUri);
+  }
+
+  private void validateTargetPath(String source, String target, String operation, boolean createParentDirectory) {
+    URI targetUri = resolvePath(target);
     FileAttributes targetPath = getFile(targetUri.getPath());
-    String sourceFileName = getFileName(source);
-    String targetFileName = StringUtils.isBlank(renameTo) ? sourceFileName : renameTo;
 
     if (targetPath != null) {
       if (targetPath.isRegularFile()) {
         throw new IllegalPathException(format("Cannot %s '%s': target '%s' path exists but it's not a directory",
-                                              delegate.getOperation(), source, target));
+                                              operation, source, target));
       }
     } else if (!createParentDirectory) {
       throw pathNotFoundException(targetUri);
     }
+  }
 
-    targetUri = createUri(targetUri.getPath(), targetFileName);
+  private URI getEffectiveTargetUri(String source, String target, String renameTo) {
+    String targetFileName = StringUtils.isBlank(renameTo) ? getFileName(source) : renameTo;
+    return createUri(target, targetFileName);
+  }
 
-    if (targetUri.getPath().equals(sourceFile.getPath())) {
-      throw new IllegalPathException(format("Cannot %s '%s': source and target paths are the same", delegate.getOperation(),
+  private URI validateDirectoryTree(FileAttributes sourceFile, String target, String renameTo, boolean overwrite,
+                                    String operation) {
+    URI result = getEffectiveTargetUri(sourceFile.getPath(), target, renameTo);
+    if (result.getPath().equals(sourceFile.getPath())) {
+      throw new IllegalPathException(format("Cannot %s '%s': source and target paths are the same", operation,
                                             sourceFile.getPath()));
     }
 
-    if (sourceFile.isDirectory() && targetUri.getPath().startsWith(sourceFile.getPath())) {
+    if (sourceFile.isDirectory() && result.getPath().startsWith(sourceFile.getPath())) {
       throw new IllegalPathException(format("Cannot %s '%s': source path is a directory and target path shares the same directory tree",
-                                            delegate.getOperation(),
+                                            operation,
                                             sourceFile.getPath()));
     }
 
-    targetPath = getFile(targetUri.getPath());
+    createParentDirectory(result, overwrite);
+
+    return result;
+  }
+
+  private void createParentDirectory(URI targetUri, boolean overwrite) {
+    FileAttributes targetPath = getFile(targetUri.getPath());
 
     if (targetPath != null && !overwrite) {
       throw alreadyExistsException(targetUri);
     }
 
     mkdirs(getParent(targetUri));
-
-    delegate.doCopy(config, sourceFile, targetUri, overwrite);
-    LOGGER.debug("Successfully executed '{}' operation ('{}' to '{}')", delegate.getOperation(), sourceFile, targetUri);
   }
+
 
   private String getFileName(String path) {
     // This path needs to be normalized first because if it ends in a separator the method will return an empty String.
