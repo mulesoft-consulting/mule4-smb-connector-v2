@@ -10,9 +10,7 @@
 		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
 		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
         http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
-        http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
-http://www.mulesoft.org/schema/mule/ftp http://www.mulesoft.org/schema/mule/ftp/current/mule-ftp.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+		http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 
     <munit:config name="smb-read-test-case.xml"/>
 
@@ -91,14 +89,11 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 				<smb:content ><![CDATA[This is a test]]></smb:content>
 			</smb:write>
 			<smb:read doc:name="Read" doc:id="96f91306-b931-488f-aad3-d45209c0b46a" config-ref="config" path="somefile.txt" lock="true"/>
-			<try doc:name="Try" doc:id="54542e52-e62c-48bb-a828-ff426f71867b" >
-				<smb:write doc:name="Write" doc:id="d196dd25-0ec5-4ecd-b7c5-7d9c23703295" config-ref="config" path="somefile.txt" lock="true">
-					<smb:content ><![CDATA[Other content]]></smb:content>
-				</smb:write>
-				<smb:write doc:name="Write" doc:id="99f0e990-e7c6-4cfd-bcab-9eafebddf9f6" config-ref="config" path="otherfile.txt"/>
+			<try doc:name="Try" doc:id="ee503990-4d5d-48f7-8724-b8b3f546841a" >
+				<smb:write doc:name="Write" doc:id="e4ba1a0f-f07c-4627-915c-b20c28d6d8f8" path="somefile.txt" config-ref="config" lock="true" />
 				<error-handler >
-					<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e9ccefce-b87d-406d-848a-fbc9efd55121" >
-						<smb:write doc:name="Write" doc:id="c4132feb-51d8-4a29-a775-02256f2f4420" config-ref="config" path="somefile.txt"/>
+					<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="85f19f77-b528-4ef6-bba5-4cc9bf1f98ab" >
+						<smb:write doc:name="Write" doc:id="645f21e1-68f6-4334-bfad-61f7a7879253" config-ref="config" path="otherfile.txt"/>
 					</on-error-propagate>
 				</error-handler>
 			</try>
