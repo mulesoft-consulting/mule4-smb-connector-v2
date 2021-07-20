@@ -9,9 +9,8 @@ package com.mulesoft.connector.smb.internal.operation;
 import com.mulesoft.connector.smb.api.LogLevel;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.api.SmbFileMatcher;
+import com.mulesoft.connector.smb.internal.LoggerMessageProcessor;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
-import com.mulesoft.connector.smb.internal.utils.SmbUtils;
-import org.apache.commons.io.IOUtils;
 import org.mule.extension.file.common.api.*;
 import org.mule.extension.file.common.api.exceptions.*;
 import org.mule.runtime.api.message.Message;
@@ -29,9 +28,6 @@ import org.mule.runtime.extension.api.runtime.streaming.StreamingHelper;
 import org.slf4j.Logger;
 
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -51,8 +47,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public final class SmbOperations extends BaseFileSystemOperations {
 
-  private static final Logger smbLogger = getLogger("com.mulesoft.connector.smb.internal.LoggerMessageProcessor");
-  private static final Logger muleLogger = getLogger(SmbOperations.class);
+  private static final Logger log = getLogger(SmbOperations.class);
 
   /**
    * Lists all the files in the {@code directoryPath} which match the given {@code matcher}.
@@ -171,7 +166,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
                         defaultValue = "OVERWRITE") @Summary("How the file is going to be written") @DisplayName("Write Mode") FileWriteMode mode,
                     CompletionCallback<Void, Void> callback) {
     if (encoding != null) {
-      muleLogger
+      log
           .warn("Deprecated parameter 'encoding' was configured for operation 'smb:write'. This parameter will be ignored, not altering the operation behavior");
     }
 
@@ -375,40 +370,22 @@ public final class SmbOperations extends BaseFileSystemOperations {
       throw new IllegalPathException("path cannot be null nor blank");
     }
 
-    if (!logLevel.isEnabled(smbLogger)) {
+    if (!LoggerMessageProcessor.isEnabled(logLevel)) {
       callback.success(Result.<Void, Void>builder().build());
       return;
     }
 
     CompletableFuture.runAsync(() -> {
       if (writeToLogger) {
-        logLevel.log(smbLogger, message);
+        LoggerMessageProcessor.writeToLocalLog(logLevel, message);
       }
       try {
-        while (!doWriteLog(fileSystem, path, logLevel, message));
+        LoggerMessageProcessor.writeToLog(fileSystem, path, logLevel, message);
       } catch (Exception e) {
-        muleLogger.error("Could not log message to remote file in async mode. File path: {}, message: {}", path, message, e);
+        log.error("Could not log message to remote file in async mode. File path: {}, message: {}", path, message, e);
       }
       callback.success(Result.<Void, Void>builder().build());
     });
   }
 
-  private boolean doWriteLog(SmbFileSystemConnection fileSystem, String path, LogLevel logLevel, String message) {
-    boolean result = false;
-    try {
-      fileSystem.write(path, IOUtils.toInputStream(
-                                                   SmbUtils.padRight(logLevel.name(), 6, " ")
-                                                       + ZonedDateTime.now()
-                                                           .format(DateTimeFormatter
-                                                               .ofPattern("yyyy-MM-dd HH:mm:ss,SSSZ: "))
-                                                       + message
-                                                       + "\n",
-                                                   Charset.defaultCharset()),
-                       FileWriteMode.APPEND, true, true);
-      result = true;
-    } catch (FileLockedException fle) {
-      muleLogger.debug("Log file is locked ({}): ", fle.getMessage(), fle);
-    }
-    return result;
-  }
 }

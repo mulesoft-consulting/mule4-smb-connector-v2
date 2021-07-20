@@ -52,7 +52,7 @@ public class SmbConnectionProvider extends FileSystemProvider<SmbFileSystemConne
   private static final String SMB_ERROR_MESSAGE_MASK =
       "Could not establish SMB connection (host: '\\\\%s\\%s', user: '%s\\%s'): %s";
 
-  private static EnumMap<NtStatus, FileError> errorMap = new EnumMap<>(NtStatus.class);
+  private static final EnumMap<NtStatus, FileError> errorMap = new EnumMap<>(NtStatus.class);
 
   static {
     errorMap.put(NtStatus.STATUS_CONNECTION_DISCONNECTED, DISCONNECTED);
