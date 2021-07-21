@@ -72,7 +72,7 @@ public class SmbUriLock implements UriLock {
     if (lock != null) {
       try {
         lock.unlock();
-      } catch (IllegalMonitorStateException e) {
+      } catch (Exception e) {
         logger.debug("Failed releasing lock for '{}': {}", uri.getPath(), e.getMessage(), e);
       }
     }
