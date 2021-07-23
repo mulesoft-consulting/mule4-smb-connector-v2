@@ -37,10 +37,10 @@ public final class TimeoutSettings {
    * A scalar value representing the amount of time to wait before a socket packet response times out. This attribute works in tandem
    * with {@link #socketTimeoutUnit}.
    * <p>
-   * Defaults to {@code 10}
+   * Defaults to {@code 0}
    */
   @Parameter
-  @Optional(defaultValue = "10")
+  @Optional(defaultValue = "0")
   @Placement(tab = ADVANCED_TAB, order = 4)
   @Summary("Socket timeout value")
   private Integer socketTimeout;

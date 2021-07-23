@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<smb:config name="SMB_Config" doc:name="SMB Config" doc:id="63998705-a6d7-4728-b771-7c62ccd69c0e" >
+		<smb:connection host="${smb.host}" domain="${smb.workgroup}" username="${smb.user}" password="${smb.password}" shareRoot="${smb.shareRoot}" socketTimeout="0">
+			<reconnection />
+		</smb:connection>
+	</smb:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="ad20df56-3325-4701-a9a4-b13e8122de27" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="496f5831-cae8-4e71-b273-0b1daaf6b571" file="config.yaml" />
+	<flow name="smb-demoFlow" doc:id="d8109b13-4408-4c59-ac80-ffe87f41311c" >
+		<http:listener doc:name="Listener" doc:id="9372d212-922a-4a30-b78e-970ab23827e5" path="/write" config-ref="HTTP_Listener_config"/>
+		<smb:logger doc:name="Logger" doc:id="f71d9cd5-26f3-4e94-aff0-1c4b23215412" config-ref="SMB_Config" path="/logs/output.log" message='#["Request received: " ++ write(payload, "application/json", {"indent": false})]'/>
+		<smb:logger doc:name="Logger" doc:id="229d1b76-304f-4cdc-8777-276885e09820" config-ref="SMB_Config" logLevel="DEBUG" path="/logs/output.log" message="Writing payload to file..."/>
+		<smb:write doc:name="Write" doc:id="ef2d0db3-a84d-4d30-995f-a87a9b46988e" config-ref="SMB_Config" path='#["/input/request-" ++ correlationId ++ ".txt"]'/>
+		<smb:logger doc:name="Logger" doc:id="93346149-c3a9-44e2-a7f2-17ac6e638ab1" config-ref="SMB_Config" path="/logs/output.log" message="Payload written to file"/>
+		<smb:logger doc:name="Logger" doc:id="51cab359-0173-4209-8692-4e064442ebeb" config-ref="SMB_Config" path="/logs/output.log" message="Finished processing."/>
+		<ee:transform doc:name="Transform Message" doc:id="418898fd-4915-4d97-b151-edf98200eb78" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	result: "OK"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="8688dfd8-85bc-43ae-afbf-5ad112c80dce" >
+				<smb:logger doc:name="Logger" doc:id="38ba83ba-0f1a-47a8-a182-affedc0dbaef" config-ref="SMB_Config" path="/logs/output.log" message='#["Could not write payload to file: " ++ error.description as String]' logLevel="ERROR"/>
+				<ee:transform doc:name="Transform Message" doc:id="0f1dabe6-575a-45a4-8077-0dbd922c84bf" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	result: "NOK",
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="smb-demoFlow1" doc:id="2308d060-6ab5-4004-a4ed-cb0662f1ed9c" >
+		<smb:smb-directory-listener doc:name="On New or Updated File" doc:id="d5664feb-8fa0-4d7f-964f-fb78b571968c" config-ref="SMB_Config" directory="/input" timeBetweenSizeCheck="100">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</smb:smb-directory-listener>
+		<smb:logger doc:name="Logger" doc:id="a8445537-72d9-4ecd-9790-923dd838f9ec" config-ref="SMB_Config" path="/logs/output.log" message='#["Processing new or updated file: " ++ write(attributes,"application/json", {"indent": false})]'/>
+		<smb:logger doc:name="Logger" doc:id="d5d18a91-7ce2-49c3-9a80-07932376cc12" config-ref="SMB_Config" path="/logs/output.log" message='#["File content: " ++ payload]'/>
+		<smb:logger doc:name="Logger" doc:id="8cfa50b0-b28d-45e2-9e88-73eae4cd2bfc" config-ref="SMB_Config" path="/logs/output.log" message="#[&quot;Moving file '&quot; ++ attributes.absolutePath ++ &quot;' to pending directory...&quot;]"/>
+		<smb:move doc:name="Move" doc:id="80ab8eb4-5655-4f0f-b246-36a254c9b15e" config-ref="SMB_Config" sourcePath="#[attributes.absolutePath]" targetPath='#["/pending"]'/>
+		<smb:logger doc:name="Logger" doc:id="48e314d7-4a5a-46aa-9d3d-500b4c4af0b4" config-ref="SMB_Config" path="/logs/output.log" message="File moved"/>
+	</flow>
+	<flow name="smb-demoFlow2" doc:id="3496abea-9192-47f1-8f2b-f0f5884e6548" initialState="started">
+		<scheduler doc:name="Scheduler" doc:id="b909cffd-11b3-4a30-8c7a-e14f503a47f0" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="20000"/>
+			</scheduling-strategy>
+		</scheduler>
+		<smb:logger doc:name="Logger" doc:id="772bc5ec-893e-430b-9244-955e97357a4e" config-ref="SMB_Config" logLevel="DEBUG" path="/logs/output.log" message="Scheduler started..."/>
+		<try doc:name="Try" doc:id="6189ed0b-dbe4-49b6-a8c8-90fa4af7a3c1" >
+			<smb:create-directory doc:name="Create directory" doc:id="7a4d1411-0f45-4d1c-b1eb-2153595f3fee" config-ref="SMB_Config" directoryPath="/pending" />
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue" doc:id="ab07e9ce-e121-443b-876b-9ee7b9d47987" type="SMB:FILE_ALREADY_EXISTS">
+					<smb:logger doc:name="Logger" doc:id="be0071c1-6c3c-4979-a77d-a8a844d154bc" config-ref="SMB_Config" logLevel="DEBUG" path="/logs/output.log" message="Directory '/pending' already exists."/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<smb:list doc:name="List" doc:id="b3db81b8-db71-44f2-827c-724cae35cdb5" config-ref="SMB_Config" directoryPath="/pending" />
+		<foreach doc:name="For Each" doc:id="cbfdff61-ba85-407c-9539-27530825d5c4" collection="#[if (isEmpty(payload.attributes)) [] else payload.attributes]">
+			<set-variable value="#[payload]" doc:name="Set Variable" doc:id="6ababf75-8afc-4ee6-b6c3-4e0676a913fd" variableName="fileAttributes"/>
+			<smb:logger doc:name="Logger" doc:id="6ce7962d-c3a9-458e-b7af-b3a18d19b540" config-ref="SMB_Config" path="/logs/output.log" message='#["Processing pending file " ++ vars.fileAttributes.absolutePath]'/>
+			<smb:copy doc:name="Copy" doc:id="e41e4123-69fd-48f1-ad6b-8c70fc6f9c3a" config-ref="SMB_Config" sourcePath="#[vars.fileAttributes.absolutePath]" targetPath="/copied"/>
+			<smb:logger doc:name="Logger" doc:id="aca0d993-e6f6-433d-8e93-691759ed17ee" config-ref="SMB_Config" path="/logs/output.log" message='#["File processed."]'/>
+			<smb:move doc:name="Move" doc:id="d1ffce2a-fc14-4e42-9232-26e8e841fe00" config-ref="SMB_Config" sourcePath="#[vars.fileAttributes.absolutePath]" targetPath='#["/processed"]'/>
+		</foreach>
+	</flow>
+	<flow name="mule-smb-connector-demoFlow" doc:id="268be161-3141-4bfc-adbf-22bfe969159d" >
+		<smb:smb-directory-listener doc:name="On New or Updated File" doc:id="fabf51f0-1855-4d7d-8e1a-c51c7cda0efa" config-ref="SMB_Config" directory="/copied" timeBetweenSizeCheck="100">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</smb:smb-directory-listener>
+		<set-variable value="#[attributes.absolutePath]" doc:name="Set Variable" doc:id="78ab8647-466a-4a9a-9282-8d6217b7b8f3" variableName="filePath"/>
+		<smb:logger doc:name="Logger" doc:id="0f4a428b-61b7-4299-ac59-2f73ca36d0b5" config-ref="SMB_Config" path="/logs/output.log" message="#[&quot;Deleting copied file '&quot; ++ vars.filePath ++ &quot;'...&quot;]"/>
+		<smb:delete doc:name="Delete" doc:id="d7a2074a-fb0a-4a89-a269-5464b30863f0" config-ref="SMB_Config" path="#[vars.filePath]"/>
+		<smb:logger doc:name="Logger" doc:id="258ccb33-1455-4043-8090-2b2051c590ad" config-ref="SMB_Config" message="#[&quot;Copied file '&quot; ++ vars.filePath ++ &quot;' deleted&quot;]" path="/logs/output.log"/>
+	</flow>
+</mule>

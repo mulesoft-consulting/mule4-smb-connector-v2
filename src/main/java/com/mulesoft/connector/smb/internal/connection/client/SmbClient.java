@@ -66,8 +66,9 @@ public class SmbClient {
   private TimeUnit transactionTimeoutUnit = TimeUnit.SECONDS;
   private Integer transactionTimeout = 60;
 
-  private SMBClient client;
-  private DiskShare share;
+  private SMBClient client = null;
+  private Session session = null;
+  private DiskShare share = null;
 
   public SmbClient(String host, int port, String shareRoot, boolean dfsEnabled) {
     this.host = host;
@@ -76,42 +77,13 @@ public class SmbClient {
     this.dfsEnabled = dfsEnabled;
   }
 
-  public SmbFileAttributes getAttributes(URI uri) throws ConnectionException {
-    String pathStr = uri.getPath();
-    Pattern p = Pattern.compile("[:\\|><\"\\?\\*]", Pattern.CASE_INSENSITIVE);
-    Matcher m = p.matcher(pathStr);
-    if (m.find()) {
-      throw new ConnectionException("The filename, directory name, or volume label syntax is incorrect.");
-    }
-
-    if (pathStr.endsWith("/.")) {
-      pathStr = pathStr.substring(0, pathStr.length() - 1);
-    }
-
-    if (pathStr.endsWith("/")) {
-      pathStr = pathStr.substring(0, pathStr.length() - 1);
-    }
-
-    if (pathStr.matches("^[/]? +$")) {
-      throw new ConnectionException("Invalid path: directory path cannot be null nor blank");
-    }
-
-    SmbFileAttributes result = null;
-
-    if (this.share.folderExists(pathStr) || this.share.fileExists(pathStr)) {
-      result = new SmbFileAttributes(uri, this.share.getFileInformation(pathStr));
-    }
-
-    return result;
-  }
-
   public void login(String domain, String username) throws IOException {
     if (this.shareRoot == null) {
       throw new IllegalArgumentException("shareRoot is null");
     }
     client = new SMBClient(getConfig());
     Connection connection = client.connect(this.getHost(), this.port);
-    Session session = connection.authenticate(getAuthenticationContext(domain, username));
+    session = connection.authenticate(getAuthenticationContext(domain, username));
     share = (DiskShare) session.connectShare(this.getShareRoot());
   }
 
@@ -148,13 +120,45 @@ public class SmbClient {
     return configBuilder.build();
   }
 
+
+  public SmbFileAttributes getAttributes(URI uri) throws ConnectionException {
+    String pathStr = uri.getPath();
+    Pattern p = Pattern.compile("[:\\|><\"\\?\\*]", Pattern.CASE_INSENSITIVE);
+    Matcher m = p.matcher(pathStr);
+    if (m.find()) {
+      throw new ConnectionException("The filename, directory name, or volume label syntax is incorrect.");
+    }
+
+    if (pathStr.endsWith("/.")) {
+      pathStr = pathStr.substring(0, pathStr.length() - 1);
+    }
+
+    if (pathStr.endsWith("/")) {
+      pathStr = pathStr.substring(0, pathStr.length() - 1);
+    }
+
+    if (pathStr.matches("^[/]? +$")) {
+      throw new ConnectionException("Invalid path: directory path cannot be null nor blank");
+    }
+
+    SmbFileAttributes result = null;
+
+    if (this.share.folderExists(pathStr) || this.share.fileExists(pathStr)) {
+      result = new SmbFileAttributes(uri, this.share.getFileInformation(pathStr));
+    }
+
+    return result;
+  }
+
+
   public boolean isConnected() {
     return this.share.isConnected();
   }
 
   public void disconnect() {
     this.close(this.share);
-    this.close(this.client);
+    this.close(this.session);
+    this.close(this.session.getConnection());
   }
 
   public void mkdir(URI uri) {

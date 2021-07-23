@@ -1,0 +1,7 @@
+smb:
+  host: "localhost"
+  port: "445"
+  workgroup: "WORKGROUP"
+  user: "mulesoft"
+  password: "mulesoft"
+  shareRoot: "share"
