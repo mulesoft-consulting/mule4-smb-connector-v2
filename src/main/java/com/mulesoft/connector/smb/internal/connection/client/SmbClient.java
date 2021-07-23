@@ -159,6 +159,7 @@ public class SmbClient {
     this.close(this.share);
     this.close(this.session);
     this.close(this.session.getConnection());
+    this.close(this.client);
   }
 
   public void mkdir(URI uri) {
