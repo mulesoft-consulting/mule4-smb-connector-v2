@@ -16,7 +16,7 @@
     <packaging>mule-extension</packaging>
     <version>1.0.0-SNAPSHOT</version>
 
-    <name>SMB Connector - Mule 4</name>
+    <name>Server Message Block (SMB) Connector - Mule 4</name>
     <description>A Mule extension that provides functionality to manage files in an SMB server</description>
 
     <properties>
