@@ -34,7 +34,7 @@ import org.mule.runtime.extension.api.annotation.param.display.Summary;
  * configurations, connection providers, operations and sources are going to be
  * declared.
  */
-@Extension(name = "SMB", category = Category.SELECT)
+@Extension(name = "SMB", category = Category.CERTIFIED)
 @Operations({SmbOperations.class})
 @ConnectionProviders({SmbConnectionProvider.class})
 @ErrorTypes(FileError.class)
