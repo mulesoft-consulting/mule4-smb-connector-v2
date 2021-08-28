@@ -201,7 +201,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * @param config the config that is parameterizing this operation
    * @param fileSystem a reference to the host {@link FileSystem}
    * @param sourcePath the path to the file to be copied
-   * @param targetPath the target directory where the file is going to be copied
+   * @param targetDirectory the target directory where the file is going to be copied
    * @param createParentDirectories whether or not to attempt creating any parent directories which don't exists.
    * @param overwrite whether or not overwrite the file if the target destination already exists.
    * @param renameTo copied file's new name. If not provided, original file name will be kept.
@@ -211,11 +211,11 @@ public final class SmbOperations extends BaseFileSystemOperations {
   @Throws(FileCopyErrorTypeProvider.class)
   public void copy(@Config FileConnectorConfig config, @Connection SmbFileSystemConnection fileSystem,
                    @Path(location = EXTERNAL) String sourcePath,
-                   @Path(type = DIRECTORY, location = EXTERNAL) String targetPath,
+                   @Path(type = DIRECTORY, location = EXTERNAL) String targetDirectory,
                    @Optional(defaultValue = "true") boolean createParentDirectories,
                    @Optional(defaultValue = "false") boolean overwrite, @Optional String renameTo,
                    CompletionCallback<Void, Void> callback) {
-    String effectiveTargetPath = targetPath;
+    String effectiveTargetPath = targetDirectory;
     if (StringUtils.isEmpty(effectiveTargetPath)) {
       effectiveTargetPath = "/";
     }
@@ -243,7 +243,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * @param config the config that is parameterizing this operation
    * @param fileSystem a reference to the host {@link FileSystem}
    * @param sourcePath the path to the file to be copied
-   * @param targetPath the target directory
+   * @param targetDirectory the target directory
    * @param createParentDirectories whether or not to attempt creating any parent directories which don't exists.
    * @param overwrite whether or not overwrite the file if the target destination already exists.
    * @param renameTo moved file's new name. If not provided, original file name will be kept.
@@ -253,12 +253,12 @@ public final class SmbOperations extends BaseFileSystemOperations {
   @Throws(FileCopyErrorTypeProvider.class)
   public void move(@Config FileConnectorConfig config, @Connection SmbFileSystemConnection fileSystem,
                    @Path(location = EXTERNAL) String sourcePath,
-                   @Path(type = DIRECTORY, location = EXTERNAL) String targetPath,
+                   @Path(type = DIRECTORY, location = EXTERNAL) String targetDirectory,
                    @Optional(defaultValue = "true") boolean createParentDirectories,
                    @Optional(defaultValue = "false") boolean overwrite, @Optional String renameTo,
                    CompletionCallback<Void, Void> callback) {
     try {
-      super.doMove(config, fileSystem, sourcePath, targetPath, createParentDirectories, overwrite, renameTo);
+      super.doMove(config, fileSystem, sourcePath, targetDirectory, createParentDirectories, overwrite, renameTo);
       callback.success(Result.<Void, Void>builder().build());
     } catch (Exception e) {
       callback.error(e);
