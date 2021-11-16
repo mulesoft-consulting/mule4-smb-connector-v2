@@ -1,6 +1,5 @@
 package com.mulesoft.connector.smb.internal.error;
 
-import org.mule.extension.file.common.api.exceptions.FileError;
 import org.mule.runtime.extension.api.error.ErrorTypeDefinition;
 import org.mule.runtime.extension.api.error.MuleErrors;
 
@@ -25,11 +24,11 @@ public enum SmbFileError implements ErrorTypeDefinition<SmbFileError> {
 
     private ErrorTypeDefinition<? extends Enum<?>> parentError;
 
-    private SmbFileError(ErrorTypeDefinition<? extends Enum<?>> parentError) {
+    SmbFileError(ErrorTypeDefinition<? extends Enum<?>> parentError) {
         this.parentError = parentError;
     }
 
-    private SmbFileError() {
+    SmbFileError() {
     }
 
     public Optional<ErrorTypeDefinition<? extends Enum<?>>> getParent() {

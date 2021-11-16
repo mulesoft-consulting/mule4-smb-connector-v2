@@ -48,7 +48,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 			<smb:write doc:name="Write" doc:id="a13da7c5-a26b-4ca0-b821-e9dba24e2b71" config-ref="config" path="#[vars.sourceFile]">
 				<smb:content ><![CDATA[This is a test]]></smb:content>
 			</smb:write>
-			<smb:copy doc:name="Copy" doc:id="ffe81c1d-bb7a-42e6-ae1f-3526f4ae350e" sourcePath="#[vars.sourceFile]" targetPath="/somedir" renameTo="renamedFile.txt" config-ref="config"/>
+			<smb:copy doc:name="Copy" doc:id="ffe81c1d-bb7a-42e6-ae1f-3526f4ae350e" sourcePath="#[vars.sourceFile]" targetDirectory="/somedir" renameTo="renamedFile.txt" config-ref="config"/>
 		</munit:behavior>
 		<munit:execution >
 			<smb:rename doc:name="Rename" doc:id="628b5177-5d2b-4d66-8e05-8fd566518c24" config-ref="config" path="#[vars.sourceFile]" to="renamedFile.txt"/>

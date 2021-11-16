@@ -48,7 +48,7 @@ public final class SmbConnectionSettings {
   @Parameter
   @Optional
   @Placement(order = 4)
-  protected String username;
+  private String username;
 
   /**
    * Password. Required if the server uses NTLM authentication.

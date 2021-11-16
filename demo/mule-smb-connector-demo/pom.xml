@@ -8,7 +8,7 @@
 	<version>1.0.0</version>
     <packaging>mule-application</packaging>
 
-	<name>Mule SMB Connector Demo App</name>
+	<name>mule-smb-connector-demo</name>
 
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -50,9 +50,9 @@
             <classifier>mule-plugin</classifier>
         </dependency>
 		<dependency>
-			<groupId>com.mulesoft.connectors</groupId>
-			<artifactId>mule-smb-connector</artifactId>
-			<version>1.0.0</version>
+            <groupId>com.mulesoft.connectors</groupId>
+            <artifactId>mule4-smb-connector</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 	</dependencies>

@@ -285,7 +285,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
             </smb:write>
 
             <try>
-                <smb:move config-ref="config-invalid-server" sourcePath="/good-omens.txt" targetPath="/apocalypse" />
+                <smb:move config-ref="config-invalid-server" sourcePath="/good-omens.txt" targetDirectory="/apocalypse" />
                 <set-variable variableName="operationSucceeded" value="#[true]" />
                 <error-handler>
                     <on-error-continue type="SMB:CONNECTIVITY">
@@ -316,7 +316,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
             </smb:write>
 
             <try>
-                <smb:copy config-ref="config-invalid-server" sourcePath="/good-omens.txt" targetPath="/apocalypse" />
+                <smb:copy config-ref="config-invalid-server" sourcePath="/good-omens.txt" targetDirectory="/apocalypse" />
                 <set-variable variableName="operationSucceeded" value="#[true]" />
                 <error-handler>
                     <on-error-continue type="SMB:CONNECTIVITY">

@@ -15,7 +15,7 @@ http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/
 	</munit:before-test>
 	<munit:test name="smb-move-invalid-source-file" doc:id="a86822b3-8682-44c0-8190-2f534f349c4c" description="Performs move operation on an invalid source file" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Path '/sourceDir/sourceFile.txt' doesn't exist">
 		<munit:execution >
-			<smb:move doc:name="Move" doc:id="8617e184-5c3a-48c4-ba00-cd65d8447ed1" config-ref="config" sourcePath="sourceDir/sourceFile.txt" targetPath="targetDir" createParentDirectories="false"/>
+			<smb:move doc:name="Move" doc:id="8617e184-5c3a-48c4-ba00-cd65d8447ed1" config-ref="config" sourcePath="sourceDir/sourceFile.txt" targetDirectory="targetDir" createParentDirectories="false"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-move-dir-to-shared-dir-tree" doc:id="7619cff2-a29b-464e-9b9e-dcb64df20612" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot move '/baseDir': source path is a directory and target path shares the same directory tree" description="Performs a move operation of a directory in a shared directory tree">
@@ -26,7 +26,7 @@ http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/
 			</smb:write>
 		</munit:behavior>
 		<munit:execution >
-			<smb:move doc:name="Move" doc:id="3b52d285-d85b-4dd5-bd9b-1b2cfbd52776" config-ref="config" sourcePath="/baseDir" targetPath="/baseDir/targetDir"/>
+			<smb:move doc:name="Move" doc:id="3b52d285-d85b-4dd5-bd9b-1b2cfbd52776" config-ref="config" sourcePath="/baseDir" targetDirectory="/baseDir/targetDir"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-move-same-source-and-target-dir-no-overwrite" doc:id="cef90003-c0de-49fe-bc51-845c8b061c9b" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot move '/sourceFile.txt': source and target paths are the same" description="Performs a move operation with the same source and target directories with overwrite = false">
@@ -37,7 +37,7 @@ http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/
 			</smb:write>
 		</munit:behavior>
 		<munit:execution >
-			<smb:move doc:name="Move" doc:id="b59aa674-d255-411d-92c4-97421d3c8157" config-ref="config" sourcePath="#[vars.sourceFile]" targetPath="/"/>
+			<smb:move doc:name="Move" doc:id="b59aa674-d255-411d-92c4-97421d3c8157" config-ref="config" sourcePath="#[vars.sourceFile]" targetDirectory="/"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-move-same-source-and-target-dir-with-overwrite" doc:id="8c7278ba-d78d-4d52-943e-d5e9b5a83fc2" description="Performs a move operation with the same source and target directories with overwrite = true" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot move '/sourceDir/sourceFile.txt': source and target paths are the same">
@@ -54,7 +54,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 			</munit-tools:assert>
 		</munit:behavior>
 		<munit:execution >
-			<smb:move doc:name="Move" doc:id="401f8015-1dd8-4e2c-807d-a8dde6edd968" config-ref="config" sourcePath="#[vars.sourceFile]" targetPath="/sourceDir" overwrite="true"/>
+			<smb:move doc:name="Move" doc:id="401f8015-1dd8-4e2c-807d-a8dde6edd968" config-ref="config" sourcePath="#[vars.sourceFile]" targetDirectory="/sourceDir" overwrite="true"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-move-and-rename" doc:id="1e12a8ac-6db1-4448-96de-bf187f460a4b" description="Performs a move operation renaming the source file" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Path '/sourceDir/sourceFile.txt' doesn't exist">
@@ -77,7 +77,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 			</try>
 		</munit:behavior>
 		<munit:execution >
-			<smb:move doc:name="Move" doc:id="4efdaa77-6406-4dc6-abe3-28ca65fca874" config-ref="config" sourcePath="#[vars.sourceFile]" targetPath="/targetDir" renameTo="otherName.txt"/>
+			<smb:move doc:name="Move" doc:id="4efdaa77-6406-4dc6-abe3-28ca65fca874" config-ref="config" sourcePath="#[vars.sourceFile]" targetDirectory="/targetDir" renameTo="otherName.txt"/>
 		</munit:execution>
 		<munit:validation >
 			<smb:read doc:name="Read" doc:id="8f59dfa0-88cd-4147-8f05-75b014937057" config-ref="config" path="/targetDir/otherName.txt"/>
@@ -96,10 +96,10 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 				<smb:content><![CDATA[This is a test]]></smb:content>
 			</smb:write>
 			<set-variable value="/targetDir" doc:name="Set Variable" doc:id="d03bebfb-521c-4431-a5af-6f19a99b6c34" variableName="targetDir" />
-			<smb:copy doc:name="Copy" doc:id="2197d826-f4ab-4036-8f94-4a7afb81527c" config-ref="config" sourcePath="#[vars.sourceFile]" targetPath="#[vars.targetDir]" />
+			<smb:copy doc:name="Copy" doc:id="2197d826-f4ab-4036-8f94-4a7afb81527c" config-ref="config" sourcePath="#[vars.sourceFile]" targetDirectory="#[vars.targetDir]" />
 		</munit:behavior>
 		<munit:execution>
-			<smb:move doc:name="Move" doc:id="a604a8e9-f89c-4e36-9f24-8f4f7cc0ade4" config-ref="config" sourcePath="#[vars.sourceFile]" targetPath="#[vars.targetDir]" />
+			<smb:move doc:name="Move" doc:id="a604a8e9-f89c-4e36-9f24-8f4f7cc0ade4" config-ref="config" sourcePath="#[vars.sourceFile]" targetDirectory="#[vars.targetDir]" />
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-move-with-existing-target-file-and-overwrite" doc:id="badfdc00-61ad-41d0-842a-daba4bdcc093" description="Performs a move operation on a file that exists in the target directory and overwrite is true" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Path '/sourceDir/sourceFile.txt' doesn't exist">
@@ -120,7 +120,7 @@ payload must equalTo("This is a different file content")]]]></munit-tools:that>
 			</munit-tools:assert>
 		</munit:behavior>
 		<munit:execution>
-			<smb:move doc:name="Move" doc:id="c08fb668-3a2c-418f-b918-ef0b917b99e9" config-ref="config" sourcePath="#[vars.sourceFile]" targetPath="#[vars.targetDir]" overwrite="true" />
+			<smb:move doc:name="Move" doc:id="c08fb668-3a2c-418f-b918-ef0b917b99e9" config-ref="config" sourcePath="#[vars.sourceFile]" targetDirectory="#[vars.targetDir]" overwrite="true" />
 		</munit:execution>
 		<munit:validation>
 			<smb:read doc:name="Read" doc:id="bd8ddf7c-2294-4960-a97c-9835bf924740" config-ref="config" path='#[vars.targetDir ++ "/sourceFile.txt"]' />
@@ -137,7 +137,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 			<smb:write doc:name="Write" doc:id="f210a2a3-7159-4b78-ab52-da183463b23d" config-ref="config" path="/source/subdir1/subdir2/subdir3/test.txt">
 				<smb:content ><![CDATA[This is a test]]></smb:content>
 			</smb:write>
-			<smb:move doc:name="Move" doc:id="4f00d9c9-7b01-40a5-91b8-9956c8dc0ea2" config-ref="config" sourcePath="/source/subdir1" targetPath="/target"/>
+			<smb:move doc:name="Move" doc:id="4f00d9c9-7b01-40a5-91b8-9956c8dc0ea2" config-ref="config" sourcePath="/source/subdir1" targetDirectory="/target"/>
 		</munit:execution>
 		<munit:validation >
 			<smb:read doc:name="Read" doc:id="bcec2639-7f8a-4431-924c-2009bd18566f" config-ref="config" path="/target/subdir1/subdir2/subdir3/test.txt"/>

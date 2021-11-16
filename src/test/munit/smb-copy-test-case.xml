@@ -26,7 +26,7 @@
 			</smb:write>
 		</munit:behavior>
 		<munit:execution >
-			<smb:copy doc:name="Copy" doc:id="b4cfe08e-c069-4304-97c9-f18ed1cef31f" config-ref="config" sourcePath="#[vars.sourceFile]" targetPath='#[""]'/>
+			<smb:copy doc:name="Copy" doc:id="b4cfe08e-c069-4304-97c9-f18ed1cef31f" config-ref="config" sourcePath="#[vars.sourceFile]" targetDirectory='#[""]'/>
 		</munit:execution>
 		<munit:validation >
 			<smb:read doc:name="Read" doc:id="c4ca7e59-0800-4bb9-9f86-2b22382d0d67" config-ref="config" path="/sourceFile.txt" target="targetFileContent"/>
@@ -45,7 +45,7 @@ vars.targetFileContent must equalTo(vars.sourceFileContent)]]]></munit-tools:tha
 			</smb:write>
 		</munit:behavior>
 		<munit:execution >
-			<smb:copy doc:name="Copy" doc:id="24eef334-e60d-496a-92e7-3da03e311179" config-ref="config" sourcePath="dirToCopy" targetPath="#[null]"/>
+			<smb:copy doc:name="Copy" doc:id="24eef334-e60d-496a-92e7-3da03e311179" config-ref="config" sourcePath="dirToCopy" targetDirectory="#[null]"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-copy-dir-to-shared-dir-tree" doc:id="de84f128-14be-41e2-bc39-380a5d4d1feb" description="Performs a copy operation of a directory in a shared directory tree" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot copy '/baseDir': source path is a directory and target path shares the same directory tree">
@@ -56,7 +56,7 @@ vars.targetFileContent must equalTo(vars.sourceFileContent)]]]></munit-tools:tha
 			</smb:write>
 		</munit:behavior>
 		<munit:execution >
-			<smb:copy doc:name="Copy" doc:id="adfb8ef8-a701-4483-9b4f-1d217ff2b5aa" config-ref="config" sourcePath="/baseDir" targetPath="/baseDir/targetDir"/>
+			<smb:copy doc:name="Copy" doc:id="adfb8ef8-a701-4483-9b4f-1d217ff2b5aa" config-ref="config" sourcePath="/baseDir" targetDirectory="/baseDir/targetDir"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-copy-dir-renamed-to-same-dir" doc:id="87690841-c9e6-4b1a-920a-5b4047bc920f" description="Performs a copy operation on a directory being renamed to same name" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot copy '/source': source and target paths are the same">
@@ -64,7 +64,7 @@ vars.targetFileContent must equalTo(vars.sourceFileContent)]]]></munit-tools:tha
 			<smb:write doc:name="Write" doc:id="635958c7-4328-4aea-af09-bfe0a2d4f5d0" config-ref="config" path="/source/somefile.txt">
 				<smb:content ><![CDATA[This is a test]]></smb:content>
 			</smb:write>
-			<smb:copy doc:name="Copy" doc:id="91b05f7a-342f-4254-80da-7b5222db20f1" config-ref="config" sourcePath="/source" targetPath="/" renameTo="source"/>
+			<smb:copy doc:name="Copy" doc:id="91b05f7a-342f-4254-80da-7b5222db20f1" config-ref="config" sourcePath="/source" targetDirectory="/" renameTo="source"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-copy-missing-target-with-no-create-parent" doc:id="8f51b690-aabb-4c06-ac8e-c2b9276a2eaa" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Path '/target' doesn't exist" description="Performs a copy operation with missing target and create parent directory = false">
@@ -72,7 +72,7 @@ vars.targetFileContent must equalTo(vars.sourceFileContent)]]]></munit-tools:tha
 			<smb:write doc:name="Write" doc:id="11a4db0f-0d8d-4da9-ae72-dd5ef83be692" config-ref="config" path="/source/test.txt">
 				<smb:content ><![CDATA[This is a test]]></smb:content>
 			</smb:write>
-			<smb:copy doc:name="Copy" doc:id="8ff06d93-7744-41f4-a35e-6f45e4f2b701" config-ref="config" sourcePath="/source" targetPath="/target" createParentDirectories="false"/>
+			<smb:copy doc:name="Copy" doc:id="8ff06d93-7744-41f4-a35e-6f45e4f2b701" config-ref="config" sourcePath="/source" targetDirectory="/target" createParentDirectories="false"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-copy-dir-already-exists-no-overwrite" doc:id="9db910d5-b3cf-4177-b1f5-0857fd42dd2a" expectedErrorType="SMB:FILE_ALREADY_EXISTS" expectedErrorDescription="'/target/subdir' already exists. Set the 'overwrite' parameter to 'true' to perform the operation anyway" description="Performs a copy operation on a directory that exists in the target path with overwrite = false">
@@ -81,7 +81,7 @@ vars.targetFileContent must equalTo(vars.sourceFileContent)]]]></munit-tools:tha
 				<smb:content ><![CDATA[This is a test]]></smb:content>
 			</smb:write>
 			<smb:create-directory doc:name="Create directory" doc:id="2b6dc6a9-7267-40a3-ac05-fd93f782cccb" config-ref="config" directoryPath="/target/subdir"/>
-			<smb:copy doc:name="Copy" doc:id="bd783048-1e25-461e-9d30-45a891956444" config-ref="config" sourcePath="/source/subdir" targetPath="/target"/>
+			<smb:copy doc:name="Copy" doc:id="bd783048-1e25-461e-9d30-45a891956444" config-ref="config" sourcePath="/source/subdir" targetDirectory="/target"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-copy-dir-already-exists-overwrite" doc:id="9dbbd344-207d-42e7-b4f7-5a6a79046f8f" description="Performs a copy operation on a directory that exists in the target path with overwrite = true">
@@ -92,7 +92,7 @@ vars.targetFileContent must equalTo(vars.sourceFileContent)]]]></munit-tools:tha
 			<smb:write doc:name="Write" doc:id="1b032c72-cffa-4f52-9cda-9b546648d225" config-ref="config" path="/target/subdir/otherfile.txt">
 				<smb:content ><![CDATA[This is another file]]></smb:content>
 			</smb:write>
-			<smb:copy doc:name="Copy" doc:id="568a9fe4-e50b-4982-94a6-f50c96a722fc" config-ref="config" sourcePath="/source/subdir" targetPath="/target" overwrite="true"/>
+			<smb:copy doc:name="Copy" doc:id="568a9fe4-e50b-4982-94a6-f50c96a722fc" config-ref="config" sourcePath="/source/subdir" targetDirectory="/target" overwrite="true"/>
 		</munit:execution>
 		<munit:validation >
 			<smb:list doc:name="List" doc:id="28ef63be-9802-4d31-b0a5-b680a36b5a48" config-ref="config" directoryPath="/target/subdir"/>
@@ -114,7 +114,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 			<smb:write doc:name="Write" doc:id="a9b26bc3-4614-49ff-9a64-125d72abc130" config-ref="config" path="/source/test.txt">
 				<smb:content ><![CDATA[This is a test]]></smb:content>
 			</smb:write>
-			<smb:copy doc:name="Copy" doc:id="88677179-4655-43ee-a84f-dd3d750b0f62" sourcePath="/source/test.txt" targetPath="/source/test.txt" config-ref="config"/>
+			<smb:copy doc:name="Copy" doc:id="88677179-4655-43ee-a84f-dd3d750b0f62" sourcePath="/source/test.txt" targetDirectory="/source/test.txt" config-ref="config"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-copy-existing-target-no-overwrite" doc:id="9b00efcf-53a1-452e-b150-4ecc8d37db31" expectedErrorType="SMB:FILE_ALREADY_EXISTS" expectedErrorDescription="'/targetDir/somefile.txt' already exists. Set the 'overwrite' parameter to 'true' to perform the operation anyway" description="Performs a copy operation when the source file already exists in the target path and overwrite is false">
@@ -125,7 +125,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 			<smb:write doc:name="Write" doc:id="252e83ec-6bdc-4252-9f25-e173b025a1e4" config-ref="config" path="/targetDir/somefile.txt">
 				<smb:content ><![CDATA[This is an existing file on the target path]]></smb:content>
 			</smb:write>
-			<smb:copy doc:name="Copy" doc:id="a26573c0-40a5-493f-a65e-529ffe5634fb" config-ref="config" sourcePath="/sourceDir/somefile.txt" targetPath="/targetDir"/>
+			<smb:copy doc:name="Copy" doc:id="a26573c0-40a5-493f-a65e-529ffe5634fb" config-ref="config" sourcePath="/sourceDir/somefile.txt" targetDirectory="/targetDir"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-copy-existing-target-overwrite" doc:id="a1bcbb73-a362-44bd-9784-d77f4d315f46" description="Performs a copy operation when the source file already exists in the target path and overwrite is true">
@@ -136,7 +136,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 			<smb:write doc:name="Write" doc:id="43af9a6f-8f68-49eb-9bd9-5c448bfd3cc0" config-ref="config" path="/targetDir/somefile.txt">
 				<smb:content ><![CDATA[This file already exists in the target path]]></smb:content>
 			</smb:write>
-			<smb:copy doc:name="Copy" doc:id="d41fd743-43bc-4e9e-b3cc-4a31956223b0" config-ref="config" sourcePath="/sourceDir/somefile.txt" targetPath="/targetDir" overwrite="true"/>
+			<smb:copy doc:name="Copy" doc:id="d41fd743-43bc-4e9e-b3cc-4a31956223b0" config-ref="config" sourcePath="/sourceDir/somefile.txt" targetDirectory="/targetDir" overwrite="true"/>
 		</munit:execution>
 		<munit:validation >
 			<smb:read doc:name="Read" doc:id="9cf01d98-0660-4f11-847b-78e2bebdb604" config-ref="config" path="/targetDir/somefile.txt"/>
@@ -155,7 +155,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 			<smb:write doc:name="Write" doc:id="cdcc731b-a8be-4bd5-8102-8bcba6edc82a" config-ref="config" path="renamedFile.txt">
 				<smb:content ><![CDATA[This file already exists before copying source file]]></smb:content>
 			</smb:write>
-			<smb:copy doc:name="Copy" doc:id="91048550-34f8-442e-94d7-0b98a2dab95d" config-ref="config" sourcePath="somefile.txt" targetPath="/" renameTo="renamedFile.txt"/>
+			<smb:copy doc:name="Copy" doc:id="91048550-34f8-442e-94d7-0b98a2dab95d" config-ref="config" sourcePath="somefile.txt" targetDirectory="/" renameTo="renamedFile.txt"/>
 		</munit:execution>
 	</munit:test>
 	<munit:test name="smb-copy-and-rename-same-directory-overwrite" doc:id="2d53b2bc-42d3-41a9-849f-53910b15b75a" description="Performs a copy operation renaming the source file and target file exists and overwrite is true">
@@ -166,7 +166,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
 			<smb:write doc:name="Write" doc:id="d7260eb1-32ab-44b0-a776-0934bb3e6a33" config-ref="config" path="renamedFile.txt">
 				<smb:content ><![CDATA[This file already exists before copying source file]]></smb:content>
 			</smb:write>
-			<smb:copy doc:name="Copy" doc:id="e6689215-9829-4811-afe3-92ef7de92f2d" config-ref="config" sourcePath="somefile.txt" targetPath="/" renameTo="renamedFile.txt" overwrite="true"/>
+			<smb:copy doc:name="Copy" doc:id="e6689215-9829-4811-afe3-92ef7de92f2d" config-ref="config" sourcePath="somefile.txt" targetDirectory="/" renameTo="renamedFile.txt" overwrite="true"/>
 		</munit:execution>
 		<munit:validation >
 			<smb:read doc:name="Read" doc:id="55f7ed8a-04eb-4b5b-93f8-84dfae74e1ed" config-ref="config" path="renamedFile.txt"/>
@@ -197,7 +197,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
         </munit:behavior>
         <munit:execution>
             <smb:copy config-ref="config" sourcePath="copy-dir-test/folder-to-copy/"
-                      targetPath="copy-dir-test/folder-copied" overwrite="false"
+					  targetDirectory="copy-dir-test/folder-copied" overwrite="false"
                       createParentDirectories="true"/>
         </munit:execution>
         <munit:validation>
@@ -232,7 +232,7 @@ payload must equalTo(vars.fileContent)]]]>
 			<smb:write doc:name="Write" doc:id="4904dfc5-4df5-4498-8c3c-57058a684851" config-ref="config" path="/source/subdir1/subdir2/subdir3/test.txt">
 				<smb:content ><![CDATA[This is a test]]></smb:content>
 			</smb:write>
-			<smb:copy doc:name="Copy" doc:id="7c653865-02f6-4642-9d82-54a86055440f" config-ref="config" sourcePath="/source/subdir1" targetPath="/target"/>
+			<smb:copy doc:name="Copy" doc:id="7c653865-02f6-4642-9d82-54a86055440f" config-ref="config" sourcePath="/source/subdir1" targetDirectory="/target"/>
 		</munit:execution>
 		<munit:validation >
 			<smb:read doc:name="Read" doc:id="5b2c6eda-c1ad-404c-80c7-f4202f00215b" config-ref="config" path="/target/subdir1/subdir2/subdir3/test.txt"/>
@@ -256,7 +256,7 @@ payload must equalTo("This is a test")]]]></munit-tools:that>
         </munit:behavior>
         <munit:execution>
             <smb:copy config-ref="config" sourcePath="copy-test/folder-input/hello-world.txt"
-                      targetPath="copy-test/folder-output/" overwrite="false"
+					  targetDirectory="copy-test/folder-output/" overwrite="false"
                       createParentDirectories="true"/>
             <set-payload value="Copy with SMB works fine!!"/>
         </munit:execution>
