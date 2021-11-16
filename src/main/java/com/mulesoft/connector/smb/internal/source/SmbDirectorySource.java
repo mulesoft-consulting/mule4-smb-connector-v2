@@ -8,7 +8,7 @@ package com.mulesoft.connector.smb.internal.source;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.api.SmbFileMatcher;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
-import com.mulesoft.connector.smb.internal.extension.SmbConnector;
+import com.mulesoft.connector.smb.internal.extension.SmbConfiguration;
 import org.mule.extension.file.common.api.matcher.NullFilePayloadPredicate;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionProvider;
@@ -77,7 +77,7 @@ public class SmbDirectorySource extends PollingSource<InputStream, SmbFileAttrib
   private static final String POST_PROCESSING_GROUP_NAME = "Post processing action";
 
   @Config
-  private SmbConnector config;
+  private SmbConfiguration config;
 
   @Connection
   private ConnectionProvider<SmbFileSystemConnection> fileSystemProvider;

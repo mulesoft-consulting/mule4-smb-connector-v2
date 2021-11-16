@@ -11,7 +11,7 @@ import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import com.mulesoft.connector.smb.internal.error.exception.SmbConnectionException;
-import com.mulesoft.connector.smb.internal.extension.SmbConnector;
+import com.mulesoft.connector.smb.internal.extension.SmbConfiguration;
 import org.mule.extension.file.common.api.FileSystemProvider;
 import org.mule.extension.file.common.api.exceptions.FileError;
 import org.mule.runtime.api.connection.ConnectionException;
@@ -36,7 +36,7 @@ import static org.mule.runtime.extension.api.annotation.param.ParameterGroup.CON
 
 /**
  * An {@link FileSystemProvider} which provides instances of
- * {@link SmbFileSystemConnection} from instances of {@link SmbConnector}
+ * {@link SmbFileSystemConnection} from instances of {@link SmbConfiguration}
  *
  * @since 1.0
  */

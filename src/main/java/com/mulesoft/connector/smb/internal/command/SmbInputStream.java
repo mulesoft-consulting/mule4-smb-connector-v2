@@ -9,7 +9,7 @@ import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.mssmb2.SMBApiException;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
-import com.mulesoft.connector.smb.internal.extension.SmbConnector;
+import com.mulesoft.connector.smb.internal.extension.SmbConfiguration;
 import org.mule.extension.file.common.api.AbstractConnectedFileInputStreamSupplier;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.lock.UriLock;
@@ -29,7 +29,7 @@ import java.io.InputStream;
  */
 public class SmbInputStream extends AbstractNonFinalizableFileInputStream {
 
-  protected static ConnectionManager getConnectionManager(SmbConnector config) {
+  protected static ConnectionManager getConnectionManager(SmbConfiguration config) {
     return config.getConnectionManager();
   }
 
@@ -44,7 +44,7 @@ public class SmbInputStream extends AbstractNonFinalizableFileInputStream {
    * @param timeBetweenSizeCheck time in milliseconds to wait between size checks to decide if a file is ready to be read
    * @return a new {@link SmbFileAttributes}
    */
-  public static SmbInputStream newInstance(SmbConnector config, SmbFileAttributes attributes, UriLock lock,
+  public static SmbInputStream newInstance(SmbConfiguration config, SmbFileAttributes attributes, UriLock lock,
                                            Long timeBetweenSizeCheck) {
     SmbFileInputStreamSupplier fileInputStreamSupplier =
         new SmbFileInputStreamSupplier(attributes, getConnectionManager(config), timeBetweenSizeCheck, config);
@@ -88,7 +88,7 @@ public class SmbInputStream extends AbstractNonFinalizableFileInputStream {
   protected static class SmbFileInputStreamSupplier extends AbstractConnectedFileInputStreamSupplier<SmbFileSystemConnection> {
 
     private SmbFileInputStreamSupplier(SmbFileAttributes attributes, ConnectionManager connectionManager,
-                                       Long timeBetweenSizeCheck, SmbConnector config) {
+                                       Long timeBetweenSizeCheck, SmbConfiguration config) {
       super(attributes, connectionManager, timeBetweenSizeCheck, config);
     }
 

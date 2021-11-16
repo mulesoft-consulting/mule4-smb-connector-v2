@@ -8,7 +8,7 @@ package com.mulesoft.connector.smb.internal.command;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
-import com.mulesoft.connector.smb.internal.extension.SmbConnector;
+import com.mulesoft.connector.smb.internal.extension.SmbConfiguration;
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.command.ReadCommand;
 import org.mule.extension.file.common.api.lock.NullUriLock;
@@ -77,7 +77,7 @@ public final class SmbReadCommand extends SmbCommand implements ReadCommand<SmbF
     UriLock pathLock = lock ? fileSystem.lock(uri) : new NullUriLock(uri);
     InputStream payload = null;
     try {
-      payload = getFileInputStream((SmbConnector) config, attributes, pathLock, timeBetweenSizeCheck, useCurrentConnection);
+      payload = getFileInputStream((SmbConfiguration) config, attributes, pathLock, timeBetweenSizeCheck, useCurrentConnection);
       MediaType resolvedMediaType = fileSystem.getFileMessageMediaType(attributes);
       return Result.<InputStream, SmbFileAttributes>builder().output(payload).mediaType(resolvedMediaType).attributes(attributes)
           .build();
@@ -87,7 +87,7 @@ public final class SmbReadCommand extends SmbCommand implements ReadCommand<SmbF
     }
   }
 
-  private InputStream getFileInputStream(SmbConnector config, SmbFileAttributes attributes, UriLock pathLock,
+  private InputStream getFileInputStream(SmbConfiguration config, SmbFileAttributes attributes, UriLock pathLock,
                                          Long timeBetweenSizeCheck, boolean useCurrentConnection) {
     if (useCurrentConnection) {
       return SmbInputStream.newInstance(fileSystem, attributes, pathLock, timeBetweenSizeCheck);

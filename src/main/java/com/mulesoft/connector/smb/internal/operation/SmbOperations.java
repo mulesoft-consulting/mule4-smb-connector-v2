@@ -10,6 +10,8 @@ import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.api.SmbFileMatcher;
 import com.mulesoft.connector.smb.internal.LoggerMessageProcessor;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
+import com.mulesoft.connector.smb.internal.error.provider.*;
+import com.mulesoft.connector.smb.internal.extension.SmbConfiguration;
 import org.mule.extension.file.common.api.*;
 import org.mule.extension.file.common.api.exceptions.*;
 import org.mule.runtime.api.message.Message;
@@ -69,8 +71,8 @@ public final class SmbOperations extends BaseFileSystemOperations {
    */
   @Summary("List all the files from given directory")
   @MediaType(value = ANY, strict = false)
-  @Throws(FileListErrorTypeProvider.class)
-  public PagingProvider<SmbFileSystemConnection, Result<Object, SmbFileAttributes>> list(@Config FileConnectorConfig config,
+  @Throws(SmbFileListErrorTypeProvider.class)
+  public PagingProvider<SmbFileSystemConnection, Result<Object, SmbFileAttributes>> list(@Config SmbConfiguration config,
                                                                                          @Path(type = DIRECTORY,
                                                                                              location = EXTERNAL) String directoryPath,
                                                                                          @Optional(
@@ -102,7 +104,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * mimeType through the {@code outputEncoding} and {@code outputMimeType} optional parameters.
    *
    * @param config the config that is parameterizing this operation
-   * @param fileSystem a reference to the host {@link FileSystem}
+   * @param fileSystem a reference to the host {@link SmbFileSystemConnection}
    * @param path the path to the file to be read
    * @param lock whether or not to lock the file. Defaults to false.
    * @param timeBetweenSizeCheck wait time between size checks to determine if a file is ready to be read.
@@ -110,9 +112,9 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * @throws IllegalArgumentException if the file at the given path doesn't exist
    */
   @Summary("Obtains the content and metadata of a file at a given path")
-  @Throws(FileReadErrorTypeProvider.class)
+  @Throws(SmbFileReadErrorTypeProvider.class)
   @MediaType(value = ANY, strict = false)
-  public void read(@Config FileConnectorConfig config,
+  public void read(@Config SmbConfiguration config,
                    @Connection SmbFileSystemConnection fileSystem,
                    @DisplayName("File Path") @Path(type = FILE,
                        location = EXTERNAL) String path,
@@ -143,8 +145,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * This operation also supports locking support depending on the value of the {@code lock} argument, but following the same
    * rules and considerations as described in the read operation.
    *
-   * @param config the {@link FileConnectorConfig} on which the operation is being executed
-   * @param fileSystem a reference to the host {@link FileSystem}
+   * @param fileSystem a reference to the host {@link SmbFileSystemConnection}
    * @param path the path of the file to be written
    * @param content the content to be written into the file. Defaults to the current {@link Message} payload
    * @param encoding this parameter is deprecated and will do nothing if configured
@@ -154,8 +155,8 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * @throws IllegalArgumentException if an illegal combination of arguments is supplied
    */
   @Summary("Writes the given \"Content\" in the file pointed by \"Path\"")
-  @Throws(FileWriteErrorTypeProvider.class)
-  public void write(@Config FileConnectorConfig config, @Connection SmbFileSystemConnection fileSystem,
+  @Throws(SmbFileWriteErrorTypeProvider.class)
+  public void write(@Connection SmbFileSystemConnection fileSystem,
                     @Path(type = DIRECTORY, location = EXTERNAL) String path,
                     @Content @Summary("Content to be written into the file") InputStream content,
                     @Optional @Summary("Deprecated: This parameter will not be taken into account for the operation execution") @Placement(
@@ -199,7 +200,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * recursively.
    *
    * @param config the config that is parameterizing this operation
-   * @param fileSystem a reference to the host {@link FileSystem}
+   * @param fileSystem a reference to the host {@link SmbFileSystemConnection}
    * @param sourcePath the path to the file to be copied
    * @param targetDirectory the target directory where the file is going to be copied
    * @param createParentDirectories whether or not to attempt creating any parent directories which don't exists.
@@ -208,8 +209,8 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * @throws IllegalArgumentException if an illegal combination of arguments is supplied
    */
   @Summary("Copies a file")
-  @Throws(FileCopyErrorTypeProvider.class)
-  public void copy(@Config FileConnectorConfig config, @Connection SmbFileSystemConnection fileSystem,
+  @Throws(SmbFileCopyErrorTypeProvider.class)
+  public void copy(@Config SmbConfiguration config, @Connection SmbFileSystemConnection fileSystem,
                    @Path(location = EXTERNAL) String sourcePath,
                    @Path(type = DIRECTORY, location = EXTERNAL) String targetDirectory,
                    @Optional(defaultValue = "true") boolean createParentDirectories,
@@ -241,7 +242,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * recursively.
    *
    * @param config the config that is parameterizing this operation
-   * @param fileSystem a reference to the host {@link FileSystem}
+   * @param fileSystem a reference to the host {@link SmbFileSystemConnection}
    * @param sourcePath the path to the file to be copied
    * @param targetDirectory the target directory
    * @param createParentDirectories whether or not to attempt creating any parent directories which don't exists.
@@ -250,8 +251,8 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * @throws IllegalArgumentException if an illegal combination of arguments is supplied
    */
   @Summary("Moves a file")
-  @Throws(FileCopyErrorTypeProvider.class)
-  public void move(@Config FileConnectorConfig config, @Connection SmbFileSystemConnection fileSystem,
+  @Throws(SmbFileCopyErrorTypeProvider.class)
+  public void move(@Config SmbConfiguration config, @Connection SmbFileSystemConnection fileSystem,
                    @Path(location = EXTERNAL) String sourcePath,
                    @Path(type = DIRECTORY, location = EXTERNAL) String targetDirectory,
                    @Optional(defaultValue = "true") boolean createParentDirectories,
@@ -269,13 +270,13 @@ public final class SmbOperations extends BaseFileSystemOperations {
   /**
    * Deletes the file pointed by {@code path}, provided that it's not locked
    *
-   * @param fileSystem a reference to the host {@link FileSystem}
+   * @param fileSystem a reference to the host {@link SmbFileSystemConnection}
    * @param path the path to the file to be deleted
    * @param failIfNotExists if true, returns an error if path does not exist.
    * @throws IllegalArgumentException if {@code filePath} doesn't exist or is locked
    */
   @Summary("Deletes a file")
-  @Throws(FileReadErrorTypeProvider.class)
+  @Throws(SmbFileReadErrorTypeProvider.class)
   public void delete(@Connection SmbFileSystemConnection fileSystem,
                      @Path(location = EXTERNAL) String path,
                      @Optional(defaultValue = "true") boolean failIfNotExists,
@@ -300,13 +301,13 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * {@code to} argument should not contain any path separator. {@code SMB:ILLEGAL_PATH} will be thrown if this
    * precondition is not honored.
    *
-   * @param fileSystem a reference to the host {@link FileSystem}
+   * @param fileSystem a reference to the host {@link SmbFileSystemConnection}
    * @param path the path to the file to be renamed
    * @param to the file's new name
    * @param overwrite whether or not overwrite the file if the target destination already exists.
    */
   @Summary("Renames a file")
-  @Throws(FileRenameErrorTypeProvider.class)
+  @Throws(SmbFileRenameErrorTypeProvider.class)
   public void rename(@Connection SmbFileSystemConnection fileSystem, @Path(location = EXTERNAL) String path,
                      @DisplayName("New Name") String to, @Optional(defaultValue = "false") boolean overwrite,
                      CompletionCallback<Void, Void> callback) {
@@ -321,11 +322,11 @@ public final class SmbOperations extends BaseFileSystemOperations {
   /**
    * Creates a new directory on {@code directoryPath}
    *
-   * @param fileSystem a reference to the host {@link FileSystem}
+   * @param fileSystem a reference to the host {@link SmbFileSystemConnection}
    * @param directoryPath the new directory's name
    */
   @Summary("Creates a new directory")
-  @Throws(FileRenameErrorTypeProvider.class)
+  @Throws(SmbFileRenameErrorTypeProvider.class)
   public void createDirectory(@Connection SmbFileSystemConnection fileSystem, @Path(location = EXTERNAL) String directoryPath,
                               CompletionCallback<Void, Void> callback) {
     try {
@@ -347,8 +348,7 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * This operation also supports locking support depending on the value of the {@code lock} argument, but following the same
    * rules and considerations as described in the read operation.
    *
-   * @param config the {@link FileConnectorConfig} on which the operation is being executed
-   * @param fileSystem a reference to the host {@link FileSystem}
+   * @param fileSystem a reference to the host {@link SmbFileSystemConnection}
    * @param path the path of the file to be written
    * @param message the message to be logged in the remote file
    * @param logLevel the log level used to log the message {@link LogLevel}
@@ -356,9 +356,8 @@ public final class SmbOperations extends BaseFileSystemOperations {
    * @throws IllegalArgumentException if an illegal combination of arguments is supplied
    */
   @Summary("Logs the message in the file pointed by \"Path\"")
-  @Throws(FileWriteErrorTypeProvider.class)
-  public void logger(@Config FileConnectorConfig config,
-                     @Connection SmbFileSystemConnection fileSystem,
+  @Throws(SmbFileWriteErrorTypeProvider.class)
+  public void logger(@Connection SmbFileSystemConnection fileSystem,
                      @Path(type = DIRECTORY, location = EXTERNAL) String path,
                      @DisplayName("Message") String message,
                      @Optional(defaultValue = "INFO") @DisplayName("Log Level") LogLevel logLevel,

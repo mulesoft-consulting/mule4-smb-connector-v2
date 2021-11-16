@@ -11,7 +11,7 @@ import org.mule.runtime.extension.api.exception.ModuleException;
 
 /**
  * {@link ConnectionException} implementation to declare connectivity errors in
- * the SmbConnector
+ * the SmbConfiguration
  *
  * @since 1.0
  */
