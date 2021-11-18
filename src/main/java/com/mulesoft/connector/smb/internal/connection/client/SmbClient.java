@@ -235,9 +235,9 @@ public class SmbClient {
 
   public InputStream read(String filePath) {
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        File f = share.openFile(filePath, EnumSet.of(AccessMask.GENERIC_READ), null, SMB2ShareAccess.ALL,
+         File f = share.openFile(filePath, EnumSet.of(AccessMask.GENERIC_READ), null, SMB2ShareAccess.ALL,
                                 SMB2CreateDisposition.FILE_OPEN, null);
-        InputStream inputStream = f.getInputStream()) {
+         InputStream inputStream = f.getInputStream()) {
       byte[] buffer = new byte[1024];
       int length;
       while ((length = inputStream.read(buffer)) > 0)

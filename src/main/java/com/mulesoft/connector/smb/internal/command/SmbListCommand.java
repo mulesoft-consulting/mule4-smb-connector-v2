@@ -67,10 +67,10 @@ public final class SmbListCommand extends SmbCommand implements ListCommand<SmbF
       throw cannotListFileException(uri);
     }
 
-    List<Result<InputStream, SmbFileAttributes>> accumulator = new LinkedList<>();
-    doList(config, directoryAttributes.getPath(), accumulator, recursive, matcher, timeBetweenSizeCheck);
+    List<Result<InputStream, SmbFileAttributes>> result = new LinkedList<>();
+    doList(config, directoryAttributes.getPath(), result, recursive, matcher, timeBetweenSizeCheck);
 
-    return accumulator;
+    return result;
   }
 
   private void doList(FileConnectorConfig config,

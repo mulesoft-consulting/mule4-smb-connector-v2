@@ -8,7 +8,7 @@ package com.mulesoft.connector.smb.internal.command;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
-import com.mulesoft.connector.smb.internal.extension.SmbConfiguration;
+import com.mulesoft.connector.smb.internal.config.SmbConfiguration;
 import org.mule.extension.file.common.api.FileConnectorConfig;
 import org.mule.extension.file.common.api.command.ReadCommand;
 import org.mule.extension.file.common.api.lock.NullUriLock;

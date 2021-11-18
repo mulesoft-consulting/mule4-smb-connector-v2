@@ -11,7 +11,7 @@ import com.mulesoft.connector.smb.internal.connection.SmbClientFactory;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
 import com.mulesoft.connector.smb.internal.connection.client.SmbClient;
 import com.mulesoft.connector.smb.internal.error.exception.SmbConnectionException;
-import com.mulesoft.connector.smb.internal.extension.SmbConfiguration;
+import com.mulesoft.connector.smb.internal.config.SmbConfiguration;
 import org.mule.extension.file.common.api.FileSystemProvider;
 import org.mule.extension.file.common.api.exceptions.FileError;
 import org.mule.runtime.api.connection.ConnectionException;

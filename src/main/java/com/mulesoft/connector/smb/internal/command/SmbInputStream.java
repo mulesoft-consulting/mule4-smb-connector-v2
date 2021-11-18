@@ -9,7 +9,7 @@ import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.mssmb2.SMBApiException;
 import com.mulesoft.connector.smb.api.SmbFileAttributes;
 import com.mulesoft.connector.smb.internal.connection.SmbFileSystemConnection;
-import com.mulesoft.connector.smb.internal.extension.SmbConfiguration;
+import com.mulesoft.connector.smb.internal.config.SmbConfiguration;
 import org.mule.extension.file.common.api.AbstractConnectedFileInputStreamSupplier;
 import org.mule.extension.file.common.api.FileAttributes;
 import org.mule.extension.file.common.api.lock.UriLock;
