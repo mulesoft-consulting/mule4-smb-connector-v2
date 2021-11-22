@@ -16,6 +16,8 @@ mvn deploy -DskipTests
 
 ## Running the demo
 
+- Make sure the connector was published into Anypoint Exchange
+
 - Start a new Samba server docker image: 
 ```
 sudo docker run -it -p 139:139 -p 445:445 -d dperson/samba -p  -u "mulesoft;mulesoft"  -s "shared;/shared;no;no;no;mulesoft" -w "WORKGROUP"
