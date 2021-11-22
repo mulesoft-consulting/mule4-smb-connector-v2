@@ -8,7 +8,7 @@
     <import file="smb-connection.xml"/>
 
     <flow name="delete">
-        <smb:delete config-ref="config" path="#[vars.delete]" />
+        <smb:delete config-ref="config" path="#[vars.delete]" failIfNotExists="#[vars.failIfNotExists]"/>
     </flow>
 
     <flow name="readAndDelete">

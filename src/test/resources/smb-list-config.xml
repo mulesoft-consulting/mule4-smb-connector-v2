@@ -35,8 +35,8 @@
         <smb:list config-ref="config" directoryPath="#[vars.path]">
             <smb:matcher filenamePattern="*2.html"/>
         </smb:list>
-        <test:processor class="org.mule.extension.smb.SmbListTestCase$TestProcessor"/>
-        <test:processor class="org.mule.extension.smb.SmbListTestCase$TestProcessor"/>
+        <test:processor class="com.mulesoft.connector.smb.SmbListTestCase$TestProcessor"/>
+        <test:processor class="com.mulesoft.connector.smb.SmbListTestCase$TestProcessor"/>
     </flow>
 
     <flow name="listFilesRecursivelyWithNameFilter">
@@ -58,11 +58,11 @@
         </smb:list>
         <foreach>
             <try>
-                <test:processor class="org.mule.extension.smb.SmbListTestCase$FilesWrittenProcessor"/>
+                <test:processor class="com.mulesoft.connector.smb.SmbListTestCase$FilesWrittenProcessor"/>
                 <object-to-string-transformer/>
                 <error-handler>
                     <on-error-continue enableNotifications="true" logException="true" type="ANY" >
-                        <test:processor class="org.mule.extension.smb.SmbListTestCase$FilesBeingWrittenProcessor"/>
+                        <test:processor class="com.mulesoft.connector.smb.SmbListTestCase$FilesBeingWrittenProcessor"/>
                     </on-error-continue>
                 </error-handler>
             </try>

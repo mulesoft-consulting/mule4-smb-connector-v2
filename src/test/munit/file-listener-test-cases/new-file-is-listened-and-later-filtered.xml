@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+      xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns:java="http://www.mulesoft.org/schema/mule/java"
+      xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
+        http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+
+    <munit:config name="new-file-is-listened-and-later-filtered.xml"/>
+
+    <munit:dynamic-port propertyName="smb.server.port"/>
+
+    <munit:before-suite name="new-file-is-listened-and-later-filtered-startListenerMatcherTestServer">
+        <flow-ref name="delete-all-files" />
+    </munit:before-suite>
+
+    <munit:before-test name="new-file-is-listened-and-later-filtered-create-file-for-listener">
+        <flow-ref name="write-file"/>
+        <flow-ref name="reset-file-listed"/>
+    </munit:before-test>
+
+    <munit:test name="newFileIsListenedAndLaterFiltered" description="New file is listed, but later filtered by the matcher">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="listen-filtering-not-updated-recently-newFileIsListenedAndLaterFiltered"/>
+        </munit:enable-flow-sources>
+        <munit:execution>
+            <flow-ref name="check-until-one-file-is-listened"/>
+            <flow-ref name="check-until-no-file-is-listened"/>
+        </munit:execution>
+    </munit:test>
+
+    <flow name="listen-filtering-not-updated-recently-newFileIsListenedAndLaterFiltered">
+        <smb:smb-directory-listener config-ref="config" directory=".">
+            <scheduling-strategy>
+                <fixed-frequency frequency="200"/>
+            </scheduling-strategy>
+            <smb:matcher updatedInTheLast="4" timeUnit="SECONDS"/>
+        </smb:smb-directory-listener>
+        <munit-tools:store key="isFileBeingListed">
+            <munit-tools:value>#[true]</munit-tools:value>
+        </munit-tools:store>
+    </flow>
+
+</mule>

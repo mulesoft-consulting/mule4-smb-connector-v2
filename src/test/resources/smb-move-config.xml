@@ -8,12 +8,12 @@
     <import file="smb-read-config.xml"/>
 
     <flow name="move">
-        <smb:move config-ref="config" sourcePath="#[vars.source]" targetPath="#[vars.target]" overwrite="#[vars.overwrite]" createParentDirectories="#[vars.createParent]" renameTo="#[vars.renameTo]"/>
+        <smb:move config-ref="config" sourcePath="#[vars.source]" targetDirectory="#[vars.target]" overwrite="#[vars.overwrite]" createParentDirectories="#[vars.createParent]" renameTo="#[vars.renameTo]"/>
     </flow>
 
     <flow name="readAndDo">
         <smb:read config-ref="config" path="#[vars.source]" />
-        <smb:move config-ref="config" sourcePath="#[vars.source]" targetPath="#[vars.target]" overwrite="#[vars.overwrite]" createParentDirectories="#[vars.createParent]" renameTo="#[vars.renameTo]"/>
+        <smb:move config-ref="config" sourcePath="#[vars.source]" targetDirectory="#[vars.target]" overwrite="#[vars.overwrite]" createParentDirectories="#[vars.createParent]" renameTo="#[vars.renameTo]"/>
     </flow>
 
 </mule>
