@@ -30,6 +30,8 @@ sudo docker run -it -p 139:139 -p 445:445 -d dperson/samba -p  -u "mulesoft;mule
 - Send a request to the application: POST http://localhost:8081/write (payload can be anything, and it will be written to the file)
 
 
-## DISCLAIMER
+## Final Notes
 
-This connector is not supported by MuleSoft official support team. If you have any issue or feature request, please submit it in the connector [Github Repository](https://github.com/mulesoft-labs/mule-smb-connector/issues)
+Found and issue or had an exciting idea? Great! Feel free to fork this repo and create pull requests with bug fixes and/or feature implemetations. You can also submit [an issue](https://github.com/mulesoft-consulting/mule4-smb-connector-v2/issues), if you prefer!
+
+Provide feedback, contribute and enjoy! :)
