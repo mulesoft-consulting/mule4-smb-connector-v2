@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+      xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns:java="http://www.mulesoft.org/schema/mule/java" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
+        http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+
+    <munit:config name="smb-directory-listener-post-processing-action-test-case.xml" />
+
+    <munit:dynamic-port propertyName="smb.server.port"/>
+
+    <munit:before-suite name="startDirectoryListenerMatcherTestServer">
+        <flow-ref name="delete-all-files" />
+    </munit:before-suite>
+	<munit:test name="smb-directory-listener-post-processing-action-test-caseTest" doc:id="1438e946-a131-438b-ae1e-b0c8493c820f" >
+		<munit:enable-flow-sources >
+			<munit:enable-flow-source value="doNotExecutePostActionAfterFailure" />
+		</munit:enable-flow-sources>
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="4c48722d-ffff-48b3-8ab5-0ed56e66ba8b" config-ref="config" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<munit-tools:sleep time="1000" doc:name="Sleep" doc:id="06cbce6f-2b7e-4774-9010-3196e460bb0d" />
+		</munit:execution>
+		<munit:validation>
+			<set-variable value="somefile.txt" doc:name="Set Variable" doc:id="c4e006b6-cae9-47ab-9503-5cb3c1087ab2" variableName="fileExists"/>
+			<flow-ref doc:name="Flow Reference" doc:id="5af04469-f098-4895-8e41-0afd9fb24e85" name="file-exists"/>
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="b85885fe-fc8c-4fd4-821a-6c2a03f065c0" actual="#[payload]" expected="#[true]"/>
+			<set-variable value="somefile.ctl" doc:name="Set Variable" doc:id="87893842-1ff7-48a0-82a0-4b294e5dfecd" variableName="fileExists"/>
+			<flow-ref doc:name="Flow Reference" doc:id="a46d3ff4-3dce-46bc-9237-557143646f80" name="file-exists"/>
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="548b2fa4-5176-4110-82e3-08c75db6fd7a" actual="#[payload]" expected="#[true]"/>
+			<set-variable value="notRenamedAfterFailure.bak" doc:name="Set Variable" doc:id="23119eb1-ff9d-48ed-a320-49a79bd12900" variableName="fileExists"/>
+			<flow-ref doc:name="Flow Reference" doc:id="7e8fb4ec-d396-43e3-8d62-ff93386a9a3b" name="file-exists"/>
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="ed06af65-4b5f-4a6e-be05-1a52367af9b3" actual="#[payload]" expected="#[false]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="renameToAfterFailure" doc:id="1c3bf20e-7840-4561-92f1-85609aa272cd" description="Verifies that the file is renamed after a failure">
+		<munit:enable-flow-sources >
+			<munit:enable-flow-source value="executePostActionAfterFailure" />
+		</munit:enable-flow-sources>
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="259161b9-1f5b-468b-b7c3-8415fe13e880" config-ref="SMB_Config" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<munit-tools:sleep time="2000" doc:name="Sleep" doc:id="3d294fce-6951-490e-9aee-e1eb82fbd9ec" />
+		</munit:execution>
+		<munit:validation >
+			<smb:read doc:name="Read" doc:id="85f7f27b-89d0-4118-9d93-b03b9cdf5efd" config-ref="SMB_Config" path="renamedAfterFailure.bak" outputMimeType="text/plain" />
+			<munit-tools:assert doc:name="Assert expression" doc:id="bdcdb42c-8c2f-4c2a-9ffc-ce9e39d145d0" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo("This is a test")]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="renameTo" description="Verifies that files are renamed after processing">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="renameToFlow"/>
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-variable variableName="fileName" value="input.txt"/>
+            <set-variable variableName="fileContent" value="File content"/>
+            <set-variable variableName="renameTo" value="renamed.bak" />
+        </munit:behavior>
+        <munit:execution>
+            <smb:write config-ref="SMB_Config" path="#[vars.fileName]">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+            <flow-ref name="wait-2-seconds"/>
+            <set-variable variableName="fileExists" value="#[vars.fileName]" />
+            <flow-ref name="file-exists" target="existsOriginal"/>
+            <set-variable variableName="fileExists" value="#[vars.renameTo]" />
+            <flow-ref name="file-exists" target="existsRenamed" />
+        </munit:execution>
+        <munit:validation >
+            <munit-tools:assert-equals actual="#[vars.existsOriginal]" expected="#[false]"/>
+            <munit-tools:assert-equals actual="#[vars.existsRenamed]" expected="#[true]" />
+        </munit:validation>
+    </munit:test>
+
+    <munit:test name="renameToAndAutoDelete" description="Verifies that files are renamed after processing even if autoDelete is configured">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="renameToAndAutoDeleteFlow"/>
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-variable variableName="fileName" value="input.txt"/>
+            <set-variable variableName="fileContent" value="File content"/>
+            <set-variable variableName="renameTo" value="renamed.bak" />
+        </munit:behavior>
+        <munit:execution>
+            <smb:write config-ref="SMB_Config" path="#[vars.fileName]">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+            <flow-ref name="wait-2-seconds"/>
+            <set-variable variableName="fileExists" value="#[vars.fileName]" />
+            <flow-ref name="file-exists" target="existsOriginal"/>
+            <set-variable variableName="fileExists" value="#[vars.renameTo]" />
+            <flow-ref name="file-exists" target="existsRenamed" />
+        </munit:execution>
+        <munit:validation >
+            <munit-tools:assert-equals actual="#[vars.existsOriginal]" expected="#[false]"/>
+            <munit-tools:assert-equals actual="#[vars.existsRenamed]" expected="#[true]" />
+        </munit:validation>
+    </munit:test>
+
+    <munit:test name="renameToAndAutoDeleteWithSameFileName" description="Verifies that files that cannot be renamed (because a file already exists in the directory with that name) are deleted">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="renameToAndAutoDeleteFlow"/>
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-variable variableName="fileName" value="input.txt"/>
+            <set-variable variableName="fileContent" value="File content"/>
+            <set-variable variableName="renameTo" value="renamed.bak" />
+        </munit:behavior>
+        <munit:execution>
+            <smb:write config-ref="SMB_Config" path="#[vars.fileName]">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+            <flow-ref name="wait-2-seconds"/>
+            <smb:write config-ref="SMB_Config" path="#[vars.fileName]">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+            <flow-ref name="wait-2-seconds"/>
+            <set-variable variableName="fileExists" value="#[vars.fileName]" />
+            <flow-ref name="file-exists" target="existsOriginal"/>
+            <set-variable variableName="fileExists" value="#[vars.renameTo]" />
+            <flow-ref name="file-exists" target="existsRenamed" />
+        </munit:execution>
+        <munit:validation >
+            <munit-tools:assert-equals actual="#[vars.existsOriginal]" expected="#[false]"/>
+            <munit-tools:assert-equals actual="#[vars.existsRenamed]" expected="#[true]" />
+        </munit:validation>
+    </munit:test>
+
+    <munit:test name="renameToWithSameFileName" description="Verifies that files that cannot be renamed (because a file already exists in the directory with that name) remain untouched">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="renameToFlow"/>
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-variable variableName="fileName" value="input.txt"/>
+            <set-variable variableName="fileContent" value="File content"/>
+            <set-variable variableName="renameTo" value="renamed.bak" />
+        </munit:behavior>
+        <munit:execution>
+            <smb:write config-ref="SMB_Config" path="#[vars.fileName]">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+            <flow-ref name="wait-2-seconds"/>
+            <smb:write config-ref="SMB_Config" path="#[vars.fileName]">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+            <flow-ref name="wait-2-seconds"/>
+            <set-variable variableName="fileExists" value="#[vars.fileName]" />
+            <flow-ref name="file-exists" target="existsOriginal"/>
+            <set-variable variableName="fileExists" value="#[vars.renameTo]" />
+            <flow-ref name="file-exists" target="existsRenamed" />
+        </munit:execution>
+        <munit:validation >
+            <munit-tools:assert-equals actual="#[vars.existsOriginal]" expected="#[true]"/>
+            <munit-tools:assert-equals actual="#[vars.existsRenamed]" expected="#[true]" />
+        </munit:validation>
+    </munit:test>
+
+    <flow name="renameToFlow">
+        <smb:smb-directory-listener config-ref="SMB_Config" directory="." renameTo="renamed.bak" recursive="false">
+            <scheduling-strategy>
+                <fixed-frequency frequency="1" timeUnit="SECONDS"/>
+            </scheduling-strategy>
+            <smb:matcher filenamePattern="*.txt" />
+        </smb:smb-directory-listener>
+        <logger level="INFO" message="#[attributes.fileName]"/>
+    </flow>
+
+    <flow name="renameToAndAutoDeleteFlow">
+        <smb:smb-directory-listener config-ref="SMB_Config" directory="." renameTo="renamed.bak" recursive="false" autoDelete="true">
+            <scheduling-strategy>
+                <fixed-frequency frequency="1" timeUnit="SECONDS"/>
+            </scheduling-strategy>
+            <smb:matcher filenamePattern="*.txt" />
+        </smb:smb-directory-listener>
+        <logger level="INFO" message="#[attributes.fileName]"/>
+    </flow>
+
+    <flow name="executePostActionAfterFailure" doc:id="cccf15f2-76c3-43e5-b54f-b1ead62a8934" >
+		<smb:smb-directory-listener doc:name="On New or Updated File" doc:id="0e11dfe6-15ec-473f-a691-4ce051b6fb2c" config-ref="SMB_Config" renameTo="renamedAfterFailure.bak" directory="/">
+			<scheduling-strategy >
+				<fixed-frequency frequency="1" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+			<smb:matcher filenamePattern="*.txt" />
+		</smb:smb-directory-listener>
+		<logger level="INFO" doc:name="Logger" doc:id="e927f239-77d4-413e-bee3-f2adc414d666" message="New file: #[attributes.path]"/>
+		<raise-error doc:name="Raise error" doc:id="6680aedd-a31b-4be9-8c57-24fa4ee243da" type="APP:FILE_SHOULD_NOT_BE_PROCESSED"/>
+	</flow>
+	<flow name="doNotExecutePostActionAfterFailure" doc:id="78d9404b-20c6-44b6-aa7f-080b9ec2487c" >
+		<smb:smb-directory-listener doc:name="On New or Updated File" doc:id="0312c4de-7c04-4c5e-a76c-704ca1c8d7dc" applyPostActionWhenFailed="false" config-ref="config" renameTo="notRenamedAfterFailure.bak">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+			<smb:matcher filenamePattern="*.txt" />
+		</smb:smb-directory-listener>
+		<smb:write doc:name="Write" doc:id="09e87a7a-de55-4282-86c8-918b0158a57c" config-ref="config" path="somefile.ctl">
+			<smb:content ><![CDATA[This is a control file]]></smb:content>
+		</smb:write>
+		<raise-error doc:name="Raise error" doc:id="dcdc08d2-9915-4635-bdbe-f023cd405909" type="APP:CANNOT_PROCESS_FILE"/>
+	</flow>
+	<flow name="file-exists">
+        <try>
+            <smb:read config-ref="config" path="#[vars.fileExists]" />
+            <set-payload value="#[true]" />
+            <error-handler>
+                <on-error-continue enableNotifications="true" logException="true">
+                    <set-payload value="#[false]" />
+                </on-error-continue>
+            </error-handler>
+        </try>
+    </flow>
+
+</mule>

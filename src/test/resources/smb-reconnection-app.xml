@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:os="http://www.mulesoft.org/schema/mule/os"
+      xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
+        http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+        http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+
+    <configuration-properties file="${applicationsConfigProperties}"/>
+
+    <api-gateway:autodiscovery apiId="${api1}" flowRef="get-smb-polled-files"/>
+    <api-gateway:autodiscovery apiId="${api2}" flowRef="write-file-to-smb"/>
+
+    <os:object-store name="smb-os" persistent="false" />
+
+    <http:listener-config name="localListenerConfig">
+        <http:listener-connection host="localhost" port="${port}" protocol="HTTP"/>
+    </http:listener-config>
+
+
+    <smb:config name="smb-config">
+        <smb:connection username="mule" password="test" host="127.0.0.1" port="${smb.port}"
+                         workingDir="/app" prngAlgorithm="SHA1PRNG">
+            <reconnection>
+                <reconnect frequency="1000" count="10" />
+            </reconnection>
+        </smb:connection>
+    </smb:config>
+
+    <flow name="smb-poll-flow">
+        <smb:listener config-ref="smb-config" directory="/app" watermarkEnabled="false">
+            <ee:repeatable-file-store-stream inMemorySize="1000" />
+            <scheduling-strategy>
+                <fixed-frequency frequency="500" />
+            </scheduling-strategy>
+        </smb:listener>
+
+        <flow-ref name="os-store" />
+        <logger level="ERROR" message="#[payload]"/>
+    </flow>
+
+    <flow name="os-store" maxConcurrency="1">
+        <os:store key="#[attributes.fileName]" objectStore="smb-os"/>
+    </flow>
+
+    <flow name="get-smb-polled-files">
+        <http:listener config-ref="localListenerConfig" path="/smb/files/{fileName}" allowedMethods="GET"/>
+        <try>
+            <os:retrieve key="#[attributes.uriParams.fileName ++ '.json']" objectStore="smb-os" />
+            <set-payload value="#[output application/json --- payload]"/>
+
+            <error-handler>
+                <on-error-continue type="OS:KEY_NOT_FOUND">
+                    <set-payload value="#[output application/json --- {}]"/>
+                </on-error-continue>
+            </error-handler>
+        </try>
+    </flow>
+
+    <flow name="write-file-to-smb">
+        <http:listener config-ref="localListenerConfig" path="/smb/files/{fileName}" allowedMethods="POST" />
+
+        <logger level="DEBUG" message="WRITING SMB FILE!!!" />
+        <logger level="DEBUG" message="#[payload]" />
+        <smb:write path="#['/app/' ++ attributes.uriParams.fileName ++ '.json']" config-ref="smb-config">
+            <smb:content>#[payload]</smb:content>
+        </smb:write>
+    </flow>
+
+    <flow name="clear-os">
+        <http:listener config-ref="localListenerConfig" path="/os/files" allowedMethods="PUT" />
+        <logger level="DEBUG" message="CLEARING OBJECT STORE!!!" />
+        <os:clear objectStore="smb-os"/>
+    </flow>
+
+</mule>

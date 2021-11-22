@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd">
+	<munit:config name="smb-delete-test-case.xml" />
+	<munit:before-test name="smb-delete-delete-all-files" doc:id="0a851e59-e0a5-4e75-a480-0cf4a027e661" >
+		<flow-ref doc:name="Flow Reference" doc:id="832c47e6-904f-4897-97ed-5079db5dae41" name="delete-all-files"/>
+	</munit:before-test>
+	<munit:test name="smb-delete-on-invalid-path" doc:id="5a827fe0-9631-444d-b1ea-d66a10f70366" expectedErrorType="SMB:CONNECTIVITY" description="Performs a delete operation on an invalid path" expectedErrorDescription="The filename, directory name, or volume label syntax is incorrect.">
+		<munit:execution >
+			<smb:delete doc:name="Delete" doc:id="77ecbf32-aab9-493d-afbc-426af08e1bac" config-ref="config" path="/s&gt;omefile.txt"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-delete-share-root-base-dir" doc:id="8765d22e-2f98-4251-b7b6-551dc862fa04" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Path '/dir/subdir/file.txt' doesn't exist" description="Performs a delete operation on the share root base directory">
+		<munit:behavior >
+			<set-variable value="/dir/subdir/file.txt" doc:name="Set Variable" doc:id="21d4d6dd-57b7-4217-95f1-b56e9b6f0b32" variableName="sourceFile"/>
+			<smb:write doc:name="Write" doc:id="784eae44-2e6c-4b47-8649-98b5399283ff" config-ref="config" path="#[vars.sourceFile]">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+		</munit:behavior>
+		<munit:execution >
+			<smb:delete doc:name="Delete" doc:id="51e26f12-0d1f-4f5e-aaa5-0597fc0d53db" config-ref="config" path="/"/>
+		</munit:execution>
+		<munit:validation>
+			<smb:list doc:name="List" doc:id="e4049eb4-03df-4767-9224-ede000af8576" config-ref="config" directoryPath="/"/>
+			<munit-tools:assert doc:name="Assert expression" doc:id="ed585958-b97a-450a-b550-ed06fe384cc2" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+sizeOf(payload) must equalTo(0)]]]></munit-tools:that>
+			</munit-tools:assert>
+			<smb:read doc:name="Read" doc:id="7705eabf-50e1-47f9-9522-41ab8765a032" config-ref="config" path="#[vars.sourceFile]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="smb-delete-non-existing-file-with-fail-if-not-exists-true" doc:id="9f08caf7-7aa7-47b3-b1b7-c2097ce45c73" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Path '/invalidFile.txt' doesn't exist" description="Performs a delete operation on a non existing file with failIfNotExists = true">
+		<munit:execution >
+			<smb:delete doc:name="Delete" doc:id="c170f6a7-fa7c-4bf9-a310-d384d124da91" config-ref="config" path="invalidFile.txt"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-delete-non-existing-file-with-fail-if-not-exists-false" doc:id="8fddd98e-1717-4baf-933d-67881a9ec834" description="Performs a delete operation on a non existing file with failIfNotExists = false">
+		<munit:execution >
+			<smb:delete doc:name="Delete" doc:id="a9ed4a66-ee19-41d5-a92c-3ed997b3387a" config-ref="config" path="/invalidFile.txt" failIfNotExists="false"/>
+		</munit:execution>
+	</munit:test>
+
+</mule>

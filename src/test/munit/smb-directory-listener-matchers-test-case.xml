@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+      xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns:java="http://www.mulesoft.org/schema/mule/java" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
+        http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+
+    <munit:config name="smb-directory-listener-matchers-test-case.xml" />
+
+    <munit:dynamic-port propertyName="smb.server.port"/>
+
+    <smb:matcher name="new-files" updatedInTheLast="3" timeUnit="SECONDS"/>
+
+    <smb:matcher name="old-files" notUpdatedInTheLast="3000" timeUnit="MILLISECONDS"/>
+
+    <smb:matcher name="all-files"/>
+	<smb:matcher name="recent-files-that-are-not-new" notUpdatedInTheLast="3" updatedInTheLast="6"
+                 timeUnit="SECONDS"/>
+	<munit:before-test name="smb-directory-listener-matchers-delete-all-files" doc:id="0deb1f10-9666-4262-ac96-a7cf3170f406">
+		<flow-ref name="delete-all-files" />
+	</munit:before-test>
+	<munit:test name="smb-directory-listener-matchers-all-matchers">
+		<munit:enable-flow-sources>
+			<munit:enable-flow-source value="fileListenerFlow" />
+        </munit:enable-flow-sources>
+		<munit:execution>
+			<foreach doc:name="For Each" doc:id="e4c4e5c8-9bf6-4456-ba4d-051a1a12a738" collection="#[1 to 5]">
+				<smb:write doc:name="Write" doc:id="7edc61be-ccef-4258-911d-f6055eb3c3bc" config-ref="config" path='#["match_" ++ vars.counter ++ ".txt"]'>
+					<smb:content><![CDATA[This is a test]]></smb:content>
+				</smb:write>
+				<smb:write doc:name="Write" doc:id="6a9bdafb-977e-4a96-9549-8bb141f34bd9" config-ref="config" path='#["no_match_" ++ vars.counter ++ ".txt"]'>
+					<smb:content><![CDATA[This is a test]]></smb:content>
+				</smb:write>
+			</foreach>
+			<munit-tools:sleep time="2000" doc:name="Sleep" doc:id="9bf88bb0-b471-42af-9025-def174290442" />
+        </munit:execution>
+		<munit:validation>
+			<smb:list doc:name="List" doc:id="c993a3f8-18bb-41a8-8d3b-5993892e2c13" config-ref="config" directoryPath="/">
+				<smb:matcher filenamePattern="*.txt" />
+			</smb:list>
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="957ede20-a26e-4621-8ba2-0446765e82ae" actual="#[sizeOf(payload)]" expected="#[5]"/>
+        </munit:validation>
+    </munit:test>
+	<flow name="fileListenerFlow">
+        <smb:smb-directory-listener config-ref="config" watermarkEnabled="true" autoDelete="true" timeBetweenSizeCheckUnit="MILLISECONDS" directory="/" timeBetweenSizeCheck="1000">
+            <scheduling-strategy>
+                <fixed-frequency frequency="2000" />
+            </scheduling-strategy>
+			<smb:matcher filenamePattern="match_*.txt" updatedInTheLast="10000"/>
+        </smb:smb-directory-listener>
+		<logger level="INFO" doc:name="Logger" doc:id="474fb4bb-4e6f-4832-a225-ae7cd1708317" message="#[attributes.path]" />
+    </flow>
+
+</mule>

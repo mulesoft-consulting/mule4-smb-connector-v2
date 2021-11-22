@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+      xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:smb="http://www.mulesoft.org/schema/mule/smb"
+      xmlns:java="http://www.mulesoft.org/schema/mule/java"
+      xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
+        http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+
+    <munit:config name="smb-directory-listener-reconnection-test-case.xml" />
+
+    <munit:dynamic-port propertyName="smb.server.port"/>
+
+    <munit:before-suite name="startDirectoryListenerReconnectionTestServer">
+        <flow-ref name="delete-all-files" />
+    </munit:before-suite>
+
+
+    <!-- TODO: SMBC-9 -->
+    <munit:test name="listenerProcessesAllFiles" ignore="true">
+
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="reconnectionFileListenerFlow"/>
+        </munit:enable-flow-sources>
+
+        <munit:behavior>
+            <set-variable variableName="fileContent" value="File content"/>
+            <set-variable variableName="fileName" value="fileName.txt"/>
+            <set-variable variableName="quantityPolled" value="#[2]"/>
+        </munit:behavior>
+        <munit:execution>
+            <smb:write config-ref="config-with-reconnection" path="#[vars.fileName]">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+        </munit:execution>
+        <munit:validation>
+            <until-successful maxRetries="50" millisBetweenRetries="1000">
+                <munit-tools:assert-that expression="#[MunitTools::queueSize()]"
+                                         is="#[MunitTools::greaterThan(vars.quantityPolled)]"/>
+            </until-successful>
+            <flow-ref name="stopServerFlow"/>
+            <flow-ref name="wait-2-seconds"/>
+            <set-variable variableName="preCount" value="#[MunitTools::queueSize()]"/>
+            <flow-ref name="wait-2-seconds"/>
+            <munit-tools:assert-that expression="#[MunitTools::queueSize()]"
+                                     is="#[MunitTools::equalTo(vars.preCount)]"/>
+            <flow-ref name="startServerFlow"/>
+            <smb:write config-ref="config-with-reconnection" path="#[vars.fileName]">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+            <until-successful maxRetries="50" millisBetweenRetries="1000">
+                <munit-tools:assert-that expression="#[MunitTools::queueSize()]"
+                                         is="#[MunitTools::greaterThan(vars.preCount + vars.quantityPolled)]"/>
+            </until-successful>
+        </munit:validation>
+    </munit:test>
+
+    <flow name="reconnectionFileListenerFlow">
+        <smb:smb-directory-listener config-ref="config-with-reconnection" watermarkEnabled="false">
+            <scheduling-strategy>
+                <fixed-frequency frequency="500"/>
+            </scheduling-strategy>
+        </smb:smb-directory-listener>
+        <set-payload value="#[attributes.fileName]"/>
+        <munit-tools:queue/>
+    </flow>
+
+    <flow name="startServerFlow">
+        <java:invoke-static class="com.mulesoft.connector.smb.internal.lifecycle.SmbServerContainerLifecycleManger"
+                            method="startServerContainer(String)">
+            <java:args>
+                #[{
+                arg0: "samba"
+                }]
+            </java:args>
+        </java:invoke-static>
+    </flow>
+
+    <flow name="stopServerFlow">
+        <java:invoke-static class="com.mulesoft.connector.smb.internal.lifecycle.SmbServerContainerLifecycleManger"
+                            method="stopServerContainer(String,int)">
+            <java:args>
+                #[{
+                arg0: "samba", arg1:2000
+                }]
+            </java:args>
+        </java:invoke-static>
+    </flow>
+
+</mule>

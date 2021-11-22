@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ftp="http://www.mulesoft.org/schema/mule/ftp"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+      xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+      xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:smb="http://www.mulesoft.org/schema/mule/smb" xmlns:java="http://www.mulesoft.org/schema/mule/java" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+        http://www.mulesoft.org/schema/mule/smb http://www.mulesoft.org/schema/mule/smb/current/mule-smb.xsd
+		http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+
+    <munit:config name="smb-read-test-case.xml"/>
+
+    <munit:dynamic-port propertyName="smb.server.port"/>
+
+    <munit:before-test name="smb-read-test-caseBefore_Test" doc:id="c9f8754d-2b17-44ba-890b-49091eef9b20" >
+		<flow-ref name="delete-all-files" />
+	</munit:before-test>
+
+    <munit:test name="smb-read-with-null-path" doc:id="bc317a3c-d934-42f5-97a7-356fa9a90d3b" description="Performs a read operation on a null path" expectedErrorType="SMB:ILLEGAL_PATH" expectedErrorDescription="Cannot read path '/' since it's a directory">
+		<munit:execution >
+			<smb:read doc:name="Read" doc:id="8af8d8b7-33b2-4cb0-a4f7-e33274173f70" config-ref="config" path="#[null]"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-read-directory" doc:id="a75e4915-b81c-4e6a-b95d-fb7a8f89f391" expectedErrorType="SMB:ILLEGAL_PATH" description="Performs a read operation on a directory" expectedErrorDescription="Cannot read path '/somedir' since it's a directory">
+		<munit:behavior >
+			<smb:create-directory doc:name="Create directory" doc:id="eaf1aa48-62b4-4cae-a39c-5a0107d78db9" config-ref="config" directoryPath="/somedir"/>
+		</munit:behavior>
+		<munit:execution >
+			<smb:read doc:name="Read" doc:id="5de30f98-4aed-45f8-ad16-825a5b353c1d" config-ref="config" path="somedir"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-read-file-using-single-connection"
+                description="Perform a read operation with a pooling profile which allows only 1 active connection">
+        <munit:behavior>
+            <set-variable variableName="fileName" value="filePath.txt"/>
+            <set-variable variableName="fileContent" value="I just want to impress Mr. Stark"/>
+            <smb:write config-ref="config-with-limited-pool" path="#[vars.fileName]">
+                <smb:content>#[vars.fileContent]</smb:content>
+            </smb:write>
+        </munit:behavior>
+        <munit:execution>
+            <smb:read config-ref="config-with-limited-pool" path='#[vars.fileName]'/>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert>
+                <munit-tools:that><![CDATA[#[import * from dw::test::Asserts
+                                     ---
+                                    payload must equalTo(vars.fileContent)
+                                    ]]]>
+                </munit-tools:that>
+            </munit-tools:assert>
+        </munit:validation>
+    </munit:test>
+	<munit:test name="smb-read-delete-before-consume-payload" doc:id="7d4c4f0b-9182-4fa3-95fc-7cd941febea1" description="Performs a read operation on a file deleted before consuming the payload" expectedErrorType="SMB:FILE_DOESNT_EXIST" expectedErrorDescription="File on path /somefile.txt was read but does not exist anymore.">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="3ecdf0cf-623f-491b-8722-f28bf0977f63" path="somefile.txt" config-ref="config">
+				<smb:content><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<smb:read doc:name="Read" doc:id="161bcd2f-13b4-47f3-8dd0-1352d3afd552" config-ref="config" path="somefile.txt" >
+			</smb:read>
+			<smb:delete doc:name="Delete" doc:id="b9eb0d5b-bd6c-41e4-a70c-8cc4bc159997" config-ref="config" path="somefile.txt"/>
+			<smb:write doc:name="Write" doc:id="04379f12-8657-47b7-a66d-6eb7b0d3e764" config-ref="config" path="otherfile.txt"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-read-with-lock-delete-before-consume-payload" doc:id="53153beb-3759-4071-88b8-31788012955e" expectedErrorType="SMB:FILE_LOCK" expectedErrorDescription="File '/somefile.txt' is locked by another process" description="Performs a read operation with lock on a file deleted before payload consumption">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="32ff219d-3904-4ccd-b2e3-206189aab5c6" config-ref="config" path="somefile.txt" lock="true">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<smb:read doc:name="Read" doc:id="23a2bd4c-6a56-4519-a81c-5e90d3ea557e" config-ref="config" path="somefile.txt" lock="true" />
+			<try doc:name="Try" doc:id="63f35314-d401-45f3-9965-145cb3043909" >
+				<smb:delete doc:name="Delete" doc:id="41e5c9b7-16bc-4e10-9588-32f5d0fb6a33" config-ref="config" path="somefile.txt" />
+				<smb:write doc:name="Write" doc:id="7c8b9ba4-fba6-4014-bee6-bc2e6b985c01" config-ref="config" path="otherfile.txt"/>
+				<error-handler >
+					<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a15941a5-0a1b-44f1-b394-2a8c2003c395" >
+						<smb:write doc:name="Write" doc:id="f0332315-12ad-4184-8c44-af4d71ecdd57" config-ref="config" path="otherfile.txt" />
+					</on-error-propagate>
+				</error-handler>
+			</try>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="smb-read-with-lock-write-before-consume-payload" doc:id="9978ee69-3b12-4118-9d4f-d847908df250" description="Performs a read operation with lock followed by a write operation with lock before payload consumption" expectedErrorType="SMB:FILE_LOCK">
+		<munit:execution >
+			<smb:write doc:name="Write" doc:id="831fe1b7-38e1-44c0-ad00-ae00a194ca0f" config-ref="config" path="somefile.txt">
+				<smb:content ><![CDATA[This is a test]]></smb:content>
+			</smb:write>
+			<smb:read doc:name="Read" doc:id="96f91306-b931-488f-aad3-d45209c0b46a" config-ref="config" path="somefile.txt" lock="true"/>
+			<try doc:name="Try" doc:id="ee503990-4d5d-48f7-8724-b8b3f546841a" >
+				<smb:write doc:name="Write" doc:id="e4ba1a0f-f07c-4627-915c-b20c28d6d8f8" path="somefile.txt" config-ref="config" lock="true" />
+				<error-handler >
+					<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="85f19f77-b528-4ef6-bba5-4cc9bf1f98ab" >
+						<smb:write doc:name="Write" doc:id="645f21e1-68f6-4334-bfad-61f7a7879253" config-ref="config" path="otherfile.txt"/>
+					</on-error-propagate>
+				</error-handler>
+			</try>
+		</munit:execution>
+	</munit:test>
+</mule>

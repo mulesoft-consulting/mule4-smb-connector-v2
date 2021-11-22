@@ -1,3 +1,4 @@
 /target/
 /.idea/
 /services/
+.DS_Store

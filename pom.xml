@@ -3,43 +3,180 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.mule.connectors</groupId>
-    <artifactId>mule-smb-connector</artifactId>
-    <version>1.0.22</version>
-    <packaging>mule-extension</packaging>
-    <name>mule-smb-connector</name>
 
     <parent>
-        <groupId>org.mule.extensions</groupId>
-        <artifactId>mule-modules-parent</artifactId>
-        <version>1.1.6</version>
+        <groupId>org.mule.connectors</groupId>
+        <artifactId>mule-certified-parent</artifactId>
+        <version>1.4.1</version>
+        <relativePath/>
     </parent>
 
-    <properties>
-        <mule.version>4.1.2</mule.version>
-        <muleFileCommonsVersion>1.3.4</muleFileCommonsVersion>
-        <formatterConfigPath>formatter.xml</formatterConfigPath>
-        <jdk.version>1.8</jdk.version>
-        <mavenResourcesVersion>3.0.2</mavenResourcesVersion>
-        <runtimeVersion>4.2.0</runtimeVersion>
-        <commonsIoVersion>2.4</commonsIoVersion>
+    <groupId>com.mulesoft.connectors</groupId>
+    <artifactId>mule4-smb-connector</artifactId>
+    <packaging>mule-extension</packaging>
+    <version>1.0.0-SNAPSHOT</version>
 
-        <muleTestsRunnerVersion>4.1.5</muleTestsRunnerVersion>
+    <name>Server Message Block (SMB) Connector - Mule 4</name>
+    <description>A Mule extension that provides functionality to manage files in an SMB server</description>
+
+    <properties>
+        <aspectjVersion>1.8.10</aspectjVersion>
+        <allureJunitVersion>2.0-BETA17</allureJunitVersion>
+        <allureReportVersion>2.3.4</allureReportVersion>
+        <allure.maven.plugin.version>2.8</allure.maven.plugin.version>
+
+        <mule.version>4.1.2</mule.version>
+        <docker.maven.plugin.version>0.36.1</docker.maven.plugin.version>
+        <maven.helper.plugin.version>3.2.0</maven.helper.plugin.version>
+
+        <commonsIoVersion>2.10.0</commonsIoVersion>
+        <commonsCollectionsVersion>3.2.2</commonsCollectionsVersion>
+        <smbjVersion>0.11.1</smbjVersion>
+
+        <muleFileCommonsVersion>1.3.6</muleFileCommonsVersion>
         <muleTestsComponentPlugin>${mule.version}</muleTestsComponentPlugin>
+        <muleTestsRunnerVersion>4.1.5</muleTestsRunnerVersion>
+        <muleSdkApiVersion>0.3.0</muleSdkApiVersion>
 
         <!-- Remove when a new parent version with MTF is available -->
-        <mule.maven.plugin.version>3.3.5</mule.maven.plugin.version>
         <munit.input.directory>src/test/munit</munit.input.directory>
         <munit.output.directory>${basedir}/target/test-mule/munit</munit.output.directory>
-        <munit.extensions.maven.plugin.version>1.0.0</munit.extensions.maven.plugin.version>
-        <munit.version>2.2.4</munit.version>
+        <munit.extensions.maven.plugin.version>1.1.1</munit.extensions.maven.plugin.version>
+        <munit.version>2.3.5</munit.version>
+        <mavenResources.version>3.2.0</mavenResources.version>
+
+        <munit.runtime.version>4.3.0</munit.runtime.version>
+        <jacoco.version>0.8.6</jacoco.version>
+
+        <muleSchedulerServiceVersion>1.1.11</muleSchedulerServiceVersion>
+        <settingsFile>${java.io.tmpdir}/effective-settings.xml</settingsFile>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.mule.modules</groupId>
+            <artifactId>mule-module-file-extension-common</artifactId>
+            <version>${muleFileCommonsVersion}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.mule.sdk</groupId>
+            <artifactId>mule-sdk-api</artifactId>
+            <version>${muleSdkApiVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commonsIoVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>${commonsCollectionsVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hierynomus</groupId>
+            <artifactId>smbj</artifactId>
+            <version>${smbjVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.engio</groupId>
+            <artifactId>mbassador</artifactId>
+            <version>1.3.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hierynomus</groupId>
+            <artifactId>asn-one</artifactId>
+            <version>0.5.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.69</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mule.services</groupId>
+            <artifactId>mule-service-scheduler</artifactId>
+            <version>${muleSchedulerServiceVersion}</version>
+            <classifier>mule-service</classifier>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-junit4</artifactId>
+            <version>${allureJunitVersion}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mule.modules</groupId>
+            <artifactId>mule-module-file-extension-common</artifactId>
+            <version>${muleFileCommonsVersion}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mule.tests</groupId>
+            <artifactId>mule-tests-infrastructure</artifactId>
+            <version>${mule.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mule.tests.plugin</groupId>
+            <artifactId>mule-tests-component-plugin</artifactId>
+            <version>${muleTestsComponentPlugin}</version>
+            <classifier>mule-plugin</classifier>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mule.tests</groupId>
+            <artifactId>mule-tests-runner</artifactId>
+            <version>${muleTestsRunnerVersion}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mule.module</groupId>
+            <artifactId>mule-java-module</artifactId>
+            <version>1.2.8</version>
+            <classifier>mule-plugin</classifier>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.spotify</groupId>
+            <artifactId>docker-client</artifactId>
+            <version>8.16.0</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
 
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <fork>false</fork>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>${mavenResourcesVersion}</version>
+                <version>${mavenResources.version}</version>
                 <executions>
                     <execution>
                         <id>copy-munit-resources</id>
@@ -71,6 +208,20 @@
                         <phase>integration-test</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <argLines>
+                        <argLine>
+                            -javaagent:${settings.localRepository}/org/jacoco/org.jacoco.agent/${jacoco.version}/org.jacoco.agent-${jacoco.version}-runtime.jar=destfile=${session.executionRootDirectory}/target/jacoco-munit.exec
+                        </argLine>
+                    </argLines>
+                    <runtimeVersion>${munit.runtime.version}</runtimeVersion>
+                    <runtimeConfiguration>
+                        <discoverRuntimes>
+                            <product>ALL</product>
+                            <includeSnapshots>false</includeSnapshots>
+                        </discoverRuntimes>
+                    </runtimeConfiguration>
+                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>com.mulesoft.munit</groupId>
@@ -84,30 +235,66 @@
                         <version>${munit.version}</version>
                         <classifier>mule-plugin</classifier>
                     </dependency>
+                    <dependency>
+                        <groupId>org.mule.modules</groupId>
+                        <artifactId>mule-connection-test-module</artifactId>
+                        <version>1.0.0</version>
+                        <classifier>mule-plugin</classifier>
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
-                <groupId>com.mulesoft.munit.tools</groupId>
-                <artifactId>munit-maven-plugin</artifactId>
-                <version>${munit.version}</version>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <configuration>
+                    <destFile>${session.executionRootDirectory}/target/jacoco-java.exec</destFile>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>test</id>
-                        <phase>test</phase>
                         <goals>
-                            <goal>test</goal>
-                            <goal>coverage-report</goal>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>merge</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>merge</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${session.executionRootDirectory}/target/jacoco.exec</destFile>
+                            <fileSets>
+                                <fileSet>
+                                    <directory>${project.build.directory}</directory>
+                                    <includes>
+                                        <include>*.exec</include>
+                                    </includes>
+                                </fileSet>
+                            </fileSets>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <goals>
+                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <coverage>
-                        <runCoverage>true</runCoverage>
-                        <formats>
-                            <format>html</format>
-                        </formats>
-                    </coverage>
-                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.20.1</version>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -120,143 +307,171 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-help-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <phase>process-test-resources</phase>
+                        <id>copy-settings</id>
+                        <goals>
+                            <goal>effective-settings</goal>
+                        </goals>
+                        <configuration>
+                            <output>${settingsFile}</output>
+                            <showPasswords>true</showPasswords>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Dmaven.settings.local=${settingsFile}</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-maven</artifactId>
+            </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <argLine>-Dfile.encoding=UTF-8 -javaagent:${settings.localRepository}/org/aspectj/aspectjweaver/${aspectjVersion}/aspectjweaver-${aspectjVersion}.jar -javaagent:${settings.localRepository}/org/jacoco/org.jacoco.agent/${jacoco.version}/org.jacoco.agent-${jacoco.version}-runtime.jar=destfile='${session.executionRootDirectory}/target/jacoco.exec'</argLine>
+                        <properties>
+                            <property>
+                                <name>listener</name>
+                                <value>io.qameta.allure.junit4.AllureJunit4</value>
+                            </property>
+                        </properties>
+                        <systemPropertyVariables>
+                            <!-- Just propagate this variable due to surefire will not do this when forked vm for tests -->
+                            <mule.freePortFinder.lockPath>${java.io.tmpdir}/mule/freePortFinder</mule.freePortFinder.lockPath>
+                            <maven.projectVersion>${project.version}</maven.projectVersion>
+                        </systemPropertyVariables>
+                        <systemProperties>
+                            <property>
+                                <name>allure.results.directory</name>
+                                <value>${project.build.directory}/allure-results</value>
+                            </property>
+                        </systemProperties>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.aspectj</groupId>
+                            <artifactId>aspectjweaver</artifactId>
+                            <version>${aspectjVersion}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jacoco</groupId>
+                            <artifactId>org.jacoco.agent</artifactId>
+                            <version>${jacoco.version}</version>
+                            <classifier>runtime</classifier>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>io.qameta.allure</groupId>
+                    <artifactId>allure-maven</artifactId>
+                    <version>${allure.maven.plugin.version}</version>
+                    <configuration>
+                        <reportVersion>${allureReportVersion}</reportVersion>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-file-extension-common</artifactId>
-            <version>${muleFileCommonsVersion}</version>
-            <classifier>mule-plugin</classifier>
-        </dependency>
-        <dependency>
-            <groupId>eu.agno3.jcifs</groupId>
-            <artifactId>jcifs-ng</artifactId>
-            <version>2.1.5</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>${commonsIoVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mule.tests.plugin</groupId>
-            <artifactId>mule-tests-component-plugin</artifactId>
-            <version>${muleTestsComponentPlugin}</version>
-            <classifier>mule-plugin</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mule.tests</groupId>
-            <artifactId>mule-tests-runner</artifactId>
-            <version>${muleTestsRunnerVersion}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mule.tests</groupId>
-            <artifactId>mule-tests-infrastructure</artifactId>
-            <version>${mule.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-file-extension-common</artifactId>
-            <version>${muleFileCommonsVersion}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mule.module</groupId>
-            <artifactId>mule-java-module</artifactId>
-            <version>1.2.1</version>
-            <classifier>mule-plugin</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-jlan-embed</artifactId>
-            <version>7.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>cryptix.jce</groupId>
-            <artifactId>crytix-jce-provider</artifactId>
-            <version>20050328</version>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
-
-    <!--
-    <distributionManagement>
-        <repository>
-            <id>mule-releases</id>
-            <name>Mule Release Repository</name>
-            <url>https://repository-master.mulesoft.org/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>mule-snapshots</id>
-            <name>Mule Snapshot Repository</name>
-            <url>https://repository-master.mulesoft.org/nexus/content/repositories/snapshots</url>
-            <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository>
-    </distributionManagement>
-    -->
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>${docker.maven.plugin.version}</version>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>dperson/samba</name>
+                                    <alias>samba</alias>
+                                    <run>
+                                        <cmd>
+                                            <shell>samba.sh -p -u mulesoft;mulesoft -s share;/share;no;no;no;mulesoft -w WORKGROUP -r</shell>
+                                        </cmd>
+                                        <ports>
+                                            <port>445:445</port>
+                                        </ports>
+                                        <log>
+                                            <enabled>true</enabled>
+                                        </log>
+                                        <wait>
+                                            <log>daemon_ready: daemon 'smbd' finished starting up and ready to serve connections</log>
+                                            <time>10000</time>
+                                        </wait>
+                                    </run>
+                                </image>
+                            </images>
+                            <verbose>true</verbose>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.slf4j</groupId>
+                                <artifactId>slf4j-api</artifactId>
+                                <version>1.7.31</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.slf4j</groupId>
+                                <artifactId>jcl-over-slf4j</artifactId>
+                                <version>1.7.31</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>start</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                    <goal>build</goal>
+                                    <goal>start</goal>
+                                </goals>
+                                <configuration>
+                                    <showLogs>true</showLogs>
+                                    <logStdout>true</logStdout>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>stop</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                    <goal>remove</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>
-            <id>mule</id>
-            <name>Mule Repository</name>
-            <url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
-        </repository>
-        <repository>
-            <id>mulesoft-releases</id>
-            <name>MuleSoft Releases Repository</name>
-            <url>http://repository.mulesoft.org/releases/</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <id>alfresco-public</id>
-            <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-        </repository>
-        <!-- TODO install jar from http://www.cryptix.org/ in MuleSoft repo -->
-        <repository>
-            <id>nuiton-public</id>
-            <url>http://maven.nuiton.org/release/</url>
+            <id>mule-releases</id>
+            <name>Nexus Public Releases</name>
+            <url>https://repository-master.mulesoft.org/nexus/content/repositories/releases/</url>
         </repository>
     </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>mule-plugin</id>
-            <name>Mule Repository</name>
-            <url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>mulesoft-release</id>
-            <name>mulesoft release repository</name>
-            <layout>default</layout>
-            <url>http://repository.mulesoft.org/releases/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>BradescoApiTeamRepository</id>
-            <name>Exchange Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/82f92d27-f09c-4498-971c-befdd2751bc6/maven</url>
-            <layout>default</layout>
-        </snapshotRepository>
-        <repository>
-            <id>BradescoApiTeamRepository</id>
-            <name>Exchange Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/82f92d27-f09c-4498-971c-befdd2751bc6/maven</url>
-            <layout>default</layout>
-        </repository>
-    </distributionManagement>
 
 </project>

@@ -13,6 +13,10 @@
         <smb:connection host="google.com" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share"/>
     </smb:config>
 
+    <smb:config name="smbConfigConnectionRefused">
+        <smb:connection host="google.com" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share" port="9999"/>
+    </smb:config>
+
     <smb:config name="smbConfigMissingCredentials">
         <smb:connection host="localhost" domain="WORKGROUP" shareRoot="share"/>
     </smb:config>
@@ -20,4 +24,13 @@
     <smb:config name="smbConfigUnknownHost">
         <smb:connection host="sdasdadasd" domain="WORKGROUP" username="mulesoft" password="mulesoft" shareRoot="share"/>
     </smb:config>
+
+    <smb:config name="smbConfigFirstConnection">
+        <smb:connection username="limitedUsed" password="limitedUsed"  host="localhost" port="${SMB_PORT}" domain="WORKGROUP" shareRoot="share"/>
+    </smb:config>
+
+    <smb:config name="smbConfigServiceUnavailable">
+        <smb:connection username="limitedUsed" password="limitedUsed"  host="localhost" port="${SMB_PORT}" domain="WORKGROUP" shareRoot="share"/>
+    </smb:config>
+
 </mule>
