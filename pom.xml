@@ -31,7 +31,7 @@
 
         <commonsIoVersion>2.10.0</commonsIoVersion>
         <commonsCollectionsVersion>3.2.2</commonsCollectionsVersion>
-        <smbjVersion>0.11.1</smbjVersion>
+        <smbjVersion>0.11.5</smbjVersion>
 
         <muleFileCommonsVersion>1.3.6</muleFileCommonsVersion>
         <muleTestsComponentPlugin>${mule.version}</muleTestsComponentPlugin>

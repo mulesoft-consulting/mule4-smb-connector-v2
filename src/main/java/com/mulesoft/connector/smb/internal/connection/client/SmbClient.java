@@ -177,7 +177,15 @@ public class SmbClient {
   }
 
   public List<SmbFileAttributes> list(String directory) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Listing files [share path: {}, directory: {}]...", this.share.getSmbPath(), directory);
+    }
     SmbPath path = new SmbPath(this.share.getSmbPath(), directory);
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("SMB Path [share name: {}, path: {}]", path.getShareName(), path.getPath());
+    }
+
     List<FileIdBothDirectoryInformation> files;
 
     try {
@@ -193,7 +201,17 @@ public class SmbClient {
 
   private SmbFileAttributes createSmbFileAttribute(String directory, FileIdBothDirectoryInformation entry) {
     try {
+      if (logger.isDebugEnabled()) {
+        if (entry == null) {
+          logger.debug("Creating SmbFileAttribute [{}, null]", directory);
+        } else {
+          logger.debug("Creating SmbFileAttribute [{}, {}]", directory, entry.getFileName());
+        }
+      }
       URI path = UriUtils.createUri(directory, entry.getFileName());
+      if (logger.isDebugEnabled()) {
+        logger.debug("URI path [dir: {}, file name: {}]: {}", directory, entry.getFileName(), path.getPath());
+      }
       return new SmbFileAttributes(path,
                                    share.getFileInformation(path.getPath()));
     } catch (Exception e) {
